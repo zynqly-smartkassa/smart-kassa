@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import RootLayout from "./layout/RootLayout";
 import Settings from "./pages/settings/Settings";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 /**
  * The Routes are all declared here
@@ -15,11 +16,12 @@ function App() {
     <Router>
       <Routes>
         {/* This will ensure, that each Route has the same Header */}
+
         <Route
           element={
-           
+            <ProtectedRoute>
               <RootLayout />
-         
+            </ProtectedRoute>
           }
         >
           <Route path="/" element={<Home />} />

@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 
-import { Bell } from 'lucide-react';
+import { Bell } from "lucide-react";
 import SearchInput from "@/components/SearchInput";
-
 
 /**
  * @returns the Root layout
@@ -16,7 +15,7 @@ export default function RootLayout() {
   const [path, setPath] = useState("home");
   const [active, setActive] = useState(true);
 
-    useEffect(() => {
+  useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
 
     const handler = () => {
@@ -34,12 +33,12 @@ export default function RootLayout() {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-
   return (
     <SidebarProvider open={active} onOpenChange={setActive}>
-      <div className="flex flex-col lg:flex-row gap-4 w-full min-h-screen md:pt-4
-      bg-gray-400/20">
-
+      <div
+        className="flex flex-col lg:flex-row gap-4 w-full min-h-screen md:pt-4
+      bg-gray-400/20"
+      >
         {/* Content in Sidebar */}
         <AppSidebar />
 
@@ -51,7 +50,6 @@ export default function RootLayout() {
         flex items-center justify-between
         px-4 z-40"
           >
-
             <SidebarTrigger className="lg:hidden" />
 
             <SearchInput></SearchInput>
@@ -59,12 +57,9 @@ export default function RootLayout() {
             {/* Account icon and Bell on the right side */}
 
             <div className="flex flex-row gap-2 items-center text-lg flex-shrink">
-
               <Bell className="hidden md:block md:w-6 md:h-6"></Bell>
               <CircleUser className="w-6 h-6 md:w-10 md:h-10"></CircleUser>
-
             </div>
-
           </header>
 
           {/* The RootLayout will automatically inject the current Page */}
@@ -72,9 +67,7 @@ export default function RootLayout() {
             <Outlet />
           </main>
 
-
-        {/* 
-         <footer
+          <footer
             className="
     h-16 w-full
     backdrop-blur-md bg-white/60 dark:bg-black/40
@@ -85,7 +78,8 @@ export default function RootLayout() {
           >
             <nav className="grid grid-cols-3 h-full place-items-center text-sm font-medium">
               {["Statistiken", "Home", "Account"].map((element, index) => {
-                const lower = element.charAt(0).toLowerCase() + element.slice(1);
+                const lower =
+                  element.charAt(0).toLowerCase() + element.slice(1);
 
                 return (
                   <Link
@@ -93,11 +87,11 @@ export default function RootLayout() {
                     className={`
             hover:text-violet-500 relative px-2 py-1
             ${
-                      // underline color
-                      path === lower
-                        ? "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[3px] after:bg-violet-500 after:transition-all after:duration-300"
-                        : "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[3px] after:bg-transparent after:transition-all after:duration-300"
-                      }
+              // underline color
+              path === lower
+                ? "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[3px] after:bg-violet-500 after:transition-all after:duration-300"
+                : "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[3px] after:bg-transparent after:transition-all after:duration-300"
+            }
           `}
                     to={""} //"/" + lower
                     onClick={() => setPath(lower)}
@@ -108,8 +102,6 @@ export default function RootLayout() {
               })}
             </nav>
           </footer>
-        */}
-         
         </div>
       </div>
     </SidebarProvider>

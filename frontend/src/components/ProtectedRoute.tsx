@@ -5,7 +5,10 @@ import { signInUser } from "../../redux/slices/userSlice";
 import type { USER_DTO } from "../../constants/User";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { setAuthenticated, setUnauthenticated } from "../../redux/slices/authSlice";
+import {
+  setAuthenticated,
+  setUnauthenticated,
+} from "../../redux/slices/authSlice";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -23,11 +26,12 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const navigator = useNavigate();
 
   // Check if the user is getting loaded currently
-  const {isLoading} = useSelector((state: RootState) => state.authState);
+  const { isLoading, isAuthenticated } = useSelector(
+    (state: RootState) => state.authState
+  );
 
   useEffect(() => {
     async function getJWTTokens() {
-
       try {
         const userData: USER_DTO = await verifyAccessToken();
         if (!userData) {
@@ -42,18 +46,18 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
             phoneNumber: userData.phoneNumber,
           })
         );
-       dispatch(setAuthenticated())
+        dispatch(setAuthenticated());
       } catch {
-        navigator("/register");
+        await navigator("/register");
         dispatch(setUnauthenticated());
       }
     }
     getJWTTokens();
   }, [dispatch, navigator]);
 
-
-  if (isLoading) {
-     return (
+  // had to also use the authenticate value so it doesn't show home page for split second to non-loged in Users
+  if (!isAuthenticated || isLoading) {
+    return (
       <div className="w-full h-screen flex items-center justify-center">
         <p className="text-lg font-semibold">Loading...</p>
       </div>
