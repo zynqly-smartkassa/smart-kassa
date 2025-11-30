@@ -1,14 +1,18 @@
 import type { CapacitorConfig } from "@capacitor/cli";
+import { KeyboardResize } from "@capacitor/keyboard";
 
 const config: CapacitorConfig = {
   appId: "org.Zynqly",
   appName: "Zynqly",
   webDir: "dist",
+  server: {
+    url: "http://192.168.0.167:5173/",
+    cleartext: true,
+  },
   plugins: {
-    keyboard: {
-      resize: "body",
-      style: "dark",
+    Keyboard: {
       resizeOnFullScreen: true,
+      resize: KeyboardResize.Native,
     },
   },
 };

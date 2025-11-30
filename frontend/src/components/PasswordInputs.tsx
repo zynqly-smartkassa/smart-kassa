@@ -3,6 +3,7 @@ import { EyeClosed, Eye } from "lucide-react";
 import { Label } from "./ui/label";
 import { InputGroup, InputGroupInput, InputGroupAddon } from "./ui/input-group";
 import type { PasswordContainer } from "../../constants/Compontents";
+import { resizeKeyboard } from "@/hooks/keyboardResizer";
 
 interface PasswordInputsProps {
   PasswordContainer: PasswordContainer[];
@@ -25,6 +26,7 @@ const PasswordInputs = ({ PasswordContainer }: PasswordInputsProps) => {
               value={value.value}
               onChange={(e) => value.onChangeListener(e.target.value)}
               onBlur={value.onBlurListener}
+              onClick={() => resizeKeyboard()}
             />
 
             <InputGroupAddon align="inline-end">

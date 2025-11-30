@@ -2,12 +2,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { Container } from "../../constants/Compontents";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { resizeKeyboard } from "@/hooks/keyboardResizer";
 
 interface NameInputsProps {
   Containers: Container[];
 }
 
 const NameInputs = ({ Containers }: NameInputsProps) => {
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {Containers.map((value, index) => (
@@ -23,6 +25,7 @@ const NameInputs = ({ Containers }: NameInputsProps) => {
             onChange={(e) => value.onChangeListener(e.target.value)}
             onBlur={value.onBlurListener}
             onFocus={value.onFocusListener}
+            onClick={() => resizeKeyboard()}
           />
           <AnimatePresence>
             {value.validation && (
