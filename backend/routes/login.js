@@ -42,7 +42,9 @@ router.post("/", async (req, res) => {
       `SELECT 
         users.user_id,
         users.password_hash,
-        users.email
+        users.email,
+        users.first_name,
+        users.last_name
       FROM users
       WHERE users.email = $1`,
       [email]
@@ -65,7 +67,7 @@ router.post("/", async (req, res) => {
     const payload = {
       userId: user.user_id,
       email: user.email,
-      name: user.name,
+      name: `${user.first_name} ${user.last_name}`,
     };
 
     // Generate both access and refresh tokens
@@ -95,9 +97,9 @@ router.post("/", async (req, res) => {
       message: "Login successful",
       accessToken,
       user: {
-        id: user.user_id,
-        name: user.name,
+        userId: user.user_id,
         email: user.email,
+        name: `${user.first_name} ${user.last_name}`,
       },
     });
   } catch (err) {
