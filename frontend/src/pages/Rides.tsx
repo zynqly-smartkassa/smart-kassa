@@ -3,12 +3,12 @@ import L from "leaflet";
 import "leaflet-routing-machine";
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
-
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import "leaflet/dist/leaflet.css"
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import '/home/umejr/Desktop/Windows/Mobile Software Development/3 Semester/smart-kassa/frontend/src/routing.css';
 import { Icon } from 'leaflet';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -22,7 +22,7 @@ const locationIcon = new Icon({
 const driverIcon = new Icon({
   iconUrl: '/dot.png',
   iconSize: [32, 32],
-  iconAnchor: [16, 16], 
+  iconAnchor: [16, 16],
 });
 
 
@@ -54,14 +54,8 @@ export const RoutingMachine = ({ start, end }: RoutingMachineProps) => {
       lineOptions: {
         styles: [{ weight: 5 }]
       },
-        
-    createMarker: (i: number, waypoint: { latLng: L.LatLngExpression; }) => {
-      // This will ensure that leaflet doesn't add a unnecessary marker on the start location
-    if (i === 0) return null;
-
-    // Our Custom marker
-    return L.marker(waypoint.latLng, { icon: locationIcon });
-  }
+      // This will ensure that leaflet doesn't add additional markers
+      createMarker: () => null
     }).addTo(map);
 
     // Clean
@@ -71,16 +65,38 @@ export const RoutingMachine = ({ start, end }: RoutingMachineProps) => {
   }, [map, start, end]);
 
   return null;
+
 };
 
+// memo from react ensures that this element is only rendered new, if and only if the lat and lng have actually updated itself
+ export const RecenterMap = memo(
+  ({ lat, lng }: { lat: number, lng: number }) => {
+    const map = useMap();
+    console.log("Ich werde aufgerufen!")
 
-// This will center the karte on the current location (driver)
-const RecenterMap = ({ lat, lng }: { lat: number, lng: number }) => {
-  const map = useMap();
-  // smooth transition to the *new* current locaton
-  map.flyTo([lat, lng], map.getZoom(), { duration: 1 });
-  return null;
-}
+    const lastLocation = useRef<[number, number] | null>(null);
+
+    useEffect(() => {
+      if (!lastLocation.current) {
+        lastLocation.current = [lat, lng];
+        map.flyTo([lat, lng], map.getZoom(), { duration: 1 });
+        return;
+      }
+
+      const [prevLat, prevLng] = lastLocation.current;
+      const distance = map.distance([prevLat, prevLng], [lat, lng]);
+
+      if (distance > 30) {
+        // only fly if moved more than 30m
+        // smooth transition to the *new* current locaton
+        map.flyTo([lat, lng], map.getZoom(), { duration: 1 });
+        lastLocation.current = [lat, lng];
+      }
+    }, [map, lat, lng]);
+    return null;
+  }
+ );
+
 
 // Calls the link and converts the adress into lat and lng coordinates
 async function geocodeAddress(address: string): Promise<[number, number] | null> {
@@ -105,7 +121,7 @@ const formatTime = (totalSeconds: number): string => {
 
   const pad = (num: number) => num.toString().padStart(2, '0');
 
-  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`; // return 00:00:00 format
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`; // returns 00:00:00 format
 };
 
 const Rides = () => {
@@ -116,6 +132,9 @@ const Rides = () => {
 
   const [isRideActive, setIsRideActive] = useState(false);
   const [timer, setTimer] = useState(0);
+
+
+  // This will center the karte on the current location (driver)
 
   // timer
   useEffect(() => {
@@ -132,15 +151,28 @@ const Rides = () => {
 
   // Update driver
   useEffect(() => {
-
     // To get the current location
     navigator.geolocation.getCurrentPosition(
       (lc) => {
         console.log("Location loaded:", lc.coords.latitude, lc.coords.longitude);
         setDriverLocation([lc.coords.latitude, lc.coords.longitude]);
       },
-      (err) => console.error("Error while loading the current location of the driver:", err),
-      { enableHighAccuracy: true }
+      (err) => {
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            alert("Error while loading the current location of the driver:");
+            break;
+          case err.POSITION_UNAVAILABLE:
+            alert("GPS not available. Ensure that the device has a built in GPS!");
+            break;
+          case err.TIMEOUT:
+            alert("GPS request was timed out because the request has taken too long.")
+            break;
+          default:
+            alert("Unknown GPS failure")
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 3000, timeout: 5000 }
     );
 
     // To udate the location
@@ -149,31 +181,55 @@ const Rides = () => {
         console.log("Live Update:", pos.coords.latitude, pos.coords.longitude);
         setDriverLocation([pos.coords.latitude, pos.coords.longitude]);
       },
-      (err) => console.error("Error while live tracking:", err),
-      { enableHighAccuracy: true, maximumAge: 1000 }
+      (err) => {
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            alert("GPS denied during live tracking!");
+            break;
+          case err.POSITION_UNAVAILABLE:
+            alert("GPS not available during live tracking!");
+            break;
+          case err.TIMEOUT:
+            console.warn("GPS live update timed out.");
+            break;
+          default:
+            console.warn("Unknown GPS error during live tracking.");
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 3000, timeout: 5000 }
     );
 
     // clean live tracker
     return () => navigator.geolocation.clearWatch(watchId);
   }, [])
 
-  //   useEffect(() => {
-  //   let lat = 48.21;
-  //   let lng = 16.36;
+    useEffect(() => {
+    let lat = 48.21;
+    let lng = 16.36;
 
+    let interval: number | undefined;
+    if (isRideActive) {
+      interval = setInterval(() => {
+      lat += 0.0001; // leicht nach Norden bewegen
+      lng += 0.0001; // leicht nach Osten bewegen
+      setDriverLocation([lat, lng]);
+    }, 1000);
+    }
+   
 
-  //   const interval = setInterval(() => {
-  //     lat += 0.0001; // leicht nach Norden bewegen
-  //     lng += 0.0001; // leicht nach Osten bewegen
-  //     setDriverLocation([lat, lng]);
-  //   }, 1000);
-
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, [isRideActive]);
 
   if (!driverLocation) {
     return <p className="text-center mt-4">Warte auf GPS-Daten…</p>;
   }
+
+  const checkRide = () => {
+    if (isRideActive && timer <= 60) {
+      return alert("Error: The ride cannot be saved, because the ride lasted only for 1 minute.");
+    };
+  };
+
 
   return (
     <div className="w-full flex flex-col gap-2 z-20">
@@ -189,6 +245,7 @@ const Rides = () => {
       <MapContainer
         center={driverLocation ?? [48.210033, 16.363449]}
         zoom={13}
+
         style={{ height: "500px", width: "100%" }}
       >
         {/* TileLayer actually shows the individual layers of the whole map */}
@@ -197,28 +254,31 @@ const Rides = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
 
-        {driverLocation && (
-          <>
-            {/* Driver current location */}
-            <Marker position={driverLocation} icon={driverIcon}></Marker>
-            <RecenterMap lat={driverLocation[0]} lng={driverLocation[1]} />
-          </>
-        )}
+        {/* This will ensure that the markers get clustered into one "container" marker */}
+        <MarkerClusterGroup>
+          {driverLocation && (
+            <>
+              {/* Driver current location */}
+              <Marker position={driverLocation} icon={driverIcon}></Marker>
+              <RecenterMap lat={driverLocation[0]} lng={driverLocation[1]} />
+            </>
+          )}
 
-        {/* Destination-Routing */}
-        {driverLocation && destinationCoords && (
-          <RoutingMachine start={driverLocation} end={destinationCoords} />
-        )}
+          {/* Marker for destination address */}
+          {destinationCoords && (
+            <Marker position={destinationCoords} icon={locationIcon}></Marker>
+          )}
 
-        {/* Marker for destination address */}
-        {destinationCoords && (
-          <Marker position={destinationCoords} icon={locationIcon}></Marker>
-        )}
+          {/* Destination-Routing */}
+          {driverLocation && destinationCoords && (
+            <RoutingMachine start={driverLocation} end={destinationCoords} />
+          )}
+        </MarkerClusterGroup>
 
       </MapContainer>
       <Input
         type="text"
-        placeholder="Zieladresse"
+        placeholder="Mariahilfer Straße 120, Wien"
         value={destination}
         onChange={e => setDestination(e.target.value)}
         className='w-full p-3 mb-4 text-gray-800 border-2 border-violet-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150'
@@ -235,7 +295,7 @@ const Rides = () => {
         disabled={isRideActive}
 
         className={`w-full py-6 mb-6 font-semibold text-white bg-violet-600 rounded-lg shadow-md hover:bg-violet-700 transition duration-150 ease-in-out`}
-        >
+      >
         Route berechnen
       </Button>
 
@@ -259,6 +319,7 @@ const Rides = () => {
             setDestinationCoords(null);
             setDestination("");
             setTimer(0);
+            checkRide();
             console.log("Ride has ended!")
           }}
           disabled={!isRideActive}>
