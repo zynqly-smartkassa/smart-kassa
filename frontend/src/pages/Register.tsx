@@ -114,7 +114,6 @@ function Register() {
         email,
         telefonnummer,
         password,
-        "Businnes muss im Frontend implementiert werden",
         firmenbuchnummer,
         atu,
         dispatch // to set Global User Variable (Injected)

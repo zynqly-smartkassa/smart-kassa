@@ -9,7 +9,6 @@ export async function register(
   email: string,
   phoneNumber: string,
   password: string,
-  business: string,
   fn: string,
   atu: string,
   dispatch: AppDispatch
@@ -23,7 +22,6 @@ export async function register(
         email: email,
         phone_number: phoneNumber,
         password: password,
-        business: business,
         fn: fn,
         atu: atu,
       },
@@ -80,7 +78,7 @@ export async function register(
         throw new Error("Missing Fields");
       }
     } else {
-      throw new Error("Unknown Error");
+      throw new Error("Internal Server Error");
     }
   }
 }
@@ -108,13 +106,12 @@ export async function login(
       throw new Error("Response is empty");
     }
 
+    console.log(data);
     AuthStorage.setTokens(data.accessToken);
-    console.log("Access Token: \n", AuthStorage.getAccessToken());
-    console.log("Access Token: \n", data.accessToken);
     const user = data.user;
     dispatch(
       signInUser({
-        id: user.id,
+        id: user.userId,
         firstName: user.name.split(" ")[0],
         lastName: user.name.split(" ")[1],
         email: user.email,
