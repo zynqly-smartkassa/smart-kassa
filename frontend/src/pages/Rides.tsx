@@ -13,15 +13,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 
-// const locationIcon = new Icon({
-//   iconUrl: '/karte3.png',
-//   iconSize: [50, 50],
-// });
+const locationIcon = new Icon({
+  iconUrl: '/karte3.png',
+  iconSize: [50, 50],
+  iconAnchor: [25, 25], //This will actually center the icon on to the location. its like transform -50%
+});
 
 const driverIcon = new Icon({
   iconUrl: '/dot.png',
   iconSize: [32, 32],
-  iconAnchor: [16, 16],
+  iconAnchor: [16, 16], 
 });
 
 
@@ -52,7 +53,15 @@ export const RoutingMachine = ({ start, end }: RoutingMachineProps) => {
       addWaypoints: false,
       lineOptions: {
         styles: [{ weight: 5 }]
-      }
+      },
+        
+    createMarker: (i: number, waypoint: { latLng: L.LatLngExpression; }) => {
+      // This will ensure that leaflet doesn't add a unnecessary marker on the start location
+    if (i === 0) return null;
+
+    // Our Custom marker
+    return L.marker(waypoint.latLng, { icon: locationIcon });
+  }
     }).addTo(map);
 
     // Clean
@@ -89,12 +98,39 @@ async function geocodeAddress(address: string): Promise<[number, number] | null>
   }
 }
 
+const formatTime = (totalSeconds: number): string => {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const pad = (num: number) => num.toString().padStart(2, '0');
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`; // return 00:00:00 format
+};
+
 const Rides = () => {
 
   const [driverLocation, setDriverLocation] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState("");
   const [destinationCoords, setDestinationCoords] = useState<[number, number] | null>(null);
 
+  const [isRideActive, setIsRideActive] = useState(false);
+  const [timer, setTimer] = useState(0);
+
+  // timer
+  useEffect(() => {
+    let interval: number | undefined;
+
+    if (isRideActive) {
+      interval = setInterval(() => {
+        setTimer(last => last + 1);
+      }, 1000)
+    }
+
+    return () => clearInterval(interval);
+  }, [isRideActive])
+
+  // Update driver
   useEffect(() => {
 
     // To get the current location
@@ -121,30 +157,34 @@ const Rides = () => {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [])
 
-  useEffect(() => {
-  let lat = 48.21;
-  let lng = 16.36;
+  //   useEffect(() => {
+  //   let lat = 48.21;
+  //   let lng = 16.36;
 
-  const interval = setInterval(() => {
-    lat += 0.0001; // leicht nach Norden bewegen
-    lng += 0.0001; // leicht nach Osten bewegen
-    setDriverLocation([lat, lng]);
-  }, 1000);
 
-  return () => clearInterval(interval);
-}, []);
+  //   const interval = setInterval(() => {
+  //     lat += 0.0001; // leicht nach Norden bewegen
+  //     lng += 0.0001; // leicht nach Osten bewegen
+  //     setDriverLocation([lat, lng]);
+  //   }, 1000);
+
+  //   return () => clearInterval(interval);
+  // }, []);
 
   if (!driverLocation) {
     return <p className="text-center mt-4">Warte auf GPS-Daten…</p>;
   }
 
   return (
-    <div className="w-full flex flex-col gap-4 z-20">
+    <div className="w-full flex flex-col gap-2 z-20">
 
       <h2 className="ml-2 text-lg text-center md:text-start font-light">
         Fahrten
       </h2>
 
+      <p className='w-full text-5xl font-bold text-center'>
+        {formatTime(timer)}
+      </p>
 
       <MapContainer
         center={driverLocation ?? [48.210033, 16.363449]}
@@ -159,33 +199,72 @@ const Rides = () => {
 
         {driverLocation && (
           <>
-            {/* Fahrer-Standort */}
+            {/* Driver current location */}
             <Marker position={driverLocation} icon={driverIcon}></Marker>
             <RecenterMap lat={driverLocation[0]} lng={driverLocation[1]} />
           </>
         )}
 
-        {/* Zieladresse-Routing */}
+        {/* Destination-Routing */}
         {driverLocation && destinationCoords && (
           <RoutingMachine start={driverLocation} end={destinationCoords} />
         )}
 
-        {/* Marker für Zieladresse */}
+        {/* Marker for destination address */}
         {destinationCoords && (
-          <Marker position={destinationCoords}></Marker>
+          <Marker position={destinationCoords} icon={locationIcon}></Marker>
         )}
 
       </MapContainer>
-      <Input type="text" placeholder="Zieladresse" value={destination} onChange={e => setDestination(e.target.value)} />
-      <Button onClick={async () => {
-        const coords = await geocodeAddress(destination);
-        if (coords) {
-          setDestinationCoords(coords);
-          console.log("Ziel gesetzt:", coords);
-        } else {
-          alert("Adresse nicht gefunden!");
-        }
-      }}>Route berechnen</Button>
+      <Input
+        type="text"
+        placeholder="Zieladresse"
+        value={destination}
+        onChange={e => setDestination(e.target.value)}
+        className='w-full p-3 mb-4 text-gray-800 border-2 border-violet-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150'
+        disabled={isRideActive}
+      />
+
+      <Button
+        onClick={async () => {
+          const coords = await geocodeAddress(destination);
+          if (coords) {
+            setDestinationCoords(coords);
+          }
+        }}
+        disabled={isRideActive}
+
+        className={`w-full py-6 mb-6 font-semibold text-white bg-violet-600 rounded-lg shadow-md hover:bg-violet-700 transition duration-150 ease-in-out`}
+        >
+        Route berechnen
+      </Button>
+
+      <div className='w-full grid grid-cols-2 gap-4'>
+        <Button
+
+          className={`py-6 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition duration-150 ease-in-out`}
+          onClick={() => {
+            setIsRideActive(true);
+            console.log("Ride has started!");
+          }}
+          disabled={isRideActive}>
+          Start Fahrt
+        </Button>
+
+        <Button
+
+          className={`py-6 font-semibold text-white bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition duration-150 ease-in-out`}
+          onClick={() => {
+            setIsRideActive(false);
+            setDestinationCoords(null);
+            setDestination("");
+            setTimer(0);
+            console.log("Ride has ended!")
+          }}
+          disabled={!isRideActive}>
+          End Fahrt
+        </Button>
+      </div>
     </div>
   )
 
