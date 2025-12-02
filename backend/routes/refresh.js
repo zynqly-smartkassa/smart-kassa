@@ -41,8 +41,8 @@ router.post("/", async (req, res) => {
 
     // Verify token exists in database and hasn't expired or been revoked
     const tokenRes = await pool.query(
-      `SELECT * FROM account
-       WHERE refresh_token = $1 AND user_id = $2 AND token_expiress_at > NOW()`,
+      `SELECT * FROM session
+       WHERE refresh_token = $1 AND user_id = $2 AND expires_at > NOW()`,
       [refreshToken, decoded.userId]
     );
 
@@ -54,8 +54,7 @@ router.post("/", async (req, res) => {
 
     // Fetch current user information for the new access token
     const userRes = await pool.query(
-      `SELECT user_id, first_name, last_name, email, business
-       FROM users
+      `SELECT user_id, first_name, last_name, email FROM users
        WHERE user_id = $1`,
       [decoded.userId]
     );
@@ -67,7 +66,6 @@ router.post("/", async (req, res) => {
       userId: user.user_id,
       email: user.email,
       name: `${user.first_name} ${user.last_name}`,
-      business: user.business,
     });
 
     // Return new access token to client

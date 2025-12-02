@@ -29,14 +29,19 @@ export function authenticateToken(req, res, next) {
 
     // Check if token exists
     if (!token) {
-      return res.status(401).json({ error: "Acces token required" });
+      return res
+        .status(401)
+        .json({ error: "Acces token required", path: "auth middleware" });
     }
 
     // Verify token signature and expiration
     const decoded = verifyAccessToken(token);
 
     if (!decoded) {
-      return res.status(403).json({ error: "Invalid or expired access token" });
+      return res.status(403).json({
+        error: "Invalid or expired access token",
+        path: "auth middleware",
+      });
     }
 
     // Attach user data to request object for use in route handlers
@@ -44,6 +49,8 @@ export function authenticateToken(req, res, next) {
     next();
   } catch (error) {
     console.error("Auth middleware error: ", error);
-    return res.status(500).json({ error: "Authentication failed" });
+    return res
+      .status(500)
+      .json({ error: "Authentication failed", path: "auth middleware" });
   }
 }

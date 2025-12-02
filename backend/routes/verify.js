@@ -24,7 +24,8 @@ router.get("/", authenticateToken, async (req, res) => {
       email: user.email,
       phone_number: user.phone_number,
     });
-  } catch {
+  } catch (err) {
+    console.error("Error in /verify: ", err);
     return res.status(500).send({ error: "Internal Server Error" });
   }
 });

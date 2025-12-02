@@ -40,7 +40,7 @@ import fahrtRoutes from "./routes/fahrten.js";
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
+      "http://localhost:5173", // local host needs to be deleted when in production
       "https://localhost:5173",
       "https://smart-kassa.vercel.app",
       process.env.DEBUG_URL
