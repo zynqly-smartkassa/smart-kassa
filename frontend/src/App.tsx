@@ -6,12 +6,30 @@ import Login from "./pages/Login";
 import RootLayout from "./layout/RootLayout";
 import Settings from "./pages/settings/Settings";
 import Rides from "./pages/Rides";
+import { useEffect } from "react";
+import { StatusBar, Style } from "@capacitor/status-bar";
 
 /**
  * The Routes are all declared here
  * @returns Router Component for Routing in the Application without reloading whole page
  */
+
 function App() {
+  /**
+   * to set the Statusbar Color on the Mobile App
+   */
+  useEffect(() => {
+    const theme = localStorage.getItem("vite-ui-theme");
+    if (!theme) {
+      StatusBar.setBackgroundColor({ color: "#7F00FF" });
+    }
+
+    if (theme === "light") {
+      StatusBar.setStyle({ style: Style.Dark });
+    } else {
+      StatusBar.setStyle({ style: Style.Light });
+    }
+  });
   return (
     <Router>
       <Routes>

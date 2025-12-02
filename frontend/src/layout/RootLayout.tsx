@@ -3,7 +3,6 @@ import { CircleUser } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { StatusBar } from "@capacitor/status-bar";
 
 import { Bell } from "lucide-react";
 import SearchInput from "@/components/SearchInput";
@@ -26,7 +25,6 @@ export default function RootLayout() {
       }
     };
 
-    StatusBar.setBackgroundColor({ color: "#44BF50" });
     // initial
     handler();
     // listener
@@ -39,10 +37,7 @@ export default function RootLayout() {
     <SidebarProvider open={active} onOpenChange={setActive}>
       <div
         className="flex flex-col lg:flex-row gap-4 w-full min-h-screen pb-20 md:pb-4
-      bg-gray-400/20"
-        style={{
-          paddingTop: "env(safe-area-insert-top)",
-        }}
+      bg-gray-400/20 pt-5 md:pt-2"
       >
         {/* Content in Sidebar */}
         <AppSidebar />
