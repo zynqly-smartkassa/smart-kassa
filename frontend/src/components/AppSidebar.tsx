@@ -40,14 +40,12 @@ export function AppSidebar() {
               {section.title}
             </SidebarGroupLabel>
             <SidebarGroupContent className="px-2">
-              <SidebarMenu className="flex flex-col gap-3">
+              <SidebarMenu
+                className="flex flex-col gap-3"
+                onClick={() => toggleSidebar()}
+              >
                 {section.items.map((item, index) => (
-                  <SidebarMenuItem
-                    key={index}
-                    onClick={() => {
-                      toggleSidebar();
-                    }}
-                  >
+                  <SidebarMenuItem key={index}>
                     <SidebarMenuButton>
                       <Link
                         to={item.path}

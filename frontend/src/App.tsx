@@ -5,10 +5,11 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import RootLayout from "./layout/RootLayout";
 import Settings from "./pages/settings/Settings";
-import Rides from "./pages/rides/Rides";
 import { useEffect } from "react";
 import { StatusBar } from "@capacitor/status-bar";
 import { Capacitor } from "@capacitor/core";
+import Ride from "./pages/rides/Ride";
+import AllRides from "./pages/rides/AllRides";
 
 /**
  * The Routes are all declared here
@@ -39,7 +40,9 @@ function App() {
         >
           <Route path="/" element={<Home />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/rides" element={<Rides />} />
+          <Route path="/ride" element={<Ride/>} />
+          <Route path="/all-rides" element={<AllRides/>} />
+          <Route path="/all-rides/:id" element={<AllRides/>} />
         </Route>
 
         <Route path="/register" element={<Register />} />

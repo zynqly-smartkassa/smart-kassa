@@ -1,5 +1,5 @@
 import { Home, BarChart, Wallet, BookOpen, Settings,
-  Car, Receipt, Users, UserSquare, Truck, CalendarClock,
+  Car, Receipt, List, UserSquare, Truck, CalendarClock,
   BadgePercent, Download, Info
  } from "lucide-react";
 
@@ -7,6 +7,7 @@ export interface SidebarItem {
   label: string;
   path: string;
   icon: React.ComponentType<{ className?: string }>;
+  onlyMobile?: boolean;
 }
 
 export interface SidebarSection {
@@ -46,19 +47,20 @@ export const sidebarSections: SidebarSection[] = [
     title: "Taxi Management",
     items: [
       {
-        label: "Fahrten",
-        path: "/rides",
+        label: "Start a ride",
+        path: "/ride",
         icon: Car,
+        onlyMobile: true
+      },
+       {
+        label: "All Rides",
+        path: "/all-rides",
+        icon: List,
       },
       {
         label: "Rechnungen",
         path: "/invoices",
         icon: Receipt,
-      },
-      {
-        label: "Kunden",
-        path: "/customers",
-        icon: Users,
       },
       {
         label: "Fahrer",
