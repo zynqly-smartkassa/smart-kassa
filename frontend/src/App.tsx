@@ -7,7 +7,8 @@ import RootLayout from "./layout/RootLayout";
 import Settings from "./pages/settings/Settings";
 import Rides from "./pages/rides/Rides";
 import { useEffect } from "react";
-import { StatusBar, Style } from "@capacitor/status-bar";
+import { StatusBar } from "@capacitor/status-bar";
+import { Capacitor } from "@capacitor/core";
 
 /**
  * The Routes are all declared here
@@ -19,17 +20,11 @@ function App() {
    * to set the Statusbar Color on the Mobile App
    */
   useEffect(() => {
-    const theme = localStorage.getItem("vite-ui-theme");
-    if (!theme) {
-      StatusBar.setBackgroundColor({ color: "#7F00FF" });
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.setBackgroundColor({ color: "#000000" });
     }
+  }, []);
 
-    if (theme === "light") {
-      StatusBar.setStyle({ style: Style.Dark });
-    } else {
-      StatusBar.setStyle({ style: Style.Light });
-    }
-  });
   return (
     <Router>
       <Routes>

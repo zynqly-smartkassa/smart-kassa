@@ -11,6 +11,9 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
     "@capacitor/keyboard": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3",
     "@emotion/react": "^11.14.0",

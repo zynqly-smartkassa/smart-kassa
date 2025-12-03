@@ -9,6 +9,7 @@ import {
 } from "./ui/dropdown-menu";
 import { useTheme } from "../hooks/useTheme";
 import { useState } from "react";
+import { StatusBar, Style } from "@capacitor/status-bar";
 
 type Theme = "light" | "dark" | "system";
 
@@ -23,6 +24,10 @@ export function ModeToggle() {
   const handleSetTheme = (theme: Theme) => {
     setTheme(theme);
     setButtonSelected(theme.toString());
+    StatusBar.setStyle({ style: theme === "dark" ? Style.Light : Style.Dark });
+    StatusBar.setBackgroundColor({
+      color: theme === "dark" ? "#000000" : "FFFFFF",
+    });
   };
 
   return (
