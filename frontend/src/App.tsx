@@ -5,7 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import RootLayout from "./layout/RootLayout";
 import Settings from "./pages/settings/Settings";
-import Rides from "./pages/Rides";
+import Rides from "./pages/rides/Rides";
 import { useEffect } from "react";
 import { StatusBar, Style } from "@capacitor/status-bar";
 

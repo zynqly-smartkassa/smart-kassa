@@ -12,8 +12,9 @@ import SearchInput from "@/components/SearchInput";
  */
 export default function RootLayout() {
   // to know which path is active for the underline in the footer
-  const [path, setPath] = useState("home");
+  //const [path, setPath] = useState("home");
   const [active, setActive] = useState(true);
+  const [path, setPath] = useState("home");
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
