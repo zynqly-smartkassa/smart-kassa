@@ -256,14 +256,16 @@ const Ride = () => {
           end_lng: destinationCoords[1],
           duration: formatTime(timer),
           distance: distance,
-          ride_type: rideType // botenfahrt
+          ride_type: rideType,
+          wholeRide: wholeRide // botenfahrt
         }
-        dispatch(add(newRide));
         try {
           const data = await sendRide(newRide);
-          console.log(data);
+          const ride_info = data.ride_info;
+          const whole = {...ride_info, ...newRide};
+          dispatch(add(whole));
           reInitialize();
-          navigator("/all-rides");
+          navigator("/all-rides/");
         } catch (error) {
           console.error(error);
         } finally {
@@ -271,9 +273,7 @@ const Ride = () => {
         }
       })();
     }
-  }, [isRideActive, isSuccessful, driverLocation, destinationCoords,
-    startTime, endTime, timer, distance, rideType, dispatch, reInitialize, user_id,
-    navigator])
+  }, [isRideActive, isSuccessful, driverLocation, destinationCoords, startTime, endTime, timer, distance, rideType, dispatch, reInitialize, user_id, navigator, wholeRide])
 
   // Simle loading state
   if (!driverLocation) {

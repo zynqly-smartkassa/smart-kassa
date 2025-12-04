@@ -9,36 +9,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-
-// const driverIcon = new Icon({
-//   iconUrl: '/dot.png',
-//   iconSize: [32, 32],
-//   iconAnchor: [16, 16],
-// });
+import { useNavigate, useParams } from "react-router";
+import SummaryRide from "./SummaryRide";
 
 const AllRides = () => {
 
   const rides = useSelector((state: RootState) => state.allRidesSlice);
-  //   console.log(rides);
+  const navigator = useNavigate();
+    console.log(rides);
 
+    const {id} = useParams();
+    const ride_id = Number(id);
 
-  //   const {id} = useParams();
-  //   const rideId = Number(id);
+    if (!rides || rides.length === 0) {
+    return <>Loading rides…</>; 
+  }
 
-  //   if (!rides || rides.length === 0) {
-  //   return <>Loading rides…</>; 
-  // }
+  const ride = rides.find(r => Number(r.ride_id) === ride_id);
+  console.log("Ride and id: ", ride, id)
 
-  // const ride = rides.find(r => Number(r.rideID) === rideId);
-  // console.log("Ride and id: ", ride, id)
-
-  // if (!ride && id) {
-  //    return <>Ride not found</>
-  // } else if (!id) {
-  //   console.log()
-  // } else {
-  //   return <SummaryRide wholeRide={rides[rideId - 1].wholeRide} driverIcon={driverIcon}></SummaryRide>
-  // };
+  if (!ride && id) {
+     return <>Ride not found</>
+  } else if (!id) {
+    console.log()
+  } else {
+    return <SummaryRide ride={rides[ride_id - 1]}></SummaryRide>
+  };
 
   function formatDistance(meters: number): string {
     if (meters < 1000) {
@@ -54,7 +50,7 @@ const AllRides = () => {
       <ul className='w-full grid grid-cols-1 md:grid-cols-4 gap-4'>
         {rides.map((ride, index) => (
           <li key={index} className='w-full'>
-            <Card>
+            <Card onClick={() => navigator(`/all-rides/${ride.ride_id}`)}>
               <CardHeader className="space-y-1">
                 {/* Start Address */}
                 <CardTitle className="flex items-center gap-2 text-lg font-semibold">
