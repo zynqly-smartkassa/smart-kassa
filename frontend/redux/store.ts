@@ -2,10 +2,11 @@ import { configureStore } from "@reduxjs/toolkit";
 import toastSlice from "./slices/toastSlice";
 import userSlice from "./slices/userSlice";
 import authSlice from "./slices/authSlice";
+import allRidesSlice from "./slices/allRidesSlice";
 
 export const store = configureStore({
   reducer: { toastState: toastSlice, user: userSlice,
-    authState: authSlice
+    authState: authSlice, allRidesSlice: allRidesSlice
    },
 });
 

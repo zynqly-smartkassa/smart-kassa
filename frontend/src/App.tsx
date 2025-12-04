@@ -5,7 +5,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import RootLayout from "./layout/RootLayout";
 import Settings from "./pages/settings/Settings";
-import Rides from "./pages/rides/Rides";
+import Ride from "./pages/rides/Ride";
+import AllRides from "./pages/rides/AllRides";
 
 /**
  * The Routes are all declared here
@@ -18,14 +19,17 @@ function App() {
         {/* This will ensure, that each Route has the same Header */}
         <Route
           element={
-           
-              <RootLayout />
-         
+
+            <RootLayout />
+
           }
         >
           <Route path="/" element={<Home />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/rides" element={<Rides/>} />
+          <Route path="/ride" element={<Ride />} />
+          <Route path="/all-rides" element={<AllRides />}>
+            <Route path=":id" element={<AllRides />} />
+          </Route>
         </Route>
 
         <Route path="/register" element={<Register />} />

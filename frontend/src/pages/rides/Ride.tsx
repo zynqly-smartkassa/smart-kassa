@@ -16,9 +16,20 @@ import { formatTime } from '@/utils/rides/formatTime';
 import { geocodeAddress } from '@/utils/rides/geoAdress';
 import { useDriverLocation } from '@/hooks/rides/useDriverLocation';
 import { useRideStates } from '@/hooks/rides/useRideStates';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useIsMobile } from '@/hooks/use-mobile';
-import SummaryRide from './SummaryRide';
+
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from "../../../redux/store";
+import { add } from '../../../redux/slices/allRidesSlice';
+import { reverseGeocode } from '@/utils/rides/reverseGeocode';
+import { getDate } from '@/utils/rides/getDate';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { sendRide } from '@/utils/ride';
 
 
 /**
@@ -39,14 +50,29 @@ const driverIcon = new Icon({
   iconAnchor: [16, 16],
 });
 
+interface RouteSummary {
+  totalDistance: number;
+  totalTime: number;
+}
 
-type RoutingMachineProps = {
-  start: [number, number];
-  end: [number, number];
-};
+interface Route {
+  summary: RouteSummary;
+}
+
+interface RoutesFoundEvent {
+  routes: Route[];
+}
+
 
 // This will create the route itself between start and end address
-export const RoutingMachine = ({ start, end }: RoutingMachineProps) => {
+export const RoutingMachine = ({ start, end, setDistance }:
+  {
+    start: [number, number],
+    end: [number, number],
+    setDistance: React.Dispatch<React.SetStateAction<number>>
+  },
+
+) => {
   const map = useMap();
 
   useEffect(() => {
@@ -72,6 +98,12 @@ export const RoutingMachine = ({ start, end }: RoutingMachineProps) => {
       createMarker: () => null
     }).addTo(map);
 
+    routingControl.on('routesfound', (e: RoutesFoundEvent) => {
+      const route = e.routes[0];
+      const distanceInMeters = route.summary.totalDistance;
+      setDistance(distanceInMeters);
+    });
+
     // Clean
     return () => {
       map.removeControl(routingControl);
@@ -82,12 +114,19 @@ export const RoutingMachine = ({ start, end }: RoutingMachineProps) => {
 
 };
 
-// array that stores coordinates of our ride, to make a summary at the end of the ride
-const wholeRide: [number, number][] = []
-
 // memo from react ensures that this element is only rendered new, if and only if the lat and lng have actually updated itself
 export const RecenterMap = memo(
-  ({ lat, lng }: { lat: number, lng: number }) => {
+  ({
+    lat,
+    lng,
+    wholeRide,
+    setWholeRide,
+  }: {
+    lat: number;
+    lng: number;
+    wholeRide: [number, number][];
+    setWholeRide: React.Dispatch<React.SetStateAction<[number, number][]>>;
+  }) => {
     const map = useMap();
 
     const lastLocation = useRef<[number, number] | null>(null);
@@ -102,9 +141,10 @@ export const RecenterMap = memo(
       const [prevLat, prevLng] = lastLocation.current;
       const distance = map.distance([prevLat, prevLng], [lat, lng]);
 
+
       const lastIndex = wholeRide.length - 1;
       if (lastIndex <= 0) {
-        wholeRide.push([lat, lng]);
+        setWholeRide(array => [...array, [lat, lng]])
       }
 
       if (distance > 50) {
@@ -112,17 +152,55 @@ export const RecenterMap = memo(
         // smooth transition to the *new* current locaton
         map.flyTo([lat, lng], map.getZoom(), { duration: 1 });
         lastLocation.current = [lat, lng];
-        wholeRide.push([lat, lng]);
+        setWholeRide(array => [...array, [lat, lng]])
       }
-    }, [map, lat, lng]);
+    }, [map, lat, lng, wholeRide, setWholeRide]);
     return null;
   }
 );
 
-const Rides = () => {
+export const DistanceTracker = ({
+  lat,
+  lng,
+  setDist,
+}: {
+  lat: number,
+  lng: number,
+  setDist: React.Dispatch<React.SetStateAction<number>>
+}) => {
+  const map = useMap();
+
+  const lastLocation = useRef<[number, number] | null>(null);
+
+  useEffect(() => {
+    if (!lastLocation.current) {
+      lastLocation.current = [lat, lng];
+      return;
+    }
+
+    const [prevLat, prevLng] = lastLocation.current;
+    const distance = map.distance([prevLat, prevLng], [lat, lng]);
+
+
+    if (distance > 5) {
+      setDist(lastValue => lastValue + distance);
+      lastLocation.current = [lat, lng];
+    }
+  }, [map, lat, lng, setDist])
+
+  return null;
+}
+
+const Ride = () => {
+
+  const dispatch: AppDispatch = useDispatch();
+
+  // array that stores coordinates of our ride, to make a summary at the end of the ride
+  const [wholeRide, setWholeRide] = useState<[number, number][]>([]);
 
   // This will track if the ride was successfully ended, to be able to load <Bill> logically
   const [isEnd, setIsEnd] = useState(false);
+
   const [isRideActive, setIsRideActive] = useState(false);
 
   const driverLocation = useDriverLocation(isRideActive);
@@ -138,29 +216,69 @@ const Rides = () => {
     checkRide
   } = useRideStates(isRideActive, driverLocation);
 
-  const isMobile = useIsMobile();
-  // We won't show the rides tab to deksto! only all-rides
-  const defaultTabValue = isMobile ? "new-ride" : "all-rides";
+  // Final Data, 
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [distance, setDistance] = useState(0);
+  console.log(distance)
+  // The user
+  //const user_id = useSelector((state: RootState) => state.user.id)
 
+
+  const [dist, setDist] = useState(0);
+
+  // Which type?
+  const [rideType, setRideType] = useState("");
+
+  // Re-Initialize fields for the next ride
+  function reInitialize() {
+    setDestinationCoords(null);
+    setDestination("");
+    setTimer(0);
+    setEndTime(getDate())
+  }
+
+  useEffect(() => {
+    if (!isRideActive && isEnd && driverLocation && destinationCoords) {
+      (async () => {
+        const [startAddress, endAddress] = await Promise.all([
+          reverseGeocode(driverLocation[0], driverLocation[1]),
+          reverseGeocode(destinationCoords[0], destinationCoords[1]),
+        ]);
+
+        const newRide = {
+          user_id: Number(7),
+          start_address: startAddress ?? "",
+          start_time: startTime,
+          start_lat: driverLocation[0],
+          start_lng: driverLocation[1],
+          end_address: endAddress ?? "",
+          end_time: endTime,
+          end_lat: destinationCoords[0],
+          end_lng: destinationCoords[1],
+          duration: formatTime(timer),
+          distance: dist,
+          ride_type: rideType // botenfahrt
+        }
+        dispatch(add(newRide));
+        sendRide(newRide);
+        console.log(rideType)
+
+        reInitialize();
+      })();
+    }
+  }, [isRideActive, isEnd, driverLocation, destinationCoords])
+
+  // Simle loading state
   if (!driverLocation) {
     return <p className="text-center mt-4">Warte auf GPS-Daten…</p>;
   }
 
-  if (!isRideActive && isEnd) {
-    return <SummaryRide wholeRide={wholeRide} driverIcon={driverIcon}/>
-  }
-
   return (
-    <Tabs defaultValue={defaultTabValue} className="w-full flex flex-col gap-2 z-20">
-
-      <TabsList className="grid grid-cols-2 md:grid-cols-1 w-full md:w-auto
-      md:hidden max-w-[400px]">
-        <TabsTrigger value="new-ride">Start Ride</TabsTrigger>
-        <TabsTrigger value="all-rides">All Rides</TabsTrigger>
-      </TabsList>
+    <div className="w-full flex flex-col gap-2 z-20">
 
       <h2 className='hidden md:block font-bold text-3xl text-left'>Rides</h2>
-      <TabsContent value='new-ride' className='md:hidden flex flex-col gap-2'>
+      <div className='md:hidden flex flex-col gap-2'>
 
         <p className='w-full text-5xl font-bold text-center'>
           {formatTime(timer)}
@@ -183,7 +301,8 @@ const Rides = () => {
               <>
                 {/* Driver current location */}
                 <Marker position={driverLocation} icon={driverIcon}></Marker>
-                <RecenterMap lat={driverLocation[0]} lng={driverLocation[1]} />
+                <RecenterMap lat={driverLocation[0]} lng={driverLocation[1]}
+                  wholeRide={wholeRide} setWholeRide={setWholeRide} />
               </>
             )}
 
@@ -195,10 +314,34 @@ const Rides = () => {
 
           {/* Destination-Routing */}
           {routingStartCoords && destinationCoords && (
-            <RoutingMachine start={routingStartCoords} end={destinationCoords} />
+            <RoutingMachine start={routingStartCoords} end={destinationCoords}
+              setDistance={setDistance} />
           )}
 
+          {driverLocation && (
+            <DistanceTracker lat={driverLocation[0]} lng={driverLocation[1]}
+              setDist={setDist}></DistanceTracker>
+          )}
+
+
         </MapContainer>
+
+        <div className='w-full flex justify-center'>
+          <Select>
+            <SelectTrigger className="w-[180px] border-2 border-violet-300 rounded-md">
+              <SelectValue placeholder="Art der Fahrt" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="botenfahrt" onClick={() => setRideType("botenfahrt")}>
+                Botenfahrt
+              </SelectItem>
+              <SelectItem value="taxifahrt" onClick={() => setRideType("taxifahrt")}>
+                Taxifahrt
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Input
           type="text"
           placeholder="Mariahilfer Straße 120, Wien"
@@ -209,26 +352,26 @@ const Rides = () => {
         />
 
         <Button
-          onClick={async () => {
+          onClick={() => {
             if (!destination) {
               toast("Bitte geben sie eine Adresse ein!", {
                 position: "top-center",
                 closeButton: true,
               });
               return;
-            }
-            const coords = await geocodeAddress(destination);
-            if (coords) {
-              setDestinationCoords(coords);
-              showNewRoute();
-            } else {
-              toast("Bitte gebe eine echte Adresse ein!", {
-                position: "top-center",
-                closeButton: true,
-              });
-            }
+            };
 
-
+            geocodeAddress(destination).then((coords) => {
+              if (coords) {
+                setDestinationCoords(coords);
+                showNewRoute();
+              } else {
+                toast("Bitte gebe eine echte Adresse ein!", {
+                  position: "top-center",
+                  closeButton: true,
+                });
+              }
+            });
           }}
           disabled={isRideActive}
 
@@ -242,8 +385,17 @@ const Rides = () => {
 
             className={`py-6 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition duration-150 ease-in-out`}
             onClick={() => {
+              if (!destination) {
+                toast("Bitte geben sie eine Adresse ein!", {
+                  position: "top-center",
+                  closeButton: true,
+                });
+                return;
+              };
               setIsRideActive(true);
-              wholeRide.length = 0; //Clear the array
+              setWholeRide(() => [])
+              setStartTime(getDate());
+              setIsEnd(false);
             }}
             disabled={isRideActive}>
             Start Fahrt
@@ -254,25 +406,22 @@ const Rides = () => {
             className={`py-6 font-semibold text-white bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition duration-150 ease-in-out`}
             onClick={() => {
               setIsRideActive(false);
-              setDestinationCoords(null);
-              setDestination("");
-              setTimer(0);
-              if (checkRide()) setIsEnd(true);
+              if (checkRide()) {
+                setIsEnd(true);
+              } else {
+                reInitialize(); // If the ride wasn't successful re-initialize duration
+              };
             }}
             disabled={!isRideActive}>
             End Fahrt
           </Button>
         </div>
-      </TabsContent>
+      </div>
 
-      <TabsContent value='all-rides'>
-            <p>All Rides</p>
-      </TabsContent>
-
-    </Tabs>
+    </div>
   )
 
 }
 
 
-export default Rides
+export default Ride

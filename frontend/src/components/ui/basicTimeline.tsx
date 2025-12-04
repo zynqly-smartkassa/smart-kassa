@@ -23,10 +23,12 @@ export default function BasicTimeline(labelClass: string, valueClass: string,
           <TimelineDot color={`${index === 0 ? "success" : "error"}`} />
           <TimelineConnector/>
         </TimelineSeparator>
-        <TimelineContent><div className='flex flex-col'>
+        <TimelineContent>
+          <div className='flex flex-col'>
           <span className={labelClass}>{element.label}</span>
           <span className={valueClass}>{element.value}</span>
-        </div></TimelineContent>
+        </div>
+        </TimelineContent>
       </TimelineItem>
       ))}
     
