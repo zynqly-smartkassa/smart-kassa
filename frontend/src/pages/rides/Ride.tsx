@@ -8,7 +8,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "../../routing.css";
 import { Icon } from "leaflet";
-import { useEffect, useRef, useState, memo } from "react";
+import { useEffect, useRef, useState, memo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -16,12 +16,20 @@ import { formatTime } from "@/utils/rides/formatTime";
 import { geocodeAddress } from "@/utils/rides/geoAdress";
 import { useDriverLocation } from "@/hooks/rides/useDriverLocation";
 import { useRideStates } from "@/hooks/rides/useRideStates";
-
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "../../../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../../redux/store";
 import { add } from "../../../redux/slices/allRidesSlice";
 import { reverseGeocode } from "@/utils/rides/reverseGeocode";
 import { getDate } from "@/utils/rides/getDate";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { sendRide } from "@/utils/ride";
+import { AnimatePresence, motion } from "framer-motion";
 
 /**
  * The Rides page, where a driver can start/end a Ride
@@ -140,10 +148,57 @@ export const RecenterMap = memo(
         lastLocation.current = [lat, lng];
         setWholeRide((array) => [...array, [lat, lng]]);
       }
-    }, [map, lat, lng]);
+    }, [map, lat, lng, wholeRide, setWholeRide]);
     return null;
   }
 );
+
+// When the driver clicks on "start Ride" we will automatically zoom onto the driver
+export const ZoomDriver = ({ lat, lng }: { lat: number; lng: number }) => {
+  const map = useMap();
+
+  const alreadyZoomed = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (!alreadyZoomed.current) {
+      map.flyTo([lat, lng], 16, { duration: 1.5 });
+      alreadyZoomed.current = true;
+    }
+  }, [map, lat, lng]);
+
+  return null;
+};
+
+export const DistanceTracker = ({
+  lat,
+  lng,
+  setDist,
+}: {
+  lat: number;
+  lng: number;
+  setDist: React.Dispatch<React.SetStateAction<number>>;
+}) => {
+  const map = useMap();
+
+  const lastLocation = useRef<[number, number] | null>(null);
+
+  useEffect(() => {
+    if (!lastLocation.current) {
+      lastLocation.current = [lat, lng];
+      return;
+    }
+
+    const [prevLat, prevLng] = lastLocation.current;
+    const distance = map.distance([prevLat, prevLng], [lat, lng]);
+
+    if (distance > 5) {
+      setDist((lastValue) => lastValue + distance);
+      lastLocation.current = [lat, lng];
+    }
+  }, [map, lat, lng, setDist]);
+
+  return null;
+};
 
 const Ride = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -152,7 +207,7 @@ const Ride = () => {
   const [wholeRide, setWholeRide] = useState<[number, number][]>([]);
 
   // This will track if the ride was successfully ended, to be able to load <Bill> logically
-  const [isEnd, setIsEnd] = useState(false);
+  const [isSuccessful, setIsSuccessful] = useState(false);
 
   const [isRideActive, setIsRideActive] = useState(false);
 
@@ -160,6 +215,11 @@ const Ride = () => {
   const {
     destination,
     setDestination,
+    showDestinationHint,
+    setShowDestinationHint,
+    isDestinationInvalid,
+    isRoutCalculated,
+    setIsRouteCalculated,
     destinationCoords,
     setDestinationCoords,
     routingStartCoords,
@@ -173,17 +233,28 @@ const Ride = () => {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [distance, setDistance] = useState(0);
+  console.log(distance);
+
+  const user_id = useSelector((state: RootState) => state.user.id);
+
+  //TODO decide between the car track or route track
+  const [dist, setDist] = useState(0);
+
+  // Which type?
+  const [rideType, setRideType] = useState("");
 
   // Re-Initialize fields for the next ride
-  function reInitialize() {
+  const reInitialize = useCallback(() => {
+    setDist(0);
     setDestinationCoords(null);
     setDestination("");
     setTimer(0);
-    setEndTime(getDate());
-  }
+    setIsSuccessful(false);
+    setIsRouteCalculated(false);
+  }, [setDestinationCoords, setDestination, setTimer, setIsRouteCalculated]);
 
   useEffect(() => {
-    if (!isRideActive && isEnd && driverLocation && destinationCoords) {
+    if (!isRideActive && isSuccessful && driverLocation && destinationCoords) {
       (async () => {
         const [startAddress, endAddress] = await Promise.all([
           reverseGeocode(driverLocation[0], driverLocation[1]),
@@ -191,29 +262,39 @@ const Ride = () => {
         ]);
 
         const newRide = {
+          user_id: Number(user_id) !== 0 ? Number(user_id) : 1,
           start_address: startAddress ?? "",
           start_time: startTime,
-          start_lat: driverLocation[0].toString(),
-          start_lng: driverLocation[1].toString(),
+          start_lat: driverLocation[0],
+          start_lng: driverLocation[1],
           end_address: endAddress ?? "",
           end_time: endTime,
-          end_lat: destinationCoords[0].toString(),
-          end_lng: destinationCoords[1].toString(),
+          end_lat: destinationCoords[0],
+          end_lng: destinationCoords[1],
           duration: formatTime(timer),
-          distance: distance.toString(),
-          rideID: "",
-          car: "",
-          ride_type: "",
-          wholeRide: wholeRide,
+          distance: dist,
+          ride_type: rideType, // botenfahrt
         };
-
         dispatch(add(newRide));
+        sendRide(newRide);
 
         reInitialize();
-        //return <SummaryRide wholeRide={wholeRide} driverIcon={driverIcon} /> //!!driver icon auslagern
       })();
     }
-  }, [isRideActive, isEnd, driverLocation, destinationCoords]);
+  }, [
+    isRideActive,
+    isSuccessful,
+    driverLocation,
+    destinationCoords,
+    startTime,
+    endTime,
+    timer,
+    dist,
+    rideType,
+    dispatch,
+    reInitialize,
+    user_id,
+  ]);
 
   // Simle loading state
   if (!driverLocation) {
@@ -268,15 +349,74 @@ const Ride = () => {
               setDistance={setDistance}
             />
           )}
+
+          {driverLocation && (
+            <DistanceTracker
+              lat={driverLocation[0]}
+              lng={driverLocation[1]}
+              setDist={setDist}
+            ></DistanceTracker>
+          )}
+
+          {isRideActive && (
+            <ZoomDriver
+              lat={driverLocation[0]}
+              lng={driverLocation[1]}
+            ></ZoomDriver>
+          )}
         </MapContainer>
+
+        <div className="w-full flex justify-center">
+          <Select>
+            <SelectTrigger className="w-[180px] border-2 border-violet-300 rounded-md">
+              <SelectValue placeholder="Art der Fahrt" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="botenfahrt"
+                onClick={() => setRideType("botenfahrt")}
+              >
+                Botenfahrt
+              </SelectItem>
+              <SelectItem
+                value="taxifahrt"
+                onClick={() => setRideType("taxifahrt")}
+              >
+                Taxifahrt
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Input
           type="text"
           placeholder="Mariahilfer Straße 120, Wien"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
-          className="w-full p-3 mb-4 border-2 border-violet-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150"
+          onBlur={() => setShowDestinationHint(true)}
+          onFocus={() => setShowDestinationHint(false)}
+          className={`w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150
+      ${
+        isDestinationInvalid && showDestinationHint
+          ? "border-red-500"
+          : "border-violet-300"
+      }`}
           disabled={isRideActive}
         />
+
+        <AnimatePresence>
+          {isDestinationInvalid && showDestinationHint && (
+            <motion.p
+              initial={{ opacity: 0, y: -2 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -2 }}
+              transition={{ duration: 0.2 }}
+              className="text-red-500 text-sm"
+            >
+              Bitte geben Sie eine gültige Adresse ein!
+            </motion.p>
+          )}
+        </AnimatePresence>
 
         <Button
           onClick={() => {
@@ -301,6 +441,8 @@ const Ride = () => {
                 });
               }
             });
+
+            setIsRouteCalculated(true);
           }}
           disabled={isRideActive}
           className={`w-full py-6 mb-6 font-semibold text-white bg-violet-600 rounded-lg shadow-md hover:bg-violet-700 transition duration-150 ease-in-out`}
@@ -320,12 +462,19 @@ const Ride = () => {
                 });
                 return;
               }
+              if (!rideType) {
+                toast("Bitte geben sie einen Fahrt-Typ an!", {
+                  position: "top-center",
+                  closeButton: true,
+                });
+                return;
+              }
               setIsRideActive(true);
               setWholeRide(() => []);
               setStartTime(getDate());
-              setIsEnd(false);
+              setIsSuccessful(false);
             }}
-            disabled={isRideActive}
+            disabled={!isRoutCalculated || isRideActive}
           >
             Start Fahrt
           </Button>
@@ -334,8 +483,9 @@ const Ride = () => {
             className={`py-6 font-semibold text-white bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition duration-150 ease-in-out`}
             onClick={() => {
               setIsRideActive(false);
+              setEndTime(getDate());
               if (checkRide()) {
-                setIsEnd(true);
+                setIsSuccessful(true);
               } else {
                 reInitialize(); // If the ride wasn't successful re-initialize duration
               }

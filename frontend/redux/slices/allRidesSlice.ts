@@ -2,20 +2,21 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit"; 
 
 interface Ride {
+  user_id: number;
   start_address: string,
   start_time: string,
-  start_lat: string,
-  start_lng: string,
+  start_lat: number,
+  start_lng: number,
   end_address: string,
   end_time: string,
-  end_lat: string,
-  end_lng: string,
+  end_lat: number,
+  end_lng: number,
   duration: string,
-  distance: string;
-  rideID: string,
-  car: string,
+  distance: number;
+  //rideID: string,
+  //car: string,
   ride_type: string,
-  wholeRide: [number, number][]
+  //wholeRide: [number, number][]
 }
 
 const initialState: Ride[] = [];

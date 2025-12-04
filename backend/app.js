@@ -29,6 +29,7 @@ import registerRoutes from "./routes/register.js";
 import loginRoutes from "./routes/login.js";
 import verifyRoutes from "./routes/verify.js";
 import fahrtRoutes from "./routes/fahrten.js";
+import rideRoutes from "./routes/ride.js";
 
 
 /**
@@ -42,6 +43,8 @@ app.use(
     origin: [
       "http://localhost:5173", // local host needs to be deleted when in production
       "https://localhost:5173",
+      "http://localhost:3000",
+      "https://localhost:3000",
       "https://smart-kassa.vercel.app",
       process.env.DEBUG_URL
     ],
@@ -67,6 +70,7 @@ app.use("/register", registerRoutes);
 app.use("/login", loginRoutes);
 app.use("/verify", verifyRoutes);
 app.use("/fahrten", fahrtRoutes);
+app.use("/ride", rideRoutes);
 
 
 /**
