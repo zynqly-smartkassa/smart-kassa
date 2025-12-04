@@ -6,10 +6,16 @@ import { AppSidebar } from "@/components/AppSidebar";
 
 import { Bell } from "lucide-react";
 import SearchInput from "@/components/SearchInput";
+import { Capacitor } from "@capacitor/core";
 
 interface IfooterLinks {
   name: string;
   path: string;
+  onWeb?: {
+    isOnWeb: boolean;
+    name: string;
+    path: string;
+  };
 }
 
 /**
@@ -17,11 +23,15 @@ interface IfooterLinks {
  */
 export default function RootLayout() {
   // to know which path is active for the underline in the footer
-  //const [path, setPath] = useState("home");
   const [active, setActive] = useState(true);
   const [path, setPath] = useState("home");
+  const isMobile = Capacitor.isNativePlatform();
   const footerLinks: IfooterLinks[] = [
-    { name: "Start Ride", path: "/ride" },
+    {
+      name: "Start Ride",
+      path: "/ride",
+      onWeb: { isOnWeb: !isMobile, name: "Statistics", path: "/" },
+    },
     { name: "Home", path: "/" },
     { name: "Account", path: "/settings" },
   ];
@@ -89,8 +99,16 @@ export default function RootLayout() {
           >
             <nav className="grid grid-cols-3 h-full place-items-center text-sm font-medium">
               {footerLinks.map((element, index) => {
+                // Use onWeb values if on web, otherwise use default values
+                const isOnWeb = !isMobile && element.onWeb?.isOnWeb;
+                const displayName = isOnWeb
+                  ? element.onWeb!.name
+                  : element.name;
+                const displayPath = isOnWeb
+                  ? element.onWeb!.path
+                  : element.path;
                 const lower =
-                  element.name.charAt(0).toLowerCase() + element.name.slice(1);
+                  displayName.charAt(0).toLowerCase() + displayName.slice(1);
 
                 return (
                   <Link
@@ -104,10 +122,10 @@ export default function RootLayout() {
                 : "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[3px] after:bg-transparent after:transition-all after:duration-300"
             }
           `}
-                    to={element.path} //"/" + lower
+                    to={displayPath}
                     onClick={() => setPath(lower)}
                   >
-                    {element.name}
+                    {displayName}
                   </Link>
                 );
               })}

@@ -12,6 +12,7 @@ import {
   useSidebar,
 } from "../components/ui/sidebar";
 import { sidebarSections } from "@/content/sidebar/sidebar";
+import { Capacitor } from "@capacitor/core";
 import { useState, useEffect } from "react";
 
 import { Link } from "react-router-dom";
@@ -21,7 +22,8 @@ export function AppSidebar() {
   const { toggleSidebar } = useSidebar();
 
   const [isMd, setIsMd] = useState(false);
-  const mdBreakpoint = 768; 
+  const mdBreakpoint = 768; // Beispiel für einen "md" Breakpoint
+  const isMobile = Capacitor.isNativePlatform();
 
   useEffect(() => {
     const handleResize = () => {
@@ -68,19 +70,22 @@ export function AppSidebar() {
                 className="flex flex-col gap-3"
                 onClick={() => closeSideBar()}
               >
-                {section.items.map((item, index) => (
-                  <SidebarMenuItem key={index}>
-                    <SidebarMenuButton>
-                      <Link
-                        to={item.path}
-                        className="flex items-center gap-2 w-full"
-                      >
-                        <item.icon className="w-6 h-6" />
-                        {item.label}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {section.items.map(
+                  (item, index) =>
+                    (isMobile || !item.onlyMobile) && (
+                      <SidebarMenuItem key={index}>
+                        <SidebarMenuButton>
+                          <Link
+                            to={item.path}
+                            className="flex items-center gap-2 w-full"
+                          >
+                            <item.icon className="w-6 h-6" />
+                            {item.label}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
