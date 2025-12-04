@@ -43,6 +43,8 @@ app.use(
     origin: [
       "http://localhost:5173", // local host needs to be deleted when in production
       "https://localhost:5173",
+      "http://localhost:3000",
+      "https://localhost:3000",
       "https://smart-kassa.vercel.app",
     ],
     credentials: true, // Allow cookies to be sent

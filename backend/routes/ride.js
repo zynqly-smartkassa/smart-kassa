@@ -45,6 +45,24 @@ router.post("/", async (req, res) => {
         ride_type,
     } = req.body;
 
+    if (
+        !user_id ||
+        !start_address ||
+        !start_time ||
+        !start_lat ||
+        !start_lng ||
+        !end_address ||
+        !end_time ||
+        !end_lat ||
+        !end_lng ||
+        !duration ||
+        !distance ||
+        !ride_type
+    ) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+
     try {
         // Begin of database transaction, if an operation fails, all queries roll back
         await pool.query("BEGIN");
