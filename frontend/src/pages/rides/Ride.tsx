@@ -51,26 +51,12 @@ const driverIcon = new Icon({
   iconAnchor: [16, 16],
 });
 
-interface RouteSummary {
-  totalDistance: number;
-  totalTime: number;
-}
-
-interface Route {
-  summary: RouteSummary;
-}
-
-interface RoutesFoundEvent {
-  routes: Route[];
-}
-
 
 // This will create the route itself between start and end address
-export const RoutingMachine = ({ start, end, setDistance }:
+export const RoutingMachine = ({ start, end }:
   {
     start: [number, number],
-    end: [number, number],
-    setDistance: React.Dispatch<React.SetStateAction<number>>
+    end: [number, number]
   },
 
 ) => {
@@ -98,12 +84,6 @@ export const RoutingMachine = ({ start, end, setDistance }:
       // This will ensure that leaflet doesn't add additional markers
       createMarker: () => null
     }).addTo(map);
-
-    routingControl.on('routesfound', (e: RoutesFoundEvent) => {
-      const route = e.routes[0];
-      const distanceInMeters = route.summary.totalDistance;
-      setDistance(distanceInMeters);
-    });
 
     // Clean
     return () => {
@@ -250,12 +230,10 @@ const Ride = () => {
   // Final Data, 
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [distance, setDistance] = useState(0);
 
   const user_id = useSelector((state: RootState) => state.user.id)
 
-  //TODO decide between the car track or route track
-  const [dist, setDist] = useState(0);
+  const [distance, setDistance] = useState(0);
 
   // Which type?
   const [rideType, setRideType] = useState("");
@@ -263,7 +241,7 @@ const Ride = () => {
 
   // Re-Initialize fields for the next ride
   const reInitialize = useCallback(() => {
-    setDist(0);
+    setDistance(0);
     setDestinationCoords(null);
     setDestination("");
     setTimer(0);
@@ -290,7 +268,7 @@ const Ride = () => {
           end_lat: destinationCoords[0],
           end_lng: destinationCoords[1],
           duration: formatTime(timer),
-          distance: dist,
+          distance: distance,
           ride_type: rideType // botenfahrt
         }
         dispatch(add(newRide));
@@ -301,7 +279,7 @@ const Ride = () => {
       })();
     }
   }, [isRideActive, isSuccessful, driverLocation, destinationCoords, 
-    startTime, endTime, timer, dist, rideType, dispatch, reInitialize, user_id])
+    startTime, endTime, timer, distance, rideType, dispatch, reInitialize, user_id])
 
   // Simle loading state
   if (!driverLocation) {
@@ -348,13 +326,12 @@ const Ride = () => {
 
           {/* Destination-Routing */}
           {routingStartCoords && destinationCoords && (
-            <RoutingMachine start={routingStartCoords} end={destinationCoords}
-              setDistance={setDistance} />
+            <RoutingMachine start={routingStartCoords} end={destinationCoords} />
           )}
 
           {driverLocation && (
             <DistanceTracker lat={driverLocation[0]} lng={driverLocation[1]}
-              setDist={setDist}></DistanceTracker>
+              setDist={setDistance}></DistanceTracker>
           )}
 
           {isRideActive && (
