@@ -76,11 +76,13 @@ function Login() {
       toast(t.success.title, {
         position: "top-center",
         closeButton: true,
+        className: "mt-5 md:mt-0",
       });
     } else {
       toast(t.error.title, {
         position: "top-center",
         closeButton: true,
+        className: "mt-5 md:mt-0",
       });
     }
   }

@@ -3,12 +3,13 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../redux/store";
 import { signInUser } from "../../redux/slices/userSlice";
 import type { USER_DTO } from "../../constants/User";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import {
   setAuthenticated,
   setUnauthenticated,
 } from "../../redux/slices/authSlice";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   // Kann man später mit einem Auth-Context oder localStorage machen
   const dispatch: AppDispatch = useDispatch();
   const navigator = useNavigate();
+  const toastShownRef = useRef(false);
 
   // Check if the user is getting loaded currently
   const { isLoading, isAuthenticated } = useSelector(
@@ -47,6 +49,15 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           })
         );
         dispatch(setAuthenticated());
+
+        // Only show toast once per session
+        if (!toastShownRef.current) {
+          toast.success(`Welcome back ${userData.firstName}!`, {
+            className: "mt-5 md:mt-0",
+            position: "top-center",
+          });
+          toastShownRef.current = true;
+        }
       } catch {
         await navigator("/register");
         dispatch(setUnauthenticated());

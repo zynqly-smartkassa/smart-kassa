@@ -23,6 +23,7 @@ export function useWarningToast(
         position: "top-center",
         closeButton: true,
         duration: 3000,
+        className: "mt-5 md:mt-0",
       });
       toastShownRef.current = false;
       resetAction(ToastWarningShowed());

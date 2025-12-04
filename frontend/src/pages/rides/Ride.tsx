@@ -1,27 +1,27 @@
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet-routing-machine";
-import 'leaflet.markercluster/dist/MarkerCluster.css';
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
-import MarkerClusterGroup from 'react-leaflet-cluster';
-import "leaflet/dist/leaflet.css"
-import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-import '../../routing.css';
-import { Icon } from 'leaflet';
-import { useEffect, useRef, useState, memo } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { formatTime } from '@/utils/rides/formatTime';
-import { geocodeAddress } from '@/utils/rides/geoAdress';
-import { useDriverLocation } from '@/hooks/rides/useDriverLocation';
-import { useRideStates } from '@/hooks/rides/useRideStates';
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import MarkerClusterGroup from "react-leaflet-cluster";
+import "leaflet/dist/leaflet.css";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+import "../../routing.css";
+import { Icon } from "leaflet";
+import { useEffect, useRef, useState, memo } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { formatTime } from "@/utils/rides/formatTime";
+import { geocodeAddress } from "@/utils/rides/geoAdress";
+import { useDriverLocation } from "@/hooks/rides/useDriverLocation";
+import { useRideStates } from "@/hooks/rides/useRideStates";
 
-import { useDispatch } from 'react-redux';
+import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../../redux/store";
-import { add } from '../../../redux/slices/allRidesSlice';
-import { reverseGeocode } from '@/utils/rides/reverseGeocode';
-import { getDate } from '@/utils/rides/getDate';
+import { add } from "../../../redux/slices/allRidesSlice";
+import { reverseGeocode } from "@/utils/rides/reverseGeocode";
+import { getDate } from "@/utils/rides/getDate";
 
 /**
  * The Rides page, where a driver can start/end a Ride
@@ -30,20 +30,20 @@ import { getDate } from '@/utils/rides/getDate';
  * @author Umejr Dzinovic
  */
 const locationIcon = new Icon({
-  iconUrl: '/karte3.png',
+  iconUrl: "/karte3.png",
   iconSize: [50, 50],
   iconAnchor: [25, 25], //This will actually center the icon on to the location. its like translate -50%
 });
 
 const driverIcon = new Icon({
-  iconUrl: '/dot.png',
+  iconUrl: "/dot.png",
   iconSize: [32, 32],
   iconAnchor: [16, 16],
 });
 
 interface RouteSummary {
-  totalDistance: number; 
-  totalTime: number;   
+  totalDistance: number;
+  totalTime: number;
 }
 
 interface Route {
@@ -54,16 +54,16 @@ interface RoutesFoundEvent {
   routes: Route[];
 }
 
-
 // This will create the route itself between start and end address
-export const RoutingMachine = ({ start, end, setDistance }:
-  {
-    start: [number, number],
-    end: [number, number],
-    setDistance: React.Dispatch<React.SetStateAction<number>>
-  },
-
-) => {
+export const RoutingMachine = ({
+  start,
+  end,
+  setDistance,
+}: {
+  start: [number, number];
+  end: [number, number];
+  setDistance: React.Dispatch<React.SetStateAction<number>>;
+}) => {
   const map = useMap();
 
   useEffect(() => {
@@ -72,10 +72,7 @@ export const RoutingMachine = ({ start, end, setDistance }:
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-expect-error
     const routingControl = L.Routing.control({
-      waypoints: [
-        L.latLng(start[0], start[1]),
-        L.latLng(end[0], end[1])
-      ],
+      waypoints: [L.latLng(start[0], start[1]), L.latLng(end[0], end[1])],
       // ensures that the driver cannot change the route
       routeWhileDragging: false,
       // this will not show any alternative routes
@@ -83,13 +80,13 @@ export const RoutingMachine = ({ start, end, setDistance }:
       // driver cannot add new wayoints to the route
       addWaypoints: false,
       lineOptions: {
-        styles: [{ weight: 5 }]
+        styles: [{ weight: 5 }],
       },
       // This will ensure that leaflet doesn't add additional markers
-      createMarker: () => null
+      createMarker: () => null,
     }).addTo(map);
 
-    routingControl.on('routesfound', (e: RoutesFoundEvent) => {
+    routingControl.on("routesfound", (e: RoutesFoundEvent) => {
       const route = e.routes[0];
       const distanceInMeters = route.summary.totalDistance;
       setDistance(distanceInMeters);
@@ -102,7 +99,6 @@ export const RoutingMachine = ({ start, end, setDistance }:
   }, [map, start, end]);
 
   return null;
-
 };
 
 // memo from react ensures that this element is only rendered new, if and only if the lat and lng have actually updated itself
@@ -134,7 +130,7 @@ export const RecenterMap = memo(
 
       const lastIndex = wholeRide.length - 1;
       if (lastIndex <= 0) {
-        setWholeRide(array => [...array, [lat, lng]])
+        setWholeRide((array) => [...array, [lat, lng]]);
       }
 
       if (distance > 50) {
@@ -142,7 +138,7 @@ export const RecenterMap = memo(
         // smooth transition to the *new* current locaton
         map.flyTo([lat, lng], map.getZoom(), { duration: 1 });
         lastLocation.current = [lat, lng];
-        setWholeRide(array => [...array, [lat, lng]])
+        setWholeRide((array) => [...array, [lat, lng]]);
       }
     }, [map, lat, lng]);
     return null;
@@ -150,7 +146,6 @@ export const RecenterMap = memo(
 );
 
 const Ride = () => {
-
   const dispatch: AppDispatch = useDispatch();
 
   // array that stores coordinates of our ride, to make a summary at the end of the ride
@@ -161,7 +156,7 @@ const Ride = () => {
 
   const [isRideActive, setIsRideActive] = useState(false);
 
-  const driverLocation = useDriverLocation(isRideActive);
+  const driverLocation = useDriverLocation();
   const {
     destination,
     setDestination,
@@ -171,10 +166,10 @@ const Ride = () => {
     timer,
     setTimer,
     showNewRoute,
-    checkRide
+    checkRide,
   } = useRideStates(isRideActive, driverLocation);
 
-  // Final Data, 
+  // Final Data,
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [distance, setDistance] = useState(0);
@@ -184,7 +179,7 @@ const Ride = () => {
     setDestinationCoords(null);
     setDestination("");
     setTimer(0);
-    setEndTime(getDate())
+    setEndTime(getDate());
   }
 
   useEffect(() => {
@@ -209,17 +204,16 @@ const Ride = () => {
           rideID: "",
           car: "",
           ride_type: "",
-          wholeRide: wholeRide
-        }
+          wholeRide: wholeRide,
+        };
 
         dispatch(add(newRide));
 
-      
         reInitialize();
         //return <SummaryRide wholeRide={wholeRide} driverIcon={driverIcon} /> //!!driver icon auslagern
       })();
     }
-  }, [isRideActive, isEnd, driverLocation, destinationCoords])
+  }, [isRideActive, isEnd, driverLocation, destinationCoords]);
 
   // Simle loading state
   if (!driverLocation) {
@@ -227,12 +221,10 @@ const Ride = () => {
   }
 
   return (
-    <div className="w-full flex flex-col gap-2 z-20">
-
-      <h2 className='hidden md:block font-bold text-3xl text-left'>Rides</h2>
-      <div className='md:hidden flex flex-col gap-2'>
-
-        <p className='w-full text-5xl font-bold text-center'>
+    <div className="w-full flex flex-col z-20 gap-2">
+      <h2 className="hidden md:block font-bold text-3xl text-left">Rides</h2>
+      <div className="md:hidden flex flex-col gap-2">
+        <p className="w-full text-5xl font-bold text-center">
           {formatTime(timer)}
         </p>
 
@@ -253,8 +245,12 @@ const Ride = () => {
               <>
                 {/* Driver current location */}
                 <Marker position={driverLocation} icon={driverIcon}></Marker>
-                <RecenterMap lat={driverLocation[0]} lng={driverLocation[1]}
-                  wholeRide={wholeRide} setWholeRide={setWholeRide} />
+                <RecenterMap
+                  lat={driverLocation[0]}
+                  lng={driverLocation[1]}
+                  wholeRide={wholeRide}
+                  setWholeRide={setWholeRide}
+                />
               </>
             )}
 
@@ -266,17 +262,19 @@ const Ride = () => {
 
           {/* Destination-Routing */}
           {routingStartCoords && destinationCoords && (
-            <RoutingMachine start={routingStartCoords} end={destinationCoords}
-              setDistance={setDistance} />
+            <RoutingMachine
+              start={routingStartCoords}
+              end={destinationCoords}
+              setDistance={setDistance}
+            />
           )}
-
         </MapContainer>
         <Input
           type="text"
           placeholder="Mariahilfer Straße 120, Wien"
           value={destination}
-          onChange={e => setDestination(e.target.value)}
-          className='w-full p-3 mb-4 border-2 border-violet-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150'
+          onChange={(e) => setDestination(e.target.value)}
+          className="w-full p-3 mb-4 border-2 border-violet-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150"
           disabled={isRideActive}
         />
 
@@ -286,9 +284,10 @@ const Ride = () => {
               toast("Bitte geben sie eine Adresse ein!", {
                 position: "top-center",
                 closeButton: true,
+                className: "mt-5 md:mt-0",
               });
               return;
-            };
+            }
 
             geocodeAddress(destination).then((coords) => {
               if (coords) {
@@ -298,40 +297,40 @@ const Ride = () => {
                 toast("Bitte gebe eine echte Adresse ein!", {
                   position: "top-center",
                   closeButton: true,
+                  className: "mt-5 md:mt-0",
                 });
               }
             });
           }}
           disabled={isRideActive}
-
           className={`w-full py-6 mb-6 font-semibold text-white bg-violet-600 rounded-lg shadow-md hover:bg-violet-700 transition duration-150 ease-in-out`}
         >
           Route berechnen
         </Button>
 
-        <div className='w-full grid grid-cols-2 gap-4'>
+        <div className="w-full grid grid-cols-2 gap-4">
           <Button
-
             className={`py-6 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition duration-150 ease-in-out`}
             onClick={() => {
               if (!destination) {
                 toast("Bitte geben sie eine Adresse ein!", {
                   position: "top-center",
                   closeButton: true,
+                  className: "mt-5 md:mt-0",
                 });
                 return;
-              };
+              }
               setIsRideActive(true);
-              setWholeRide(() => [])
+              setWholeRide(() => []);
               setStartTime(getDate());
               setIsEnd(false);
             }}
-            disabled={isRideActive}>
+            disabled={isRideActive}
+          >
             Start Fahrt
           </Button>
 
           <Button
-
             className={`py-6 font-semibold text-white bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition duration-150 ease-in-out`}
             onClick={() => {
               setIsRideActive(false);
@@ -339,18 +338,16 @@ const Ride = () => {
                 setIsEnd(true);
               } else {
                 reInitialize(); // If the ride wasn't successful re-initialize duration
-              };
+              }
             }}
-            disabled={!isRideActive}>
+            disabled={!isRideActive}
+          >
             End Fahrt
           </Button>
         </div>
       </div>
-
     </div>
-  )
+  );
+};
 
-}
-
-
-export default Ride
+export default Ride;

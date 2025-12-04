@@ -118,25 +118,37 @@ function Register() {
         atu,
         dispatch // to set Global User Variable (Injected)
       );
-      toast.success(t.success.title);
+      toast.success(t.success.title, {
+        className: "mt-5 md:mt-0"
+      });
       navigator("/");
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {
         if (error.message === "Email already exists") {
-          toast.error(t.error.emailAlreadyInUse);
+          toast.error(t.error.emailAlreadyInUse, {
+            className: "mt-5 md:mt-0"
+          });
         }
         if (error.message === "FN already exists") {
-          toast.error(t.error.fnAlreadyInUse);
+          toast.error(t.error.fnAlreadyInUse, {
+            className: "mt-5 md:mt-0"
+          });
         }
         if (error.message === "Phonenumber already exists") {
-          toast.error(t.error.phoneNumberAlreadyInUse);
+          toast.error(t.error.phoneNumberAlreadyInUse, {
+            className: "mt-5 md:mt-0"
+          });
         }
         if (error.message === "ATU already exists") {
-          toast.error(t.error.atuAlreadyInUse);
+          toast.error(t.error.atuAlreadyInUse, {
+            className: "mt-5 md:mt-0"
+          });
         }
       } else {
-        toast.error(t.error.title);
+        toast.error(t.error.title, {
+          className: "mt-5 md:mt-0"
+        });
       }
     }
   };

@@ -37,6 +37,7 @@ export const useRideStates = (isRideActive: boolean,
       toast("The ride cannot be saved, because the ride lasted only under 1 minute.", {
         position: "top-center",
         closeButton: true,
+        className: "mt-5 md:mt-0"
       });
       return false;
     } 

@@ -12,15 +12,39 @@ import {
   useSidebar,
 } from "../components/ui/sidebar";
 import { sidebarSections } from "@/content/sidebar/sidebar";
+import { useState, useEffect } from "react";
 
 import { Link } from "react-router-dom";
 
 export function AppSidebar() {
   // to close the Side Bar when a menu item is clicked
   const { toggleSidebar } = useSidebar();
+
+  const [isMd, setIsMd] = useState(false);
+  const mdBreakpoint = 768; // Beispiel für einen "md" Breakpoint
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMd(window.innerWidth >= mdBreakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Initialen Zustand setzen
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  function closeSideBar() {
+    if (!isMd) {
+      toggleSidebar();
+    }
+  }
+
   return (
     <Sidebar className="hidden lg:flex w-full max-w-64 z-50">
-      <SidebarHeader className="flex pt-10 md:pt-0 flex-row justify-between items-center">
+      <SidebarHeader className="flex pt-10 md:pt-5 flex-row justify-between items-center">
         <Link to="/">
           <img
             src="/Logo.png"
@@ -42,7 +66,7 @@ export function AppSidebar() {
             <SidebarGroupContent className="px-2">
               <SidebarMenu
                 className="flex flex-col gap-3"
-                onClick={() => toggleSidebar()}
+                onClick={() => closeSideBar()}
               >
                 {section.items.map((item, index) => (
                   <SidebarMenuItem key={index}>

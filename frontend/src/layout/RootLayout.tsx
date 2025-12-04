@@ -7,6 +7,11 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Bell } from "lucide-react";
 import SearchInput from "@/components/SearchInput";
 
+interface IfooterLinks {
+  name: string;
+  path: string;
+}
+
 /**
  * @returns the Root layout
  */
@@ -15,6 +20,11 @@ export default function RootLayout() {
   //const [path, setPath] = useState("home");
   const [active, setActive] = useState(true);
   const [path, setPath] = useState("home");
+  const footerLinks: IfooterLinks[] = [
+    { name: "Start Ride", path: "/ride" },
+    { name: "Home", path: "/" },
+    { name: "Account", path: "/settings" },
+  ];
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -74,13 +84,13 @@ export default function RootLayout() {
     backdrop-blur-md bg-white/60 dark:bg-black/40
     border-t border-zinc-300 dark:border-zinc-800
     px-4
-    fixed bottom-0 left-0 md:hidden
+    fixed bottom-0 left-0 md:hidden z-30
   "
           >
             <nav className="grid grid-cols-3 h-full place-items-center text-sm font-medium">
-              {["Statistiken", "Home", "Account"].map((element, index) => {
+              {footerLinks.map((element, index) => {
                 const lower =
-                  element.charAt(0).toLowerCase() + element.slice(1);
+                  element.name.charAt(0).toLowerCase() + element.name.slice(1);
 
                 return (
                   <Link
@@ -94,10 +104,10 @@ export default function RootLayout() {
                 : "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[3px] after:bg-transparent after:transition-all after:duration-300"
             }
           `}
-                    to={""} //"/" + lower
+                    to={element.path} //"/" + lower
                     onClick={() => setPath(lower)}
                   >
-                    {element}
+                    {element.name}
                   </Link>
                 );
               })}
