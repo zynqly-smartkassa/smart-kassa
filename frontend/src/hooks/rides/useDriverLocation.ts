@@ -5,7 +5,7 @@ import { Geolocation } from "@capacitor/geolocation";
 /*
 Code not fully tested and implemented by Claude, do not use it in Production!
 */
-export const useDriverLocation = () => {
+export const useDriverLocation = (isRideActive: boolean) => {
   const [driverLocation, setDriverLocation] = useState<[number, number] | null>(
     null
   );
@@ -88,8 +88,26 @@ export const useDriverLocation = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let lat = driverLocation?.[0] ?? 48.21;
+    let lng = driverLocation?.[1] ?? 16.36;
+
+    let interval: number | undefined;
+    if (isRideActive) {
+      interval = setInterval(() => {
+        lat += 0.0005;
+        lng += 0.0005;
+        setDriverLocation([lat, lng]);
+      }, 1000);
+    }
+
+
+    return () => clearInterval(interval);
+  }, [isRideActive, driverLocation]);
+
   return driverLocation;
 };
+
 
 // Error Handler für Capacitor
 function handleGeolocationError() {

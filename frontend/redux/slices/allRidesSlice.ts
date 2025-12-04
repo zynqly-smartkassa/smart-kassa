@@ -1,23 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit"; 
+import type { PayloadAction } from "@reduxjs/toolkit";
+import type { Ride } from "../../constants/Ride"; // Update the path to match your project structure
 
-interface Ride {
-  user_id: number;
-  start_address: string,
-  start_time: string,
-  start_lat: number,
-  start_lng: number,
-  end_address: string,
-  end_time: string,
-  end_lat: number,
-  end_lng: number,
-  duration: string,
-  distance: number;
-  //rideID: string,
-  //car: string,
-  ride_type: string,
-  //wholeRide: [number, number][]
-}
 
 const initialState: Ride[] = [];
 
@@ -25,8 +9,12 @@ const allRidesSlice = createSlice({
   name: "allRides",
   initialState,
   reducers: {
-    add(state, action: PayloadAction<Ride>) {
-      state.push(action.payload);
+     add(state, action: PayloadAction<Omit<Ride, "ride_id">>) {
+      const newRide = {
+        ...action.payload,
+        ride_id: state.length > 0 ? state[state.length - 1].ride_id + 1 : 1, // auto-increment
+      };
+      state.push(newRide);
     }
   }
 })

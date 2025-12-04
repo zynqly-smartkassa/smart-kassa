@@ -1,9 +1,9 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 
 export async function sendRide(
  ride: {
-   user_id: number;
+  user_id: number;
   start_address: string,
   start_time: string,
   start_lat: number,
@@ -23,9 +23,35 @@ export async function sendRide(
         "Content-Type": "application/json"
       },
     });
+    if (!data) {
+      throw new Error("Response is empty");
+    }
     return data;
-  } catch(error) {
-    console.error("Fehler beim Registrieren der Fahrt:", error);
-    throw error;
+  } catch (error) {
+    console.error("Error while sending ride:", error);
+
+    if (error instanceof AxiosError) {
+
+      //500
+      if (error.response?.status === 500) {
+        throw new Error("Internal Server Error");
+      }
+
+      //400
+      if (error.response?.status === 400) {
+        throw new Error("Missing or invalid ride fields");
+      }
+
+      // Ride exists already
+      if (error.response?.status === 409) {
+        if (error.response?.data?.error) {
+          throw new Error(error.response.data.error);
+        }
+        throw new Error("Ride already exists");
+      }
+    }
+
+    // Fallback unknown
+    throw new Error("Unknown Error while sending ride");
   }
 }

@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/select";
 import { sendRide } from "@/utils/ride";
 import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate } from "react-router";
+import StatusOverlay from "@/components/StatusOverlay";
 
 /**
  * The Rides page, where a driver can start/end a Ride
@@ -182,6 +184,7 @@ export const DistanceTracker = ({
 
 const Ride = () => {
   const dispatch: AppDispatch = useDispatch();
+  const navigator = useNavigate();
 
   // array that stores coordinates of our ride, to make a summary at the end of the ride
   const [wholeRide, setWholeRide] = useState<[number, number][]>([]);
@@ -191,7 +194,7 @@ const Ride = () => {
 
   const [isRideActive, setIsRideActive] = useState(false);
 
-  const driverLocation = useDriverLocation();
+  const driverLocation = useDriverLocation(isRideActive);
   const {
     destination,
     setDestination,
@@ -220,6 +223,8 @@ const Ride = () => {
   // Which type?
   const [rideType, setRideType] = useState("");
 
+  const [isLoading, setIsLoading] = useState(false);
+
   // Re-Initialize fields for the next ride
   const reInitialize = useCallback(() => {
     setDistance(0);
@@ -232,6 +237,7 @@ const Ride = () => {
 
   useEffect(() => {
     if (!isRideActive && isSuccessful && driverLocation && destinationCoords) {
+      setIsLoading(true);
       (async () => {
         const [startAddress, endAddress] = await Promise.all([
           reverseGeocode(driverLocation[0], driverLocation[1]),
@@ -250,20 +256,32 @@ const Ride = () => {
           end_lng: destinationCoords[1],
           duration: formatTime(timer),
           distance: distance,
-          ride_type: rideType // botenfahrt
+          ride_type: rideType,
+          wholeRide: wholeRide // botenfahrt
         }
-        dispatch(add(newRide));
-        sendRide(newRide);
-
-        reInitialize();
+        try {
+          const data = await sendRide(newRide);
+          const ride_info = data.ride_info;
+          const whole = {...ride_info, ...newRide};
+          dispatch(add(whole));
+          reInitialize();
+          navigator("/all-rides/");
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setTimeout(() => setIsLoading(false), 200); // Needed so navigator has enough time to switch
+        }
       })();
     }
-  }, [isRideActive, isSuccessful, driverLocation, destinationCoords, 
-    startTime, endTime, timer, distance, rideType, dispatch, reInitialize, user_id])
+  }, [isRideActive, isSuccessful, driverLocation, destinationCoords, startTime, endTime, timer, distance, rideType, dispatch, reInitialize, user_id, navigator, wholeRide])
 
   // Simle loading state
   if (!driverLocation) {
-    return <p className="text-center mt-4">Warte auf GPS-Daten…</p>;
+    return <StatusOverlay text="Warte auf GPS-Daten…" />;
+  }
+
+  if (isLoading) {
+    return <StatusOverlay text="Fahrt wird verarbeitet..." />;
   }
 
   return (
@@ -354,11 +372,10 @@ const Ride = () => {
           onBlur={() => setShowDestinationHint(true)}
           onFocus={() => setShowDestinationHint(false)}
           className={`w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150
-      ${
-        isDestinationInvalid && showDestinationHint
-          ? "border-red-500"
-          : "border-violet-300"
-      }`}
+      ${isDestinationInvalid && showDestinationHint
+              ? "border-red-500"
+              : "border-violet-300"
+            }`}
           disabled={isRideActive}
         />
 
@@ -390,6 +407,7 @@ const Ride = () => {
             geocodeAddress(destination).then((coords) => {
               if (coords) {
                 setDestinationCoords(coords);
+                setTimeout(() => setIsRouteCalculated(true), 1000);
                 showNewRoute();
               } else {
                 toast("Bitte gebe eine echte Adresse ein!", {
@@ -399,8 +417,6 @@ const Ride = () => {
                 });
               }
             });
-
-            setIsRouteCalculated(true);
           }}
           disabled={isRideActive}
           className={`w-full py-6 mb-6 font-semibold text-white bg-violet-600 rounded-lg shadow-md hover:bg-violet-700 transition duration-150 ease-in-out`}
