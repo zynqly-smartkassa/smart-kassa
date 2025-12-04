@@ -17,14 +17,16 @@ import AllRides from "./pages/rides/AllRides";
  */
 
 function App() {
+  const isMobile = Capacitor.isNativePlatform();
+
   /**
    * to set the Statusbar Color on the Mobile App
    */
   useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
+    if (isMobile) {
       StatusBar.setBackgroundColor({ color: "#000000" });
     }
-  }, []);
+  }, [isMobile]);
 
   return (
     <Router>
@@ -33,9 +35,15 @@ function App() {
 
         <Route
           element={
-            <ProtectedRoute>
+            isMobile ? (
+              // Mobile: No ProtectedRoute, direct access
               <RootLayout />
-            </ProtectedRoute>
+            ) : (
+              // Web: Use ProtectedRoute
+              <ProtectedRoute>
+                <RootLayout />
+              </ProtectedRoute>
+            )
           }
         >
           <Route path="/" element={<Home />} />

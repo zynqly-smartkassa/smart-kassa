@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { AuthStorage } from "./localStorageTokens";
+import { AuthStorage } from "./secureStorage";
 
 /**
  * Method to check if access token is valid or not
@@ -7,7 +7,11 @@ import { AuthStorage } from "./localStorageTokens";
  */
 export async function verifyAccessToken() {
   try {
-    const accessToken = AuthStorage.getAccessToken();
+    const accessToken = await AuthStorage.getAccessToken();
+
+    if (!accessToken) {
+      throw new Error("No access token found");
+    }
 
     const response = await axios.get(`${import.meta.env.VITE_API_URL}/verify`, {
       headers: {
@@ -19,19 +23,20 @@ export async function verifyAccessToken() {
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError && error.response) {
-      AuthStorage.clearToken();
+      await AuthStorage.clearTokens();
       try {
         const newAccessToken = await refreshAccessToken();
 
-        const response = axios.get(`${import.meta.env.VITE_API_URL}/verify`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/verify`, {
           headers: {
             Authorization: `Bearer ${newAccessToken}`,
           },
+          withCredentials: true,
         });
 
-        return (await response).data;
+        return response.data;
       } catch {
-        AuthStorage.clearToken();
+        await AuthStorage.clearTokens();
         throw new Error("Session expired, please login again");
       }
     } else {
@@ -53,7 +58,7 @@ async function refreshAccessToken() {
 
     const { accessToken } = await response.data;
 
-    AuthStorage.setTokens(accessToken);
+    await AuthStorage.setTokens(accessToken);
     return accessToken;
   } catch (error) {
     if (

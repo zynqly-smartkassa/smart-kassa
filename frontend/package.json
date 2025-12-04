@@ -16,6 +16,7 @@
     "@capacitor/core": "^7.4.4",
     "@capacitor/geolocation": "^7.1.6",
     "@capacitor/keyboard": "^7.0.3",
+    "@capacitor/preferences": "^7.0.2",
     "@capacitor/status-bar": "^7.0.3",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

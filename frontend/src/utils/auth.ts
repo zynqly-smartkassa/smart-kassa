@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { AuthStorage } from "./localStorageTokens";
+import { AuthStorage } from "./secureStorage";
 import type { AppDispatch } from "../../redux/store";
 import { signInUser } from "../../redux/slices/userSlice";
 
@@ -31,7 +31,7 @@ export async function register(
     if (!data) {
       throw new Error("Response is Empty");
     }
-    AuthStorage.setTokens(data.accessToken);
+    await AuthStorage.setTokens(data.accessToken);
     dispatch(
       signInUser({
         id: data.id,
@@ -83,31 +83,41 @@ export async function register(
   }
 }
 
-export async function login(
+interface LoginResponse {
+  accessToken: string;
+  user: {
+    userId: number;
+    name: string;
+    email: string;
+  };
+}
+
+export function login(
   email: string,
   password: string,
   dispatch: AppDispatch
-) {
+): Promise<LoginResponse> {
   if (!email || !password) {
     throw new Error("Missing Fields");
   }
 
-  try {
-    const { data } = await axios.post(
-      `${import.meta.env.VITE_API_URL}/login`,
-      {
-        email: email,
-        password: password,
-      },
-      { withCredentials: true } // to set the refresh token in the Cookie
-    );
+  return axios.post(
+    `${import.meta.env.VITE_API_URL}/login`,
+    {
+      email: email,
+      password: password,
+    },
+    { withCredentials: true }
+  )
+  .then(async (response) => {
+    const data = response.data;
 
     if (!data) {
       throw new Error("Response is empty");
     }
 
-    console.log(data);
-    AuthStorage.setTokens(data.accessToken);
+    await AuthStorage.setTokens(data.accessToken);
+
     const user = data.user;
     dispatch(
       signInUser({
@@ -118,9 +128,10 @@ export async function login(
         phoneNumber: "phone number need implementation",
       })
     );
-    return await data;
-  } catch (error) {
-    console.error(error);
+
+    return data;
+  })
+  .catch((error) => {
     if (error instanceof AxiosError) {
       if (error.response?.status === 401 || error.response?.status === 400) {
         throw new Error("Wrong Email or Password");
@@ -128,8 +139,9 @@ export async function login(
       if (error.response?.status === 500) {
         throw new Error("Internal Server Error");
       }
+      throw new Error(`Login failed: ${error.message}`);
     } else {
       throw new Error("Internal Server Error");
     }
-  }
+  });
 }
