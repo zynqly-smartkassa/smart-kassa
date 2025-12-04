@@ -220,7 +220,6 @@ const Ride = () => {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [distance, setDistance] = useState(0);
-  console.log(distance)
   // The user
   //const user_id = useSelector((state: RootState) => state.user.id)
 
@@ -235,7 +234,6 @@ const Ride = () => {
     setDestinationCoords(null);
     setDestination("");
     setTimer(0);
-    setEndTime(getDate())
   }
 
   useEffect(() => {
@@ -262,8 +260,8 @@ const Ride = () => {
         }
         dispatch(add(newRide));
         sendRide(newRide);
-        console.log(rideType)
-
+      
+        console.log(newRide)
         reInitialize();
       })();
     }
@@ -406,6 +404,7 @@ const Ride = () => {
             className={`py-6 font-semibold text-white bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition duration-150 ease-in-out`}
             onClick={() => {
               setIsRideActive(false);
+              setEndTime(getDate())
               if (checkRide()) {
                 setIsEnd(true);
               } else {
