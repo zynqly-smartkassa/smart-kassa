@@ -77,7 +77,7 @@ router.post("/", async (req, res) => {
     let userId;
 
     try {
-      // Begin a transaction, so if it fails, or one insert operation fails, both querys roll back
+        // Begin of database transaction, if an operation fails, all queries roll back
       await pool.query("BEGIN");
 
       // Insert company into company table and return the generated company_id
