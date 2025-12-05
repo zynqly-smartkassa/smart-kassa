@@ -245,7 +245,7 @@ const Ride = () => {
         ]);
 
         const newRide = {
-          user_id: Number(7),
+          user_id: Number(1),
           start_address: startAddress ?? "",
           start_time: startTime,
           start_lat: driverLocation[0],
