@@ -30,6 +30,7 @@ import loginRoutes from "./routes/login.js";
 import verifyRoutes from "./routes/verify.js";
 import fahrtRoutes from "./routes/fahrten.js";
 import rideRoutes from "./routes/ride.js";
+import allridesRoutes from "./routes/all-rides.js";
 
 
 /**
@@ -70,6 +71,7 @@ app.use("/login", loginRoutes);
 app.use("/verify", verifyRoutes);
 app.use("/fahrten", fahrtRoutes);
 app.use("/ride", rideRoutes);
+app.use("/all-rides", allridesRoutes);
 
 
 /**
