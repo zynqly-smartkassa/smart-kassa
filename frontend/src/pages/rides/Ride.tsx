@@ -18,7 +18,6 @@ import { useDriverLocation } from "@/hooks/rides/useDriverLocation";
 import { useRideStates } from "@/hooks/rides/useRideStates";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../../redux/store";
-import { add } from "../../../redux/slices/allRidesSlice";
 import { reverseGeocode } from "@/utils/rides/reverseGeocode";
 import { getDate } from "@/utils/rides/getDate";
 import {
@@ -28,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { sendRide } from "@/utils/ride";
+import { sendRide } from "@/utils/rides/ride";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router";
 import StatusOverlay from "@/components/StatusOverlay";
@@ -243,7 +242,7 @@ const Ride = () => {
           reverseGeocode(driverLocation[0], driverLocation[1]),
           reverseGeocode(destinationCoords[0], destinationCoords[1]),
         ]);
-
+        console.log(startTime)
         const newRide = {
           user_id: Number(user_id) !== 0 ? Number(user_id) : 1,
           start_address: startAddress ?? "",
@@ -257,15 +256,15 @@ const Ride = () => {
           duration: formatTime(timer),
           distance: distance,
           ride_type: rideType,
-          wholeRide: wholeRide // botenfahrt
+          //wholeRide: wholeRide // botenfahrt
         }
         try {
-          const data = await sendRide(newRide);
-          const ride_info = data.ride_info;
-          const whole = {...ride_info, ...newRide};
-          dispatch(add(whole));
+          await sendRide(newRide);
+          //const ride_id = data.ride_info.ride_id;
+          //const whole = {...ride_info, ...newRide};
+          //dispatch(add(whole));
           reInitialize();
-          navigator("/all-rides/");
+          navigator(`/all-rides`);
         } catch (error) {
           console.error(error);
         } finally {

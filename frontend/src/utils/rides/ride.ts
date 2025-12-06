@@ -27,25 +27,25 @@ export async function sendRide(
       throw new Error("Response is empty");
     }
     return data;
-  } catch (error) {
-    console.error("Error while sending ride:", error);
+  } catch (err) {
+    console.error("Error while sending ride:", err);
 
-    if (error instanceof AxiosError) {
+    if (err instanceof AxiosError) {
 
       //500
-      if (error.response?.status === 500) {
+      if (err.response?.status === 500) {
         throw new Error("Internal Server Error");
       }
 
       //400
-      if (error.response?.status === 400) {
+      if (err.response?.status === 400) {
         throw new Error("Missing or invalid ride fields");
       }
 
       // Ride exists already
-      if (error.response?.status === 409) {
-        if (error.response?.data?.error) {
-          throw new Error(error.response.data.error);
+      if (err.response?.status === 409) {
+        if (err.response?.data?.error) {
+          throw new Error(err.response.data.error);
         }
         throw new Error("Ride already exists");
       }
@@ -55,3 +55,6 @@ export async function sendRide(
     throw new Error("Unknown Error while sending ride");
   }
 }
+
+
+

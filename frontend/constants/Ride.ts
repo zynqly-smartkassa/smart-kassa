@@ -15,3 +15,4 @@ export interface Ride {
   vehicle_id: number
   wholeRide: [number, number][]
 }
+

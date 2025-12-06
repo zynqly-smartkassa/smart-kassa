@@ -1,111 +1,152 @@
-import { MapPin, Clock, Route, Timer, Bike, Car } from "lucide-react";
-import { useSelector } from 'react-redux'
-import type { RootState } from '../../../redux/store'
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+import { getAllRides } from "@/utils/rides/all-rides";
+import { useEffect, useState } from "react";
+import type { AllRide } from 'constants/AllRide';
+import RideAtDate from "./RideAtDate";
+import { ListFilter, ArrowUp, ArrowDown } from 'lucide-react';
+
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { useNavigate, useParams } from "react-router";
-import SummaryRide from "./SummaryRide";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 
 const AllRides = () => {
 
-  const rides = useSelector((state: RootState) => state.allRidesSlice);
-  const navigator = useNavigate();
-    console.log(rides);
+  //const rides = useSelector((state: RootState) => state.allRidesSlice);
+  //const user_id = useSelector((state: RootState) => state.user.id);
+  //const navigator = useNavigate();
+  const [rides, setRides] = useState<AllRide[] | null>(null);
+  //const { id } = useParams();
 
-    const {id} = useParams();
-    const ride_id = Number(id);
+  useEffect(() => {
+    (async () => {
+      const data = await
+        getAllRides(1)
 
-    if (!rides || rides.length === 0) {
-    return <>Loading rides…</>; 
+      if (!data || !data.rides) throw new Error("No rides found");
+      setRides(data.rides);
+      console.log(data.rides)
+    })();
+  }, []);
+
+  // const ride_id = Number(id);
+
+  // if (!rides || rides.length === 0) {
+  //   return <>Loading rides…</>;
+  // }
+
+  // const ride = rides.find(r => Number(r.ride_id) === ride_id);
+  // console.log("Ride and id: ", ride, id)
+
+  // if (!ride && id) {
+  //   return <>Ride not found</>
+  // } else if (!id) {
+  //   console.log()
+  // } else {
+  //  // return <SummaryRide ride={rides[ride_id - 1]}></SummaryRide>
+  // };
+
+  if (!rides) return;
+
+  function pad(n: number) {
+    return n < 10 ? "0" + n : n.toString();
   }
 
-  const ride = rides.find(r => Number(r.ride_id) === ride_id);
-  console.log("Ride and id: ", ride, id)
+  const ridesToday = rides.filter((element) => {
+    const onlyDate = element.start_time.replace('T', ' ').split(" ")[0];
+    const today = new Date();
+    const [year, month, day] = onlyDate.split("-");
 
-  if (!ride && id) {
-     return <>Ride not found</>
-  } else if (!id) {
-    console.log()
-  } else {
-    return <SummaryRide ride={rides[ride_id - 1]}></SummaryRide>
-  };
-
-  function formatDistance(meters: number): string {
-    if (meters < 1000) {
-      return `${meters.toFixed(2)} m`;
-    } else {
-      const km = meters / 1000;
-      return `${km.toFixed(2)} km`;
+    if (pad(today.getFullYear()) === year &&
+      pad(today.getMonth() + 1) === month &&
+      pad(today.getDate()) === (day)) {
+      return element;
     }
-  }
+  })
+
+  const ridesYesterday = rides.filter((element) => {
+    const onlyDate = element.start_time.replace('T', ' ').split(" ")[0];
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 200)
+    const [year, month, day] = onlyDate.split("-");
+
+    if (pad(yesterday.getFullYear()) === year &&
+      pad(yesterday.getMonth() + 1) === month &&
+      pad(yesterday.getDate()) === day) {
+      return element;
+    }
+  })
 
   return (
-    <div className='w-full'>
-      <ul className='w-full grid grid-cols-1 md:grid-cols-4 gap-4'>
-        {rides.map((ride, index) => (
-          <li key={index} className='w-full'>
-            <Card onClick={() => navigator(`/all-rides/${ride.ride_id}`)}>
-              <CardHeader className="space-y-1">
-                {/* Start Address */}
-                <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                  <MapPin className="w-4 h-4 text-indigo-600" />
-                  {ride.start_address.split(",").slice(2, 4).join(", ")}
-                </CardTitle>
+    <div className='w-full flex'>
+      {/* TabsList links */}
+      <Tabs defaultValue="today" className="w-full flex flex-col gap-3">
+        <div className="flex flex-col items-start md:w-auto max-w-[400px] gap-3">
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="today">Today</TabsTrigger>
+            <TabsTrigger value="yesterday">Yesterday</TabsTrigger>
+            <TabsTrigger value="every">Every</TabsTrigger>
+          </TabsList>
+          <div className="flex flex-row items-center gap-3">
+            
+            <Select>
+              <SelectTrigger className="max-w-[80px] border-2 border-violet-300 rounded-md">
+                <ListFilter className="text-violet-400"></ListFilter>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  value="date"
 
-                <CardDescription className="flex gap-4 text-sm text-gray-600">
-                  <span className="flex items-center gap-1">
-                    <Route className="w-4 h-4" />
-                    {formatDistance(ride.distance)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Timer className="w-4 h-4" />
-                    {ride.duration}
-                  </span>
-                </CardDescription>
-              </CardHeader>
+                >
+                  Date
+                </SelectItem>
+                <SelectItem
+                  value="distance"
 
-              <CardContent className="space-y-3 text-sm">
+                >
+                  Distanz
+                </SelectItem>
 
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-green-600" />
-                  <span>{ride.end_address.split(",").slice(0, 2).join(", ")}</span>
-                </div>
+                <SelectItem
+                  value="type"
 
-                <div className="flex flex-col gap-1">
-                  <span className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    <span className="font-bold">Start:</span>
-                    {ride.start_time.split(" ").join(" | ")}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    <span className="font-bold">Ende:</span>
-                    {ride.end_time.split(" ").join(" | ")}
-                  </span>
-                </div>
-              </CardContent>
+                >
+                  Art
+                </SelectItem>
 
-              <CardFooter className="flex justify-between text-sm">
+                <SelectItem
+                  value="duration"
 
-                <div className="flex items-center gap-2 font-medium">
-                  {ride.ride_type === "botenfahrt" ? (
-                    <Bike className="w-4 h-4" />
-                  ) : (
-                    <Car className="w-4 h-4" />
-                  )}
-                  {ride.ride_type.charAt(0).toUpperCase() + ride.ride_type.slice(1)}
-                </div>
-              </CardFooter>
-            </Card>
-          </li>
-        ))}
-      </ul>
+                >
+                  Dauer
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <ArrowUp className="w-8 h-8"></ArrowUp>
+            <ArrowDown className="w-8 h-8"></ArrowDown>
+          </div>
+
+        </div>
+
+
+        {/* TabsContent rechts */}
+        <div className="w-full">
+          <TabsContent value="today">
+            <RideAtDate rides={ridesToday}></RideAtDate>
+          </TabsContent>
+          <TabsContent value="yesterday">
+            <RideAtDate rides={ridesYesterday}></RideAtDate>
+          </TabsContent>
+          <TabsContent value="every">
+            <RideAtDate rides={rides}></RideAtDate>
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   )
 }
