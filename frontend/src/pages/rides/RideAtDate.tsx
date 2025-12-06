@@ -60,9 +60,10 @@ const RideAtDate = ({ rides, sortAfter, isDescending, rideType }: RideAtDateArgs
   rides = handleRideType(rides, rideType);
 
   return (
-    <ul className='w-full grid grid-cols-1 md:grid-cols-4 gap-4'>
+    <ul className='w-full grid grid-cols-1 md:grid-cols-2
+     xl:grid-cols-3 gap-4 2xl:grid-cols-4 3xl:grid-cols-5'>
       {rides && rides.map((ride, index) => (
-        <li key={index} className='w-full'>
+        <li key={index} className='w-full max-w-[600px]'>
           {/*<Card onClick={() => navigator(`/all-rides/${ride.ride_id}`)}> */}
           <Card>
             <CardHeader className="space-y-1">

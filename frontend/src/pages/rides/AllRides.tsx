@@ -64,15 +64,29 @@ const AllRides = () => {
 
   return (
     <div className='w-full flex'>
+
       {/* TabsList links */}
       <Tabs defaultValue="today" className="w-full flex flex-col gap-3">
-        <div className="flex flex-col items-start md:w-auto max-w-[400px] gap-3">
-          <TabsList className="grid grid-cols-3 w-full">
+
+        <div className="flex flex-col md:justify-between gap-3 md:flex-row
+        md:items-center">
+
+          <div className="flex flex-col gap-1 text-center">
+            <h2 className="text-3xl font-extrabold">Every Ride</h2>
+            <p className="text-base text-gray-600 dark:text-gray-500">
+              Visit, sort and sceify every ride you took!
+            </p>
+          </div>
+
+        <div className="flex flex-col items-center md:items-end gap-3">
+
+          <TabsList className="grid grid-cols-3 md:w-auto max-w-[400px] ">
             <TabsTrigger value="today">Today</TabsTrigger>
             <TabsTrigger value="yesterday">Yesterday</TabsTrigger>
             <TabsTrigger value="every">Every</TabsTrigger>
           </TabsList>
-          <div className="w-full flex flex-row justify-between items-center">
+          <div className="w-full md:w-auto flex flex-row justify-between
+           items-center md:gap-6">
             <div className="flex flex-row items-center gap-1">
               <Select defaultValue="date">
                 <SelectTrigger className={`max-w-[70px] px-1 border-2
@@ -83,12 +97,14 @@ const AllRides = () => {
                   <SelectItem
                     value="date"
                     onClick={() => setSortAfter("date")}
+                    className="md:text-lg"
                   >
                     Date
                   </SelectItem>
                   <SelectItem
                     value="distance"
                     onClick={() => setSortAfter("distance")}
+                    className="md:text-lg"
                   >
                     Distanz
                   </SelectItem>
@@ -96,17 +112,20 @@ const AllRides = () => {
                   <SelectItem
                     value="duration"
                     onClick={() => setSortAfter("duration")}
+                    className="md:text-lg"
                   >
                     Dauer
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <ArrowDown className={`w-8 h-8 ${isDescending ? "text-violet-400" : ''} `}
+              <ArrowDown className={`w-8 h-8 md:w-10 md:h-10
+               ${isDescending ? "text-violet-400" : ''} `}
                 onClick={() => {
                   setIsDescending(!isDescending);
                   setIsAscending(!isAscending)
                 }}></ArrowDown>
-              <ArrowUp className={`w-8 h-8 ${isAscending ? "text-violet-400" : ''} `}
+              <ArrowUp className={`w-8 h-8  md:w-10 md:h-10
+              ${isAscending ? "text-violet-400" : ''} `}
                 onClick={() => {
                   setIsAscending(!isAscending);
                   setIsDescending(!isDescending)
@@ -114,25 +133,29 @@ const AllRides = () => {
             </div>
 
             <Select>
-              <SelectTrigger className="w-[180px] border-2 border-violet-300 rounded-md">
+              <SelectTrigger className="w-[180px] border-2 
+              border-violet-300 rounded-md md:text-lg">
                 <SelectValue placeholder="Art der Fahrt" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
                   value="every"
                   onClick={() => setRideType("every")}
+                  className="md:text-lg"
                 >
                   Every
                 </SelectItem>
                 <SelectItem
                   value="botenfahrt"
                   onClick={() => setRideType("botenfahrt")}
+                  className="md:text-lg"
                 >
                   Botenfahrt
                 </SelectItem>
                 <SelectItem
                   value="taxifahrt"
                   onClick={() => setRideType("taxifahrt")}
+                  className="md:text-lg"
                 >
                   Taxifahrt
                 </SelectItem>
@@ -142,6 +165,8 @@ const AllRides = () => {
           </div>
 
         </div>
+        </div>
+
 
 
         {/* TabsContent rechts */}
