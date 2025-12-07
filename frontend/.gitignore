@@ -28,11 +28,19 @@ dist-ssr
 !.env.example
 
 # Capacitor
-android/
-ios/
+android/app/build/
+android/build/
+android/.gradle/
+android/app/release/
+android/app/debug/
+android/.idea/
+android/local.properties
+android/*.iml
+android/.cxx/
+
+# Die APK Files
 *.apk
 *.aab
-*.ipa
 
 # Capacitor generated files
 capacitor-cordova-android-plugins/

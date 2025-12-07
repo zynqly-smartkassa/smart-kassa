@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
-//import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import RootLayout from "./layout/RootLayout";
 import Settings from "./pages/settings/Settings";
@@ -17,14 +17,16 @@ import AllRides from "./pages/rides/AllRides";
  */
 
 function App() {
+  const isMobile = Capacitor.isNativePlatform();
+
   /**
    * to set the Statusbar Color on the Mobile App
    */
   useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
+    if (isMobile) {
       StatusBar.setBackgroundColor({ color: "#000000" });
     }
-  }, []);
+  }, [isMobile]);
 
   return (
     <Router>
@@ -33,7 +35,15 @@ function App() {
 
         <Route
           element={
-            <RootLayout></RootLayout>
+            isMobile ? (
+              // Mobile: No ProtectedRoute, direct access
+              <RootLayout />
+            ) : (
+              // Web: Use ProtectedRoute
+              <ProtectedRoute>
+                <RootLayout />
+              </ProtectedRoute>
+            )
           }
         >
           <Route path="/" element={<Home />} />
