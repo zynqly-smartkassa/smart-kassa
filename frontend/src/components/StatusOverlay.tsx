@@ -6,7 +6,11 @@ interface StatusOverlayProps {
   isLoading?: boolean;
 }
 
-const StatusOverlay: React.FC<StatusOverlayProps> = ({ text, isError = false, isLoading = false }) => {
+const StatusOverlay: React.FC<StatusOverlayProps> = ({
+  text,
+  isError = false,
+  isLoading = false,
+}) => {
   const [dots, setDots] = useState("");
 
   useEffect(() => {

@@ -28,6 +28,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const navigator = useNavigate();
   const toastShownRef = useRef(false);
   const isMobile = Capacitor.isNativePlatform();
+  const user = useSelector((state: RootState) => state.user);
 
   // Check if the user is getting loaded currently
   const { isLoading, isAuthenticated } = useSelector(
@@ -37,32 +38,32 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     async function getJWTTokens() {
       try {
-        if (isMobile) {
+        if (isMobile && !toastShownRef.current) {
           await navigator("/ride");
         }
 
-        console.log("dadadafafafafaf");
-        const userData: USER_DTO = await verifyAccessToken();
-        if (!userData) {
-          throw new Error("User Data invalid");
+        if (!isAuthenticated) {
+          const userData: USER_DTO = await verifyAccessToken();
+          if (!userData) {
+            throw new Error("User Data invalid");
+          }
+
+          dispatch(
+            signInUser({
+              id: userData.id,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              email: userData.email,
+              phoneNumber: userData.phoneNumber,
+            })
+          );
+
+          dispatch(setAuthenticated());
         }
-
-        console.log("dadadafafafafaf");
-        dispatch(
-          signInUser({
-            id: userData.id,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            email: userData.email,
-            phoneNumber: userData.phoneNumber,
-          })
-        );
-
-        dispatch(setAuthenticated());
 
         // Only show toast once per session
         if (!toastShownRef.current) {
-          toast.success(`Welcome back ${userData.firstName}!`, {
+          toast.success(`Welcome back ${user.firstName}!`, {
             className: "mt-5 md:mt-0",
             position: "top-center",
             closeButton: true,
@@ -70,13 +71,12 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           toastShownRef.current = true;
         }
       } catch {
-        console.log("dadadafafafafaf")
         await navigator("/register");
         dispatch(setUnauthenticated());
       }
     }
     getJWTTokens();
-  }, [dispatch, navigator]);
+  }, [dispatch, isAuthenticated, isMobile, navigator, user.firstName]);
 
   // had to also use the authenticate value so it doesn't show home page for split second to non-loged in Users
   if (!isAuthenticated || isLoading) {

@@ -24,8 +24,8 @@ interface IfooterLinks {
 export default function RootLayout() {
   // to know which path is active for the underline in the footer
   const [active, setActive] = useState(true);
-  const [path, setPath] = useState("home");
   const isMobile = Capacitor.isNativePlatform();
+  const [path, setPath] = useState(isMobile ? "start Ride" : "home");
   const footerLinks: IfooterLinks[] = [
     {
       name: "Start Ride",

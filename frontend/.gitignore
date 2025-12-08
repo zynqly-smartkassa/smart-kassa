@@ -37,6 +37,10 @@ android/.idea/
 android/local.properties
 android/*.iml
 android/.cxx/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/src/main/res/xml/config.xml
 
 # Die APK Files
 *.apk
@@ -58,3 +62,7 @@ DerivedData/
 
 # Capacitor plugins
 .capacitor/
+
+# Redundant patterns (cleanup)
+android/**/.gradle/
+android/**/build/

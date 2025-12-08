@@ -35,17 +35,9 @@ function App() {
 
         <Route
           element={
-            isMobile ? (
-              // Mobile: No ProtectedRoute, direct access
-              <ProtectedRoute>
-                <RootLayout />
-              </ProtectedRoute>
-            ) : (
-              // Web: Use ProtectedRoute
-              <ProtectedRoute>
-                <RootLayout />
-              </ProtectedRoute>
-            )
+            <ProtectedRoute>
+              <RootLayout />
+            </ProtectedRoute>
           }
         >
           <Route path="/" element={<Home />} />
