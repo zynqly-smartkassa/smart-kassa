@@ -29,7 +29,8 @@ dist-ssr
 
 # Android
 android/.gradle/
-android/app/build/
+android/app/.gradle/
 android/build/
-android/.idea/
+android/app/build/
+android/app/src/main/assets/
 android/local.properties
