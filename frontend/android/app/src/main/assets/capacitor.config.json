@@ -1,0 +1,11 @@
+{
+	"appId": "org.Zynqly",
+	"appName": "Zynqly",
+	"webDir": "dist",
+	"plugins": {
+		"Keyboard": {
+			"resizeOnFullScreen": true,
+			"resize": "native"
+		}
+	}
+}
