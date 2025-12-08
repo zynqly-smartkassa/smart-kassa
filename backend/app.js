@@ -32,7 +32,6 @@ import fahrtRoutes from "./routes/fahrten.js";
 import rideRoutes from "./routes/ride.js";
 import allridesRoutes from "./routes/all-rides.js";
 
-
 /**
  * Middleware Configuration
  * Applied in order to all incoming requests
@@ -42,11 +41,11 @@ import allridesRoutes from "./routes/all-rides.js";
 app.use(
   cors({
     origin: [
-      "http://localhost:5173", // local host needs to be deleted when in production
-      "https://localhost:5173",
-      "http://localhost:3000",
-      "https://localhost:3000",
+      "http://localhost",
+      "https://localhost",
+      "capacitor://localhost",
       "https://smart-kassa.vercel.app",
+      process.env.DEBUG_URL,
     ],
     credentials: true, // Allow cookies to be sent
   })
@@ -72,7 +71,6 @@ app.use("/verify", verifyRoutes);
 app.use("/fahrten", fahrtRoutes);
 app.use("/ride", rideRoutes);
 app.use("/all-rides", allridesRoutes);
-
 
 /**
  * Health Check Endpoint
