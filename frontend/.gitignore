@@ -33,4 +33,8 @@ android/app/.gradle/
 android/build/
 android/app/build/
 android/app/src/main/assets/
+android/capacitor-cordova-android-plugins/.gradle/
+android/capacitor-cordova-android-plugins/build/
 android/local.properties
+android/**/.gradle/
+android/**/build/
