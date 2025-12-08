@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { Container } from "../../constants/Compontents";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { resizeKeyboard } from "@/hooks/keyboardResizer";
+import { resizeKeyboard } from "../hooks/keyboardResizer";
 
 interface NameInputsProps {
   Containers: Container[];
@@ -30,6 +30,7 @@ const NameInputs = ({ Containers, classname }: NameInputsProps) => {
             onBlur={value.onBlurListener}
             onFocus={value.onFocusListener}
             onClick={() => resizeKeyboard()}
+            data-testid={value.id}
             autoComplete={value.autocomplete}
           />
           <AnimatePresence>

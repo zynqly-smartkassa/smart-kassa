@@ -1,8 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
-import Register from "./pages/Register";
+import Register from "./pages/auth/Register";
 import Home from "./pages/Home";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import Login from "./pages/Login";
+import Login from "./pages/auth/Login";
 import RootLayout from "./layout/RootLayout";
 import Settings from "./pages/settings/Settings";
 import { useEffect } from "react";
@@ -10,6 +9,7 @@ import { StatusBar } from "@capacitor/status-bar";
 import { Capacitor } from "@capacitor/core";
 import Ride from "./pages/rides/Ride";
 import AllRides from "./pages/rides/AllRides";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 /**
  * The Routes are all declared here

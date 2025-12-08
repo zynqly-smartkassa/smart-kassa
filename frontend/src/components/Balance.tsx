@@ -4,7 +4,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "../components/ui/card"
 
 import {
   BarChart,
@@ -17,9 +17,9 @@ import {
   LabelList,
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
-import type { DailyStats, MonthlyWeekStats, RidesStats } from "@/pages/Home";
-import { barChartConfig, radialSeriesConfig, chartKeys, type Duration } from "@/content/balance/config";
-import { metrics, type Metric, chartData, driverShare, brutto, netto } from "@/content/balance/data";
+import type { DailyStats, MonthlyWeekStats, RidesStats } from "../pages/Home";
+import { barChartConfig, radialSeriesConfig, chartKeys, type Duration } from "../content/balance/config";
+import { metrics, type Metric, chartData, driverShare, brutto, netto } from "../content/balance/data";
 
 // configs & data moved to content/balance/*
 

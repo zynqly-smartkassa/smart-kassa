@@ -1,4 +1,4 @@
-import { Button } from "../components/ui/button";
+import { Button } from "../../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -7,28 +7,28 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "../components/ui/card";
+} from "../../components/ui/card";
 import { toast } from "sonner";
 import { useState } from "react";
 import {
   useInvalidEmail,
   useInvalidPassword,
   type PASSWORD_VALIDATOR,
-} from "../hooks/useValidator";
-import { authContent } from "../content/auth/auth";
-import { validationMessages } from "../content/auth/validationMessages";
-import { toastMessages } from "../content/auth/toastMessages";
-import { useWarningToast } from "../hooks/useToast";
+} from "../../hooks/useValidator";
+import { authContent } from "../../content/auth/auth";
+import { validationMessages } from "../../content/auth/validationMessages";
+import { toastMessages } from "../../content/auth/toastMessages";
+import { useWarningToast } from "../../hooks/useToast";
 import { useSelector, useDispatch } from "react-redux";
-import type { RootState, AppDispatch } from "../../redux/store";
-import { login } from "@/utils/auth";
+import type { RootState, AppDispatch } from "../../../redux/store";
+import { login } from "../../utils/auth";
 import type {
   Container,
   LoginShowError,
   PasswordContainer,
-} from "../../constants/Compontents";
-import Inputs from "@/components/Inputs";
-import PasswordInputs from "@/components/PasswordInputs";
+} from "../../../constants/Compontents";
+import Inputs from "../../components/Inputs";
+import PasswordInputs from "../../components/PasswordInputs";
 
 /**
  * The Login page, where users sign in
@@ -199,6 +199,7 @@ function Login() {
               className="w-full bg-black text-white dark:bg-white dark:text-black"
               variant="default"
               disabled={formUnvalid}
+              data-testid="login"
             >
               {l.buttons.login}
             </Button>
@@ -211,6 +212,7 @@ function Login() {
                 <Link
                   to="/register"
                   className="font-extrabold underline hover:text-violet-400"
+                  data-testid="registerLink"
                 >
                   {l.footer.link}
                 </Link>

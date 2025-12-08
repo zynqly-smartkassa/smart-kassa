@@ -1,8 +1,8 @@
 import { useSelector } from "react-redux";
 
 import type { RootState } from "../../redux/store";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Balance from "@/components/Balance";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import Balance from "../components/Balance";
 
 export type RidesStats = {
   day: string;

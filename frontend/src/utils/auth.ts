@@ -3,6 +3,7 @@ import { AuthStorage } from "./secureStorage";
 import type { AppDispatch } from "../../redux/store";
 import { signInUser } from "../../redux/slices/userSlice";
 
+
 export async function register(
   firstName: string,
   lastName: string,
