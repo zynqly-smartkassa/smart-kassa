@@ -27,6 +27,8 @@ const router = express.Router();
  * @body {string} duration (required)
  * @body {float} distance (required)
  * @body {string} ride_type (required)
+ * @body {jsonb string} wholeRide (required)
+ * @returns {Object} 400 - Missing required fields
  * @returns {Object} 500 - Internal server error
  */
 router.post("/", async (req, res) => {
@@ -75,7 +77,7 @@ router.post("/", async (req, res) => {
 
         // Random vehicle id for test purposes, when vehicle_id gets implemented refactor the code!
         const vehicle_id = Math.floor(Math.random() * 100 + 1);
-        console.log(vehicle_id)
+
         const rideRes = await pool.query(
             `
             INSERT INTO ride
@@ -93,11 +95,18 @@ router.post("/", async (req, res) => {
                 duration, distance, ride_type, JSON.stringify(wholeRide)
             ]
         );
-        console.log(vehicle_id);
-        console.log(wholeRide);
+
+        if (!rideRes.rows || rideRes.rows.length === 0) {
+            return res.status(500).json({
+                status: "error",
+                message: "Ride could not be created"
+            });
+        }
+
         const ride_id = rideRes.rows[0].ride_id;
 
         res.json({
+            status: "success",
             message: "Ride successfully saved",
             ride_info: {
                 ride_id: ride_id,
@@ -108,11 +117,9 @@ router.post("/", async (req, res) => {
         await pool.query("COMMIT");
     } catch (error) {
         await pool.query("ROLLBACK");
-        console.error("DATABASE ERROR:", error);
-        console.error("Details:", error.message);
         return res.status(500).send({
             error: "Internal Server Error",
-        details: error.message
+            details: error.message
         });
     }
 });
