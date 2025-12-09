@@ -8,9 +8,28 @@ import express from "express";
 import pool from "../db.js";
 
 const router = express.Router();
-
+/**
+ * POST /all-rides
+ * 
+ *
+ * @route POST /all-rides
+ * @access Public
+ * @body {integer} user_id
+ * @returns {Object} 200 - Successful query
+ * @returns {Object} 400 - Missing required fields
+ * @returns {Object} 400 - User has no rides
+ * @returns {Object} 500 - Internal server error
+ */
 router.post("/", async (req, res) => {
     const { user_id } = req.body;
+
+    if (!user_id) {
+        return res.status(400).json({
+            status: "error",
+            code: "MISSING_FIELDS",
+            message: "Missing required fields"
+        });
+    }
 
     try {
         const rides = await pool.query(
@@ -26,17 +45,25 @@ router.post("/", async (req, res) => {
             [user_id]
         )
 
+        if (rides.rows.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                code: "USER_HAS_NO_RIDES ",
+                message: "User has no rides"
+            });
+        }
+
         res.status(200).json({
-            success: true,
-            count: rides.rowCount,
+            status: "success",
+            ride_count: rides.rowCount,
             rides: rides.rows
         });
 
     } catch (error) {
-        const errorResponse = "Error caught";
-        console.error(errorResponse);
-        return res.status(500).send({ error: errorResponse, message: "Internal Server Error" });
-
+        return res.status(500).send({
+            error: "Internal Server Error",
+            details: error.message
+        });
     }
 });
 
