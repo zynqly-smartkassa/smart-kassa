@@ -44,6 +44,7 @@ router.post("/", async (req, res) => {
         distance,
         ride_type,
         wholeRide
+        wholeRide
     } = req.body;
 
     if (
@@ -58,7 +59,8 @@ router.post("/", async (req, res) => {
         !end_lng ||
         !duration ||
         !distance ||
-        !ride_type || !wholeRide
+        !ride_type ||
+        !wholeRide || !wholeRide
     ) {
         return res.status(400).json({ error: "Missing required fields" });
     }
@@ -79,13 +81,15 @@ router.post("/", async (req, res) => {
                 end_address, end_time, end_lat, end_lng,
                 duration, distance, ride_type, wholeRide)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                duration, distance, ride_type, wholeRide)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING ride_id
             `,
             [
                 user_id, vehicle_id,
                 start_address, start_time, start_lat, start_lng,
                 end_address, end_time, end_lat, end_lng,
-                duration, distance, ride_type, wholeRide
+                duration, distance, ride_type, wholeRide, wholeRide
             ]
         );
 
