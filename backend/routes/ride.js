@@ -44,7 +44,6 @@ router.post("/", async (req, res) => {
         distance,
         ride_type,
         wholeRide
-        wholeRide
     } = req.body;
 
     if (
@@ -60,9 +59,13 @@ router.post("/", async (req, res) => {
         !duration ||
         !distance ||
         !ride_type ||
-        !wholeRide || !wholeRide
+        !wholeRide
     ) {
-        return res.status(400).json({ error: "Missing required fields" });
+        return res.status(400).json({
+            status: "error",
+            code: "MISSING_FIELDS",
+            message: "Missing required fields"
+        });
     }
 
 
@@ -72,7 +75,7 @@ router.post("/", async (req, res) => {
 
         // Random vehicle id for test purposes, when vehicle_id gets implemented refactor the code!
         const vehicle_id = Math.floor(Math.random() * 100 + 1);
-
+        console.log(vehicle_id)
         const rideRes = await pool.query(
             `
             INSERT INTO ride
@@ -81,18 +84,17 @@ router.post("/", async (req, res) => {
                 end_address, end_time, end_lat, end_lng,
                 duration, distance, ride_type, wholeRide)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-                duration, distance, ride_type, wholeRide)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING ride_id
             `,
             [
                 user_id, vehicle_id,
                 start_address, start_time, start_lat, start_lng,
                 end_address, end_time, end_lat, end_lng,
-                duration, distance, ride_type, wholeRide, wholeRide
+                duration, distance, ride_type, JSON.stringify(wholeRide)
             ]
         );
-
+        console.log(vehicle_id);
+        console.log(wholeRide);
         const ride_id = rideRes.rows[0].ride_id;
 
         res.json({
@@ -106,10 +108,12 @@ router.post("/", async (req, res) => {
         await pool.query("COMMIT");
     } catch (error) {
         await pool.query("ROLLBACK");
-        const errorResponse = "\nDEBUG PRINT\n";
-        console.error(errorResponse)
-        return res.status(500).send({ error: errorResponse, message: "Internal Server Error" });
-
+        console.error("DATABASE ERROR:", error);
+        console.error("Details:", error.message);
+        return res.status(500).send({
+            error: "Internal Server Error",
+        details: error.message
+        });
     }
 });
 
