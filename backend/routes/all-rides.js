@@ -15,6 +15,7 @@ router.post("/", async (req, res) => {
     try {
         const rides = await pool.query(
             `SELECT
+                r.ride_id,
                 r.start_address, r.end_address,
                 r.distance, r.duration, 
                 r.start_time, r.end_time, 
