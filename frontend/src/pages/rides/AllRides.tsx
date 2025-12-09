@@ -20,15 +20,11 @@ import SummaryRide from "./SummaryRide";
 
 const AllRides = () => {
 
-
   const [isDescending, setIsDescending] = useState(true);
   const [isAscending, setIsAscending] = useState(false);
   const [sortAfter, setSortAfter] = useState("date");
   const [rideType, setRideType] = useState("");
 
-  //const rides = useSelector((state: RootState) => state.allRidesSlice);
-  //const user_id = useSelector((state: RootState) => state.user.id);
-  //const navigator = useNavigate();
   const [rides, setRides] = useState<AllRide[] | null>(null);
   const { id } = useParams();
 
@@ -44,24 +40,26 @@ const AllRides = () => {
 
   const ride_id = Number(id);
 
-
-  if (!rides || rides.length === 0) {
+  if (!rides) {
     return <>Loading rides…</>;
   }
+
+  if (rides.length === 0) {
+    return <>No Rides yet</>
+  }
+
+  // Test if all-rides was called with a id, if so find the exact route
 
   if (ride_id) {
      const ride = rides.find(r => Number(r.ride_id) === ride_id);
 
   if (!ride) {
     return <>Ride not found</>
-  } else if (!id) {
-    // Handle case when no id
   } else {
     return <SummaryRide ride={ride}></SummaryRide>
   };
 
   }
-
 
   const ridesToday = getRidesToday(rides);
   const ridesYesterday = getRidesYesterday(rides);

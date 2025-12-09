@@ -51,6 +51,16 @@ export const RoutingMachine = ({
 }) => {
   const map = useMap();
 
+  useEffect(() => {
+    // Create a custom pane for the route line
+    map.createPane("fixedRoutes");
+
+    // Make sure the line is above tiles but below markers
+    map.getPane("fixedRoutes")!.style.zIndex = "399";
+
+    // Prevent route from becoming thick during zoom animation
+  }, [map]);
+
   // use ref to hold control between renders
   const routingControlRef = useRef<L.Routing.Control | null>(null);
 
@@ -84,6 +94,7 @@ export const RoutingMachine = ({
         extendToWaypoints: true,
         missingRouteTolerance: 10,
       },
+      pane: "fixedRoutes",
       // This will ensure that leaflet doesn't add additional markers
       createMarker: () => null,
       router: router, // Tell leaflet to use this router

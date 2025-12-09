@@ -5,19 +5,12 @@ import { BadgeCheck } from 'lucide-react';
 import BasicTimeline from '@/components/ui/basicTimeline';
 import { Clock3 } from 'lucide-react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet'
-import L, { Icon } from "leaflet";
+import L from "leaflet";
 import "leaflet-routing-machine";
 import { useEffect, useRef } from 'react';
 import { durationToMinutes, formatMinutes } from '@/utils/rides/summaryMinutes';
 import type { AllRide } from 'constants/AllRide';
-
-
-const driverIcon = new Icon({
-  iconUrl: '/dot.png',
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
-});
-
+import { driverIcon } from '@/utils/icons';
 
 interface SummaryRideArgs {
   ride: AllRide
@@ -29,9 +22,10 @@ interface DrawMapArgs {
 
 export const DrawMap = (data: DrawMapArgs) => {
 
+  const map = useMap();
   const wholeride = data.wholeride;
 
-  const map = useMap();
+
   // This will hold the whole ride at the end
   const routePolyline = useRef<L.Polyline | null>(null);
 
@@ -86,7 +80,7 @@ export const DrawMap = (data: DrawMapArgs) => {
   return null;
 }
 
-export const SummaryRide = ({ride}: SummaryRideArgs) => {
+export const SummaryRide = ({ ride }: SummaryRideArgs) => {
   const navigator = useNavigate();
   const labelClass = 'text-gray-500 text-sm'
   const valueClass = 'font-bold text-lg';
@@ -115,7 +109,7 @@ export const SummaryRide = ({ride}: SummaryRideArgs) => {
         />
 
 
-          <DrawMap wholeride={wholeride} />
+        <DrawMap wholeride={wholeride} />
       </MapContainer>
 
       {/* Ride ID */}
