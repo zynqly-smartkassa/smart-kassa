@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
                 r.start_address, r.end_address,
                 r.distance, r.duration, 
                 r.start_time, r.end_time, 
-                r.ride_type, u.user_id, r.wholeRide
+                r.ride_type, u.user_id, r.whole_ride
             FROM ride r 
             JOIN users u ON r.user_id = u.user_id 
             WHERE u.user_id = $1`,
