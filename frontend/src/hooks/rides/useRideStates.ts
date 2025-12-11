@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
+import { isValidAddressInput } from '../useValidator';
 
 export const useRideStates = (isRideActive: boolean, 
   driverLocation: [number, number] | null,
@@ -7,6 +8,13 @@ export const useRideStates = (isRideActive: boolean,
 
   // Input
   const [destination, setDestination] = useState("");
+
+  // Validation for destination...
+  const [showDestinationHint, setShowDestinationHint] = useState(false);
+  const isDestinationInvalid = !destination || !isValidAddressInput(destination);
+
+  // Driver can't click start button, if route is not calculated
+  const [isRoutCalculated, setIsRouteCalculated] = useState(false);
 
   // Actual coords of the adress
   const [destinationCoords, setDestinationCoords] = useState<[number, number] | null>(null);
@@ -33,10 +41,11 @@ export const useRideStates = (isRideActive: boolean,
   }
 
   const checkRide = () => {
-    if (isRideActive && timer <= 5) {
+    if (isRideActive && timer <= 3) {
       toast("The ride cannot be saved, because the ride lasted only under 1 minute.", {
         position: "top-center",
         closeButton: true,
+        className: "mt-5 md:mt-0"
       });
       return false;
     } 
@@ -58,7 +67,6 @@ export const useRideStates = (isRideActive: boolean,
 
     const interval = setInterval(() => {
       showNewRoute();
-      console.log("Routing Line new")
     }, 10000)
 
     return () => clearInterval(interval);
@@ -83,9 +91,15 @@ export const useRideStates = (isRideActive: boolean,
   return {
     destination,
     setDestination,
+    showDestinationHint,
+    setShowDestinationHint,
+    isDestinationInvalid,
+    isRoutCalculated,
+    setIsRouteCalculated,
     destinationCoords,
     setDestinationCoords,
     routingStartCoords,
+    setRoutingStartCoords,
     timer,
     setTimer,
     showNewRoute,

@@ -3,12 +3,12 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    globals: true,          
-<<<<<<< HEAD
-    environment: 'jsdom',  
-=======
+    globals: true,            
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
->>>>>>> frontend
+    coverage: {
+      provider: 'v8',    
+      reporter: ['text', 'html', 'lcov'],
+    },
   },
 })

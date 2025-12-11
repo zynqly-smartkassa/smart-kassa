@@ -68,3 +68,10 @@ export const useInvalidTelefonnummer = (telefon: string) => {
     telefon === "" || !/^[\d\s+()-]{7,20}$/.test(telefon) || telefon.length < 7;
   return telefonIsInvalid;
 };
+
+// Adress-Validation
+export const isValidAddressInput = (input: string) => {
+  // Erlaubte Zeichen: Buchstaben, Zahlen, Leerzeichen, Kommas, Punkte, Bindestriche
+  const regex = /^[a-zA-Z0-9\s.,-]*$/;
+  return regex.test(input);
+};

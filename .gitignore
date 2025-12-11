@@ -150,3 +150,6 @@ vite.config.ts.timestamp-*
 
 # Tools
 .claude/
+
+#Code Editor
+.vscode

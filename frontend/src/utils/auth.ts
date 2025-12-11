@@ -1,7 +1,8 @@
 import axios, { AxiosError } from "axios";
-import { AuthStorage } from "./localStorageTokens";
+import { AuthStorage } from "./secureStorage";
 import type { AppDispatch } from "../../redux/store";
 import { signInUser } from "../../redux/slices/userSlice";
+
 
 export async function register(
   firstName: string,
@@ -9,7 +10,6 @@ export async function register(
   email: string,
   phoneNumber: string,
   password: string,
-  business: string,
   fn: string,
   atu: string,
   dispatch: AppDispatch
@@ -23,7 +23,6 @@ export async function register(
         email: email,
         phone_number: phoneNumber,
         password: password,
-        business: business,
         fn: fn,
         atu: atu,
       },
@@ -33,7 +32,9 @@ export async function register(
     if (!data) {
       throw new Error("Response is Empty");
     }
-    AuthStorage.setTokens(data.accessToken);
+
+    await AuthStorage.setTokens(data.accessToken);
+
     dispatch(
       signInUser({
         id: data.id,
@@ -80,41 +81,51 @@ export async function register(
         throw new Error("Missing Fields");
       }
     } else {
-      throw new Error("Unknown Error");
+      throw new Error("Internal Server Error");
     }
   }
+}
+
+interface LoginResponse {
+  accessToken: string;
+  user: {
+    userId: number;
+    name: string;
+    email: string;
+  };
 }
 
 export async function login(
   email: string,
   password: string,
   dispatch: AppDispatch
-) {
+): Promise<LoginResponse> {
   if (!email || !password) {
     throw new Error("Missing Fields");
   }
 
   try {
-    const { data } = await axios.post(
+    const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/login`,
       {
         email: email,
         password: password,
       },
-      { withCredentials: true } // to set the refresh token in the Cookie
+      { withCredentials: true }
     );
+    const data = response.data;
 
     if (!data) {
       throw new Error("Response is empty");
     }
 
-    AuthStorage.setTokens(data.accessToken);
-    console.log("Access Token: \n", AuthStorage.getAccessToken());
-    console.log("Access Token: \n", data.accessToken);
+    const accessToken = await data.accessToken;
+    await AuthStorage.setTokens(accessToken);
+
     const user = data.user;
     dispatch(
       signInUser({
-        id: user.id,
+        id: user.userId,
         firstName: user.name.split(" ")[0],
         lastName: user.name.split(" ")[1],
         email: user.email,
@@ -123,13 +134,13 @@ export async function login(
     );
     return await data;
   } catch (error) {
-    console.error(error);
     if (error instanceof AxiosError) {
       if (error.response?.status === 401 || error.response?.status === 400) {
         throw new Error("Wrong Email or Password");
-      }
-      if (error.response?.status === 500) {
+      } else if (error.response?.status === 500) {
         throw new Error("Internal Server Error");
+      } else {
+        throw new Error(`Login failed: ${error.message}`);
       }
     } else {
       throw new Error("Internal Server Error");

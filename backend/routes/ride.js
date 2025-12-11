@@ -27,6 +27,8 @@ const router = express.Router();
  * @body {string} duration (required)
  * @body {float} distance (required)
  * @body {string} ride_type (required)
+ * @body {jsonb string} whole_ride (required)
+ * @returns {Object} 400 - Missing required fields
  * @returns {Object} 500 - Internal server error
  */
 router.post("/", async (req, res) => {
@@ -43,6 +45,7 @@ router.post("/", async (req, res) => {
         duration,
         distance,
         ride_type,
+        whole_ride
     } = req.body;
 
     if (
@@ -57,9 +60,14 @@ router.post("/", async (req, res) => {
         !end_lng ||
         !duration ||
         !distance ||
-        !ride_type
+        !ride_type ||
+        !whole_ride
     ) {
-        return res.status(400).json({ error: "Missing required fields" });
+        return res.status(400).json({
+            status: "error",
+            code: "MISSING_FIELDS",
+            message: "Missing required fields"
+        });
     }
 
 
@@ -76,21 +84,29 @@ router.post("/", async (req, res) => {
                 (user_id, vehicle_id,
                 start_address, start_time, start_lat, start_lng,
                 end_address, end_time, end_lat, end_lng,
-                duration, distance, ride_type)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                duration, distance, ride_type, whole_ride)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING ride_id
             `,
             [
                 user_id, vehicle_id,
                 start_address, start_time, start_lat, start_lng,
                 end_address, end_time, end_lat, end_lng,
-                duration, distance, ride_type
+                duration, distance, ride_type, JSON.stringify(whole_ride)
             ]
         );
+
+        if (!rideRes.rows || rideRes.rows.length === 0) {
+            return res.status(500).json({
+                status: "error",
+                message: "Ride could not be created"
+            });
+        }
 
         const ride_id = rideRes.rows[0].ride_id;
 
         res.json({
+            status: "success",
             message: "Ride successfully saved",
             ride_info: {
                 ride_id: ride_id,
@@ -101,10 +117,10 @@ router.post("/", async (req, res) => {
         await pool.query("COMMIT");
     } catch (error) {
         await pool.query("ROLLBACK");
-        const errorResponse = "\nDEBUG PRINT\n";
-        console.error(errorResponse)
-        return res.status(500).send({ error: errorResponse, message: "Internal Server Error" });
-
+        return res.status(500).send({
+            error: "Internal Server Error",
+            details: error.message
+        });
     }
 });
 

@@ -1,86 +1,92 @@
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Geolocation } from "@capacitor/geolocation";
 
+/*
+Code not fully tested and implemented by Claude, do not use it in Production!
+*/
 export const useDriverLocation = (isRideActive: boolean) => {
-  const [driverLocation, setDriverLocation] = useState<[number, number] | null>(null);
+  const [driverLocation, setDriverLocation] = useState<[number, number] | null>(
+    null
+  );
 
-   // Update driver
   useEffect(() => {
-    // To get the current location
-    navigator.geolocation.getCurrentPosition(
-      (lc) => {
-        console.log("Location loaded:", lc.coords.latitude, lc.coords.longitude);
-        setDriverLocation([lc.coords.latitude, lc.coords.longitude]);
-      },
-      (err) => {
-        switch (err.code) {
-          case err.PERMISSION_DENIED:
-            toast("Error while loading the current location of the driver:", {
-              position: "top-center",
-              closeButton: true,
-            });
-            break;
-          case err.POSITION_UNAVAILABLE:
-            toast("GPS not available. Ensure that the device has a built in GPS!", {
-              position: "top-center",
-              closeButton: true,
-            });
-            break;
-          case err.TIMEOUT:
-            toast("GPS request was timed out because the request has taken too long.", {
-              position: "top-center",
-              closeButton: true,
-            });
-            break;
-          default:
-            toast("Unknown GPS failure", {
-              position: "top-center",
-              closeButton: true,
-            });
-        }
-      },
-      { enableHighAccuracy: true, maximumAge: 3000, timeout: 5000 }
-    );
+    let watchId: string | undefined;
 
-    // To udate the location
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        console.log("Live Update:", pos.coords.latitude, pos.coords.longitude);
-        setDriverLocation([pos.coords.latitude, pos.coords.longitude]);
-      },
-      (err) => {
-        switch (err.code) {
-          case err.PERMISSION_DENIED:
-            toast("GPS denied during live tracking!", {
-              position: "top-center",
-              closeButton: true,
-            });
-            break;
-          case err.POSITION_UNAVAILABLE:
-            toast("GPS not available during live tracking!", {
-              position: "top-center",
-              closeButton: true,
-            });
-            break;
-          case err.TIMEOUT:
-            toast("GPS live update timed out.", {
-              position: "top-center",
-              closeButton: true,
-            });
-            break;
-          default:
-            toast("Unknown GPS error during live tracking.", {
-              position: "top-center",
-              closeButton: true,
-            });
-        }
-      },
-      { enableHighAccuracy: true, maximumAge: 3000, timeout: 5000 }
-    );
+    const initLocation = async () => {
+      try {
+        const permission = await Geolocation.checkPermissions();
 
-    // clean live tracker
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [])
+        if (permission.location !== "granted") {
+          const request = await Geolocation.requestPermissions();
+
+          // Only show error toast if user explicitly denied
+          if (request.location === "denied") {
+            toast(
+              "Standort-Berechtigung verweigert. Bitte erlaube den Zugriff in den Einstellungen.",
+              {
+                position: "top-center",
+                closeButton: true,
+                className: "mt-5 md:mt-0",
+              }
+            );
+            return;
+          }
+
+          // If still not granted after request, return silently
+          if (request.location !== "granted") {
+            console.warn("Permission not granted, but not explicitly denied");
+            return;
+          }
+        }
+
+        // ✅ 3. Get initial position
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 3000,
+        });
+
+        setDriverLocation([
+          position.coords.latitude,
+          position.coords.longitude,
+        ]);
+
+        // ✅ 4. Start live tracking
+        watchId = await Geolocation.watchPosition(
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 3000,
+          },
+          (position, err) => {
+            if (err) {
+              handleGeolocationError();
+              return;
+            }
+
+            if (position) {
+              setDriverLocation([
+                position.coords.latitude,
+                position.coords.longitude,
+              ]);
+            }
+          }
+        );
+      } catch {
+        handleGeolocationError();
+      }
+    };
+
+    initLocation();
+
+    // ✅ 5. Cleanup
+    return () => {
+      if (watchId) {
+        Geolocation.clearWatch({ id: watchId });
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let lat = driverLocation?.[0] ?? 48.21;
@@ -89,8 +95,8 @@ export const useDriverLocation = (isRideActive: boolean) => {
     let interval: number | undefined;
     if (isRideActive) {
       interval = setInterval(() => {
-        lat += 0.0001;
-        lng += 0.0001;
+        lat += 0.0005;
+        lng += 0.0005;
         setDriverLocation([lat, lng]);
       }, 1000);
     }
@@ -100,6 +106,18 @@ export const useDriverLocation = (isRideActive: boolean) => {
   }, [isRideActive, driverLocation]);
 
   return driverLocation;
+};
+
+
+// Error Handler für Capacitor
+function handleGeolocationError() {
+  console.error("Geolocation error:");
+
+  const errorMessage = "GPS-Fehler aufgetreten";
+
+  toast(errorMessage, {
+    position: "top-center",
+    closeButton: true,
+    className: "mt-5 md:mt-0",
+  });
 }
-
-

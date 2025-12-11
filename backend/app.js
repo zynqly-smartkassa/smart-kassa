@@ -47,6 +47,7 @@ app.use(
       "http://localhost:3000",
       "https://localhost:3000",
       "https://smart-kassa.vercel.app",
+      process.env.DEBUG_URL
     ],
     credentials: true, // Allow cookies to be sent
   })

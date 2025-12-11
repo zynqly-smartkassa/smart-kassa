@@ -6,7 +6,6 @@ export async function geocodeAddress(address: string): Promise<[number, number] 
     );
     const data = await response.json();
     if (data.length === 0) return null;
-    console.log(parseFloat(data[0].lat), parseFloat(data[0].lon))
     return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
   } catch (err) {
     console.error("Geocoding failed:", err);

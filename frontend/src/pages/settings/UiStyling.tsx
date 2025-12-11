@@ -18,7 +18,7 @@ const UiStyling = () => {
 
         {/* Left Label Column */}
         <div className="w-full md:w-64">
-          <h3 className="font-extrabold text-lg">UI-The</h3>
+          <h3 className="font-extrabold text-lg">UI-Theme</h3>
           <p className="text-sm font-light mt-1">
             How the website will look like!
           </p>

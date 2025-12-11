@@ -26,3 +26,43 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Capacitor
+android/app/build/
+android/build/
+android/.gradle/
+android/app/release/
+android/app/debug/
+android/.idea/
+android/local.properties
+android/*.iml
+android/.cxx/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/src/main/res/xml/config.xml
+
+# Die APK Files
+*.apk
+*.aab
+
+# Capacitor generated files
+capacitor-cordova-android-plugins/
+capacitor-cordova-ios-plugins/
+
+# Android-specific
+local.properties
+*.keystore
+*.jks
+
+# iOS-specific
+*.mobileprovision
+*.p12
+DerivedData/
+
+# Capacitor plugins
+.capacitor/
+
+# Redundant patterns (cleanup)
+android/**/.gradle/
+android/**/build/

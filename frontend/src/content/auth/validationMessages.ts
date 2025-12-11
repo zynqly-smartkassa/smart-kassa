@@ -1,3 +1,15 @@
+export interface PasswordErrors {
+  tooShort: string;
+  missingNumber: string;
+  missingSymbol: string;
+}
+
+export interface ConfirmPasswordErrors {
+  required: string;
+  invalid: string;
+}
+
+
 // 🔹 Alle Validierungsnachrichten
 export const validationMessages = {
   // 🔸 Login-bezogene Fehler
@@ -7,9 +19,7 @@ export const validationMessages = {
       required: "E-Mail-Adresse darf nicht leer sein",
     },
     password: {
-      tooShort: "Passwort braucht mindestens 8 Zeichen",
-      invalidFormat:
-        "Das Passwort muss mindestens eine Zahl und ein Sonderzeichen enthalten",
+      tooShort: "Passwort braucht mindestens 8 Zeichen"
     },
   },
 
@@ -18,7 +28,7 @@ export const validationMessages = {
     vorname: {
       required: "Bitten geben Sie ihren Vornamen ein",
     },
-    nachanme: {
+    nachname: {
       required: "Bitten geben Sie ihren Nachnamen ein",
     },
     email: {
