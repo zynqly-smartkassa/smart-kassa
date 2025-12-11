@@ -84,3 +84,10 @@ export interface PasswordContainer {
   validationMessage: string[];
   autocomplete?: HTMLInputAutoCompleteAttribute | undefined;
 }
+
+/**
+ * a type to globaly set/read the footerlinks, the first footerlink (left) is 0, the in the middle is 1, and the last (right) is 2
+ * @used in the redux state footerLinksSlice.ts
+ * @author Casper Zielinski
+ */
+export type footerLinks = 0 | 1 | 2;
