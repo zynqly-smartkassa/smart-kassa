@@ -18,6 +18,8 @@ export async function getAllRides(
 
     if (err instanceof AxiosError) {
 
+      console.error(err.response?.data)
+
       //500
       if (err.response?.status === 500) {
         throw new Error("Internal Server Error");
@@ -25,6 +27,7 @@ export async function getAllRides(
 
       //400
       if (err.response?.status === 400) {
+
         throw new Error("Missing or invalid ride fields");
       }
 

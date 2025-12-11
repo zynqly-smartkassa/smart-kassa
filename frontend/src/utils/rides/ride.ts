@@ -33,6 +33,8 @@ export async function sendRide(
 
     if (err instanceof AxiosError) {
 
+      console.error(err.response?.data)
+
       //500
       if (err.response?.status === 500) {
         throw new Error("Internal Server Error");

@@ -45,7 +45,6 @@ const AllRides = () => {
   const ride_id = Number(id);
 
   if (!rides) {
-    console.log(rides);
     return <>Loading rides...</>;
   }
 

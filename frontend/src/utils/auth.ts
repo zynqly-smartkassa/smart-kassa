@@ -46,38 +46,39 @@ export async function register(
     );
 
     return await data;
-  } catch (error) {
-    console.error(error);
-    if (error instanceof AxiosError) {
-      if (error.response?.status === 500) {
+  } catch (err) {
+    console.error(err);
+    if (err instanceof AxiosError) {
+      console.error(err.response?.data)
+      if (err.response?.status === 500) {
         throw new Error("Internal Server Error");
       }
-      if (error.response?.status === 409) {
+      if (err.response?.status === 409) {
         if (
-          error.response?.data.error === "User with this email already exists"
+          err.response?.data.error === "User with this email already exists"
         ) {
           throw new Error("Email already exists");
         }
         if (
-          error.response?.data.error ===
+          err.response?.data.error ===
           `Ein Account mit der FN '${fn}' existiert bereits.`
         ) {
           throw new Error("FN already exists");
         }
         if (
-          error.response?.data.error ===
+          err.response?.data.error ===
           `Ein Account mit der Telefonnumer '${phoneNumber}' existiert bereits.`
         ) {
           throw new Error("Phonenumber already exists");
         }
         if (
-          error.response?.data.error ===
+          err.response?.data.error ===
           `Ein Account mit der ATU-Nummer '${atu}' existiert bereits.`
         ) {
           throw new Error("ATU already exists");
         }
       }
-      if (error.response?.status === 400) {
+      if (err.response?.status === 400) {
         throw new Error("Missing Fields");
       }
     } else {
@@ -133,14 +134,15 @@ export async function login(
       })
     );
     return await data;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      if (error.response?.status === 401 || error.response?.status === 400) {
+  } catch (err) {
+    if (err instanceof AxiosError) {
+       console.error(err.response?.data)
+      if (err.response?.status === 401 || err.response?.status === 400) {
         throw new Error("Wrong Email or Password");
-      } else if (error.response?.status === 500) {
+      } else if (err.response?.status === 500) {
         throw new Error("Internal Server Error");
       } else {
-        throw new Error(`Login failed: ${error.message}`);
+        throw new Error(`Login failed: ${err.message}`);
       }
     } else {
       throw new Error("Internal Server Error");

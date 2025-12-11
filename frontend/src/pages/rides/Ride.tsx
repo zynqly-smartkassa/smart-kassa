@@ -91,7 +91,11 @@ export const RoutingMachine = ({
       // This will ensure that leaflet doesn't add additional markers
       createMarker: () => null,
       router: router, // Tell leaflet to use this router
+      collapsible: true, //Necassary for context menu
     }).addTo(map);
+
+    // Will hide the context menu at the start
+    routingControl.hide();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     routingControl.on("routingerror", (e: any) => {
