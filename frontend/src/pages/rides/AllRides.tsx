@@ -17,6 +17,8 @@ import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { SelectValue } from "@radix-ui/react-select";
 import { useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
+import { useSelector } from "react-redux";
+import type { RootState } from "redux/store";
 
 const AllRides = () => {
 
@@ -27,11 +29,13 @@ const AllRides = () => {
 
   const [rides, setRides] = useState<AllRide[] | null>(null);
   const { id } = useParams();
+  const user_id = useSelector((state: RootState) => state.user.id)
+
 
   useEffect(() => {
     (async () => {
       const data = await
-        getAllRides(1)
+        getAllRides(Number(user_id))
 
       if (!data || !data.rides) throw new Error("No rides found");
       setRides(data.rides);
@@ -41,6 +45,7 @@ const AllRides = () => {
   const ride_id = Number(id);
 
   if (!rides) {
+    console.log(rides);
     return <>Loading rides...</>;
   }
 
