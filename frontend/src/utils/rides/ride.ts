@@ -15,6 +15,7 @@ export async function sendRide(
   duration: string,
   distance: number;
   ride_type: string,
+  wholeRide: [number, number][]
   }
 ) {
   try {

@@ -48,7 +48,7 @@ export function duration(rides: AllRide[], isDescending: boolean) {
 }
 
 
-function timeToSeconds(timeString: string) {
+export function timeToSeconds(timeString: string) {
   const [h, m, s] = timeString.split(":").map(Number);
   return h * 3600 + m * 60 + s;
 }

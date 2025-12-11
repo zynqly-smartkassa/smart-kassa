@@ -1,7 +1,7 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 
-import { getAllRides } from "@/utils/rides/all-rides";
+import { getAllRides } from "../../utils/rides/all-rides";
 import { useEffect, useState } from "react";
 import type { AllRide } from 'constants/AllRide';
 import RideAtDate from "./RideAtDate";
@@ -12,8 +12,8 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-} from "@/components/ui/select";
-import { getRidesToday, getRidesYesterday } from "@/utils/rides/getRides";
+} from "../../components/ui/select";
+import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { SelectValue } from "@radix-ui/react-select";
 
 const AllRides = () => {
@@ -72,7 +72,7 @@ const AllRides = () => {
         md:items-center">
 
           <div className="flex flex-col gap-1 text-center">
-            <h2 className="text-3xl font-extrabold">Every Ride</h2>
+            <h2 data-testid="h2text" className="text-3xl font-extrabold">Rides</h2>
             <p className="text-base text-gray-600 dark:text-gray-500">
               Visit, sort and sceify every ride you took!
             </p>
@@ -81,16 +81,17 @@ const AllRides = () => {
         <div className="flex flex-col items-center md:items-end gap-3">
 
           <TabsList className="grid grid-cols-3 md:w-auto max-w-[400px] ">
-            <TabsTrigger value="today">Today</TabsTrigger>
-            <TabsTrigger value="yesterday">Yesterday</TabsTrigger>
-            <TabsTrigger value="every">Every</TabsTrigger>
+            <TabsTrigger value="today" data-testid="today">Today</TabsTrigger>
+            <TabsTrigger value="yesterday" data-testid="yesterday">Yesterday</TabsTrigger>
+            <TabsTrigger value="every" data-testid="every">Every</TabsTrigger>
           </TabsList>
           <div className="w-full md:w-auto flex flex-row justify-between
            items-center md:gap-6">
             <div className="flex flex-row items-center gap-1">
               <Select defaultValue="date">
                 <SelectTrigger className={`max-w-[70px] px-1 border-2
-                  border-gray-400/50`}>
+                  border-gray-400/50`}
+                  data-testid="select-trigger">
                   <ListFilter></ListFilter>
                 </SelectTrigger>
                 <SelectContent>
@@ -98,6 +99,7 @@ const AllRides = () => {
                     value="date"
                     onClick={() => setSortAfter("date")}
                     className="md:text-lg"
+                    data-testid="date"
                   >
                     Date
                   </SelectItem>
@@ -105,6 +107,7 @@ const AllRides = () => {
                     value="distance"
                     onClick={() => setSortAfter("distance")}
                     className="md:text-lg"
+                    data-testid="distance"
                   >
                     Distanz
                   </SelectItem>
@@ -113,6 +116,7 @@ const AllRides = () => {
                     value="duration"
                     onClick={() => setSortAfter("duration")}
                     className="md:text-lg"
+                    data-testid="duration"
                   >
                     Dauer
                   </SelectItem>
@@ -123,13 +127,15 @@ const AllRides = () => {
                 onClick={() => {
                   setIsDescending(!isDescending);
                   setIsAscending(!isAscending)
-                }}></ArrowDown>
+                }}
+                data-testid="desc"></ArrowDown>
               <ArrowUp className={`w-8 h-8  md:w-10 md:h-10
               ${isAscending ? "text-violet-400" : ''} `}
                 onClick={() => {
                   setIsAscending(!isAscending);
                   setIsDescending(!isDescending)
-                }}></ArrowUp>
+                }}
+                data-testid="asc"></ArrowUp>
             </div>
 
             <Select>

@@ -7,9 +7,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "../../components/ui/card"
 import type { AllRide } from "constants/AllRide";
-import { date, distance, duration } from "@/utils/rides/sort";
+import { date, distance, duration } from "../../utils/rides/sort";
 
 interface RideAtDateArgs {
   rides: AllRide[];
