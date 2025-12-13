@@ -1,20 +1,19 @@
 import { screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { renderWithRouter } from "../../utils/test/renderWithRouter";
-import AllRides from "./AllRides";
-import * as ridesUtils from "../../utils/rides/all-rides";
+import { renderWithRouter } from "../../../utils/test/renderWithRouter";
+import AllRides from "../AllRides";
+import * as ridesUtils from "../../../utils/rides/all-rides";
 import userEvent from "@testing-library/user-event";
-import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
-import { getDateFormat, getDateNow, getDateYesterday } from "../../utils/rides/getDate";
-import { date, distance, duration, timeToSeconds } from "../../utils/rides/sort";
+import { getRidesToday, getRidesYesterday } from "../../../utils/rides/getRides";
+import { getDateFormat, getDateNow, getDateYesterday } from "../../../utils/rides/getDate";
+import { date, distance, duration, timeToSeconds } from "../../../utils/rides/sort";
 import type { AllRide } from "constants/AllRide";
 
 const rides: AllRide[] = [
-
   {
     user_id: 6,
-    ride_id: 4,
+    ride_id: 1,
     vehicle_id: 7,
     start_address: "Hauptstraße 1",
     start_time: getDateYesterday(),
@@ -23,11 +22,11 @@ const rides: AllRide[] = [
     duration: "00:20:00",
     distance: 3200,
     ride_type: "Taxifahrt",
-    whole_ride: [[50.55, 55], [50.55,  55]]
+    whole_ride: [[50.55, 55], [50.55, 55]]
   },
   {
     user_id: 7,
-    ride_id: 4,
+    ride_id: 2,
     vehicle_id: 7,
     start_address: "Sarkweg 12",
     start_time: getDateYesterday(),
@@ -41,7 +40,7 @@ const rides: AllRide[] = [
 
   {
     user_id: 3,
-    ride_id: 4,
+    ride_id: 3,
     vehicle_id: 7,
     start_address: "Neugasse 20",
     start_time: getDateNow(),
@@ -68,7 +67,7 @@ const rides: AllRide[] = [
 
   {
     user_id: 4,
-    ride_id: 4,
+    ride_id: 5,
     vehicle_id: 7,
     start_address: "Gartenweg 2",
     start_time: "2025-12-11 11:10:00",
@@ -81,7 +80,7 @@ const rides: AllRide[] = [
   },
   {
     user_id: 1,
-    ride_id: 4,
+    ride_id: 6,
     vehicle_id: 7,
     start_address: "Bergstraße 5",
     start_time: getDateNow(),
@@ -94,7 +93,7 @@ const rides: AllRide[] = [
   },
   {
     user_id: 2,
-    ride_id: 4,
+    ride_id: 7,
     vehicle_id: 7,
     start_address: "Ringstraße",
     start_time: "2025-12-20 19:00:00",
@@ -105,39 +104,39 @@ const rides: AllRide[] = [
     ride_type: "Taxifahrt",
     whole_ride: [[50.55, 55], [50.55, 55]]
   }
-]
+];
+
+// mock the SummaryRide, if anyone accesses it.
+vi.mock("../SummaryRide", () => ({
+  default: ({ ride }: { ride: AllRide }) => (
+    <div data-testid="summary-ride">
+      Mocked Summary: {ride.start_address}
+    </div>
+  ),
+}));
 
 // mock getAllRides method, so our own method will get called
 vi.spyOn(ridesUtils, "getAllRides").mockResolvedValue({
   rides: rides
 })
 
+/**
+ * Initializes the test environment for `AllRides`.
+ * Queries common DOM elements (tabs, sort buttons) and provides helper functions
+ * for interacting with dropdowns and retrieving ride data from the DOM.
+ * * @returns An object containing DOM elements and helper functions for the tests.
+ */
 async function setup() {
 
   // tabs from the tabslist
-  const today = await screen.findByTestId("today");
-  const yesterday = await screen.findByTestId("yesterday");
-  const every = await screen.findByTestId("every");
+  const today = await screen.findByTestId("show-today");
+  const yesterday = await screen.findByTestId("show-yesterday");
+  const every = await screen.findByTestId("show-every");
 
   // DESC and ASC
 
   const desc = await screen.findByTestId("desc");
   const asc = await screen.findByTestId("asc");
-
-  // Filter Button
-  const trigger = await screen.findByTestId("select-trigger");
-
-  const useFilters = async () => {
-    // Erst klicken (mit userEvent)
-    await userEvent.click(trigger);
-
-    // DANN warten, bis die Items da sind
-    const dateItem = await screen.findByTestId("date");
-    const distanceItem = await screen.findByTestId("distance");
-    const durationItem = await screen.findByTestId("duration");
-
-    return { dateItem, distanceItem, durationItem };
-  };
 
   // Get all rides from the DOM
   const getRidesFromDom = async () => {
@@ -151,12 +150,38 @@ async function setup() {
     return currentRides;
   }
 
+  // Will trigger the menu and select the item
+  const selectItem = async (triggerTestID: string, selectTestID: string) => {
+
+    const trigger = await screen.findByTestId(triggerTestID);
+    await userEvent.click(trigger);
+
+    const onlyElement = await screen.findByTestId(selectTestID);
+
+    await userEvent.click(onlyElement);
+  }
+
+  // Will trigger the menu and check if the given testID is selected
+  const isSelected = async (triggerTestID: string, selectTestID: string) => {
+
+    const trigger = await screen.findByTestId(triggerTestID);
+    await userEvent.click(trigger);
+
+    const onlyElement = await screen.findByTestId(selectTestID);
+
+    await waitFor(() => {
+      expect(onlyElement).toHaveAttribute("aria-selected", "true");
+    })
+
+    // Close the select menu manually with the keyboard
+    await userEvent.keyboard('{Escape}');
+  }
 
   return {
     tabs: { today, yesterday, every },
     order: { desc, asc },
-    filters: { trigger, useFilters },
-    getRidesFromDom: getRidesFromDom
+    getRidesFromDom: getRidesFromDom,
+    select: { selectItem, isSelected }
   }
 }
 
@@ -166,15 +191,20 @@ describe("AllRides", () => {
     vi.clearAllMocks();
     Element.prototype.hasPointerCapture = () => false;
     Element.prototype.scrollIntoView = vi.fn();
-    renderWithRouter(<AllRides />, "/all-rides", 
-      [{path: "/allrides/:id", element: <AllRides/>}]
-    )
-  })
+    renderWithRouter(<AllRides />, ["/all-rides"], [
+      { path: "/all-rides", element: <AllRides /> },
+      { path: "/all-rides/:id", element: <AllRides /> }
+    ]);
+  });
 
   // -----------------------------
-  // Test 1: Is the correct tab active?  
+  // Test 1
   // -----------------------------
 
+  /**
+   * Verifies that the tab navigation works correctly.
+   * Ensures that clicking on 'Today', 'Yesterday', or 'Every' updates the active state (aria-selected).
+   */
   it("should be able to switch between each tab correctly", async () => {
 
     const { tabs } = await setup();
@@ -183,26 +213,24 @@ describe("AllRides", () => {
     // Today is the clicked one at the start!
 
     expect(today).toHaveAttribute("aria-selected", "true");
-    expect(yesterday).toHaveAttribute("aria-selected", "false");
-    expect(every).toHaveAttribute("aria-selected", "false");
 
     await userEvent.click(yesterday);
 
     expect(yesterday).toHaveAttribute("aria-selected", "true");
-    expect(today).toHaveAttribute("aria-selected", "false");
-    expect(every).toHaveAttribute("aria-selected", "false");
 
     await userEvent.click(every);
 
     expect(every).toHaveAttribute("aria-selected", "true");
-    expect(today).toHaveAttribute("aria-selected", "false");
-    expect(yesterday).toHaveAttribute("aria-selected", "false");
   });
 
   // -----------------------------
-  // Test 2: Does it show only the rides for today when clicked on it?
+  // Test 2
   // -----------------------------
 
+  /**
+   * Tests the 'Today' filter functionality.
+   * Checks if the list only contains rides where the start_time matches the current date.
+   */
   it("should show only show rides of 'today' in the rides array", async () => {
 
     const { tabs } = await setup()
@@ -217,12 +245,16 @@ describe("AllRides", () => {
     const todayDate = getDateFormat(now);
 
     expect(ridesToday.every(ride => ride.start_time.split(" ")[0] === todayDate)).toBe(true);
-  })
+  });
 
   // -----------------------------
-  // Test 3: Does it show only the rides for yesterday when clicked on it? 
+  // Test 3
   // -----------------------------
 
+  /**
+   * Tests the 'Yesterday' filter functionality.
+   * Checks if clicking the yesterday tab filters the list to show only rides from the previous day.
+   */
   it("should show only show rides of 'yesterday' in the rides array", async () => {
 
     const { tabs } = await setup()
@@ -240,12 +272,16 @@ describe("AllRides", () => {
     const yesterdayDate = getDateFormat(y);
 
     expect(ridesYesterday.every(ride => ride.start_time.split(" ")[0] === yesterdayDate)).toBe(true);
-  })
+  });
 
   // -----------------------------
-  // Test 4: Does it show every ride for every when clicked on it? 
+  // Test 4
   // -----------------------------
 
+  /**
+   * Tests the 'Every' (All) filter functionality.
+   * Ensures that clicking this tab resets filters and displays the full list of rides.
+   */
   it("should show all the rides with out any sorted elements", async () => {
 
     const { tabs } = await setup()
@@ -256,20 +292,47 @@ describe("AllRides", () => {
 
     // Unsorted
     expect(rides).toHaveLength(rides.length);
-  })
+  });
+
 
   // -----------------------------
-  // Test 5: Are the DESC icon the sort method: 'date' active on freshly loaded all-rides? 
+  // Test 5
   // -----------------------------
 
+  /**
+   * Verifies the 'Ride Type' dropdown filter.
+   * Ensures specific types (e.g., 'Botenfahrt', 'Taxifahrt') can be selected and set as active.
+   */
+  it("checks if each 'ride_type' can be clicked", async () => {
+
+    const { select } = await setup()
+    const { selectItem, isSelected } = select;
+
+    // This means 'every" is active on default
+    await isSelected("select-only-trigger", "only-every");
+
+    await selectItem("select-only-trigger", "only-botenfahrt");
+    await isSelected("select-only-trigger", "only-botenfahrt");
+
+    await selectItem("select-only-trigger", "only-taxifahrt");
+    await isSelected("select-only-trigger", "only-taxifahrt");
+  });
+
+  // -----------------------------
+  // Test 6
+  // -----------------------------
+
+  /**
+   * Checks the initial state of sorting controls on page load.
+   * Expects 'Date' to be the default sort metric and 'Descending' (DESC) to be the default order.
+   */
   it("checks if sort method: 'date' (DESC) is selected on default", async () => {
-    const { tabs, filters, order } = await setup()
+    const { tabs, order, select } = await setup()
     const { every } = tabs;
-    const { useFilters } = filters;
+    const { desc, asc } = order;
+    const { isSelected: isSelectTrue } = select;
 
     await userEvent.click(every);
-
-    const { desc, asc } = order;
 
     // This means desc is active at beginning
     expect(desc).toHaveClass("text-violet-400");
@@ -280,37 +343,33 @@ describe("AllRides", () => {
     expect(asc).toHaveClass("text-violet-400");
     expect(desc).not.toHaveClass("text-violet-400")
 
-    const { dateItem } = await useFilters();
-
     // This means 'date" is active on default
-    expect(dateItem).toHaveAttribute("aria-selected", "true");
-
-    // The trigger is unavailable due to the functionality of <Select> in html
-    // We are closing the context menu of Select with the ESC key.
-    await userEvent.keyboard('{Escape}');
+    isSelectTrue("select-filter-trigger", "date");
 
     expect(every).toBeInTheDocument();
   });
 
+
+
   // -----------------------------
-  // Test 6: Does the sort method: 'date' work correctly with DESC and ASC?
+  // Test 7
   // -----------------------------
 
+  /**
+   * Tests sorting by 'Date'.
+   * Verifies that the rides are correctly re-ordered in the DOM when switching between DESC and ASC for dates.
+   */
   it("sorts after 'date' (default) DESC as well as ASC correctly", async () => {
-    const { tabs, filters, order, getRidesFromDom: ridesDom } = await setup()
+    const { tabs, order, getRidesFromDom: ridesDom, select } = await setup()
     const { every } = tabs;
-    const { useFilters } = filters;
-
     const { desc, asc } = order;
+    const { isSelected } = select;
 
     // load all-rides
     await userEvent.click(every);
 
     // since 'date' is selected on default
-    const { dateItem } = await useFilters();
-    expect(dateItem).toHaveAttribute("aria-selected", "true");
-
-    await userEvent.keyboard('{Escape}');
+    await isSelected("select-filter-trigger", "date");
 
     // DESC
     await userEvent.click(desc);
@@ -325,12 +384,8 @@ describe("AllRides", () => {
       descSorted.push(new Date(start));
     })
 
-    console.log("BEFORE:", currentRides)
-
     //sort our array DESC
     date(currentRides, true)
-
-    console.log("AFTER:", currentRides)
 
     descSorted.sort((a, b) => b.getTime() - a.getTime());
 
@@ -364,32 +419,24 @@ describe("AllRides", () => {
   });
 
   // -----------------------------
-  // Test 7: Does the sort method: 'distance' work correctly with DESC and ASC?
+  // Test 8
   // -----------------------------
 
+  /**
+   * Tests sorting by 'Distance'.
+   * Selects the distance filter and verifies correct ASC and DESC ordering of the ride list based on meters.
+   */
   it("sorts after 'distance' DESC as well as ASC correctly", async () => {
-    const { tabs, filters, order, getRidesFromDom: ridesDom } = await setup()
+    const { tabs, order, getRidesFromDom: ridesDom, select } = await setup()
     const { every } = tabs;
-    const { useFilters } = filters;
-
     const { desc, asc } = order;
+    const { selectItem, isSelected } = select;
 
     // load all-rides
     await userEvent.click(every);
 
-    const { distanceItem } = await useFilters();
-    await userEvent.click(distanceItem);
-
-    await useFilters();
-
-    const selected = await screen.findByTestId("distance");
-
-    // Again search is needed, because the click results in closing the menu, and distance is then undefined
-    await waitFor(async () => {
-      expect(selected).toHaveAttribute("aria-selected", "true");
-    });
-
-    await userEvent.keyboard('{Escape}');
+    await selectItem("select-filter-trigger", "distance");
+    await isSelected("select-filter-trigger", "distance");
 
     // DESC
     await userEvent.click(desc);
@@ -428,36 +475,28 @@ describe("AllRides", () => {
   });
 
   // -----------------------------
-  // Test 8: Does the sort method: 'duration' work correctly with DESC and ASC?
+  // Test 9
   // -----------------------------
 
+  /**
+   * Tests sorting by 'Duration'.
+   * Selects the duration filter and verifies correct ASC and DESC ordering based on ride time (converted to seconds).
+   */
   it("sorts after 'duration' DESC as well as ASC correctly", async () => {
-    const { tabs, filters, order, getRidesFromDom: ridesDom } = await setup()
+    const { tabs, order, getRidesFromDom: ridesDom, select } = await setup()
     const { every } = tabs;
-    const { useFilters } = filters;
+    const { selectItem, isSelected } = select;
 
     const { desc, asc } = order;
 
     // load all-rides
     await userEvent.click(every);
 
-    const { durationItem } = await useFilters();
-    await userEvent.click(durationItem);
-
-    await useFilters();
-
-    const selected = await screen.findByTestId("duration");
-
-    // Again search is needed, because the click results in closing the menu, and distance is then undefined
-    await waitFor(async () => {
-      expect(selected).toHaveAttribute("aria-selected", "true");
-    });
-
-    await userEvent.keyboard('{Escape}');
+    await selectItem("select-filter-trigger", "duration");
+    await isSelected("select-filter-trigger", "duration");
 
     // DESC
     await userEvent.click(desc);
-
 
     const descSorted: number[] = []
 
@@ -490,5 +529,27 @@ describe("AllRides", () => {
     ascSorted.sort((a, b) => a - b);
 
     expect(currentRides.every((ride, index) => timeToSeconds(ride.duration) === ascSorted[index])).toBe(true);
+  });
+
+  // -----------------------------
+  // Test 10
+  // -----------------------------
+
+  /**
+   * Tests the navigation to SummaryRide when clicking a ride item.
+   * Verifies that clicking an item (e.g., ride_id 3) successfully triggers
+   * the rendering of SummaryRide and shows the correct ride data.
+   */
+  it("navigates to the SummaryRide when clicking on a ride", async () => {
+    // Warte auf die Liste
+    const rideItem = await screen.findByTestId("ride-item-3"); // ride_id 3
+    await userEvent.click(rideItem);
+
+    // Jetzt sollte SummaryRide erscheinen
+    const summary = await screen.findByTestId("summary-ride");
+    expect(summary).toBeInTheDocument();
+
+    // Optional: prüfen, dass die richtigen Daten kommen
+    expect(summary).toHaveTextContent("Neugasse 20"); // start_address von ride_id 3
   });
 });

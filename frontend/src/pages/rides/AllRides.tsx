@@ -68,7 +68,7 @@ const AllRides = () => {
   return (
     <div className='w-full flex'>
 
-      {/* TabsList links */}
+      {/* TabsList left */}
       <Tabs defaultValue="today" className="w-full flex flex-col gap-3">
 
         <div className="flex flex-col md:justify-between gap-3 md:flex-row
@@ -84,9 +84,9 @@ const AllRides = () => {
         <div className="flex flex-col items-center md:items-end gap-3">
 
           <TabsList className="grid grid-cols-3 md:w-auto max-w-[400px] ">
-            <TabsTrigger value="today" data-testid="today">Today</TabsTrigger>
-            <TabsTrigger value="yesterday" data-testid="yesterday">Yesterday</TabsTrigger>
-            <TabsTrigger value="every" data-testid="every">Every</TabsTrigger>
+            <TabsTrigger value="today" data-testid="show-today">Today</TabsTrigger>
+            <TabsTrigger value="yesterday" data-testid="show-yesterday">Yesterday</TabsTrigger>
+            <TabsTrigger value="every" data-testid="show-every">Every</TabsTrigger>
           </TabsList>
           <div className="w-full md:w-auto flex flex-row justify-between
            items-center md:gap-6">
@@ -94,7 +94,7 @@ const AllRides = () => {
               <Select defaultValue="date">
                 <SelectTrigger className={`max-w-[70px] px-1 border-2
                   border-gray-400/50`}
-                  data-testid="select-trigger">
+                  data-testid="select-filter-trigger">
                   <ListFilter></ListFilter>
                 </SelectTrigger>
                 <SelectContent>
@@ -141,9 +141,10 @@ const AllRides = () => {
                 data-testid="asc"></ArrowUp>
             </div>
 
-            <Select>
+            <Select defaultValue="every">
               <SelectTrigger className="w-[180px] border-2 
-              border-violet-300 rounded-md md:text-lg">
+              border-violet-300 rounded-md md:text-lg"
+              data-testid="select-only-trigger">
                 <SelectValue placeholder="Art der Fahrt" />
               </SelectTrigger>
               <SelectContent>
@@ -151,6 +152,7 @@ const AllRides = () => {
                   value="every"
                   onClick={() => setRideType("every")}
                   className="md:text-lg"
+                  data-testid="only-every"
                 >
                   Every
                 </SelectItem>
@@ -158,6 +160,7 @@ const AllRides = () => {
                   value="botenfahrt"
                   onClick={() => setRideType("botenfahrt")}
                   className="md:text-lg"
+                  data-testid="only-botenfahrt"
                 >
                   Botenfahrt
                 </SelectItem>
@@ -165,6 +168,7 @@ const AllRides = () => {
                   value="taxifahrt"
                   onClick={() => setRideType("taxifahrt")}
                   className="md:text-lg"
+                  data-testid="only-taxifahrt"
                 >
                   Taxifahrt
                 </SelectItem>
@@ -178,7 +182,7 @@ const AllRides = () => {
 
 
 
-        {/* TabsContent rechts */}
+        {/* TabsContent right */}
         <div className="w-full">
           <TabsContent value="today">
             <RideAtDate rides={ridesToday} sortAfter={sortAfter}

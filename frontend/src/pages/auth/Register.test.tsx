@@ -77,10 +77,11 @@ describe("Register Page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    renderWithRouter(<Register />, "/register", [
-      { path: "/login", element: <Login /> },
-      { path: "/", element: <Home></Home> },
-    ]);
+    renderWithRouter(<Login />, ["/register"], [
+  { path: "/register", element: <Register /> },
+  { path: "/login", element: <Login /> },
+  { path: "/", element: <Home /> }
+]);
 
     // Get all input elements
     name = screen.getByTestId(/vorname/i);

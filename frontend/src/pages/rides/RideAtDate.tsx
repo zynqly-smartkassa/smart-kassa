@@ -70,11 +70,10 @@ const RideAtDate = ({ rides, sortAfter, isDescending, rideType }: RideAtDateArgs
     <ul className='w-full grid grid-cols-1 md:grid-cols-2
      xl:grid-cols-3 gap-4 2xl:grid-cols-4 3xl:grid-cols-5'>
       {rides && rides.map((ride, index) => (
-        <li data-testid="ride-item" data-starttime={ride.start_time}
-        data-distance={ride.distance} data-duration={ride.duration}
-        data-ride={JSON.stringify(ride)}
+        <li data-testid="ride-item" data-ride={JSON.stringify(ride)}
          key={index} className='w-full max-w-[600px]'>
-         <Card onClick={() => navigator(`/all-rides/${ride.ride_id}`)}> 
+         <Card onClick={() => navigator(`/all-rides/${ride.ride_id}`)}
+          data-testid={`ride-item-${ride.ride_id}`}> 
             <CardHeader className="space-y-1">
               {/* Start Address */}
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">

@@ -1,0 +1,15 @@
+[**frontend**](../../../../README.md)
+
+***
+
+[frontend](../../../../README.md) / [utils/rides/getDate](../README.md) / getDateNow
+
+# Function: getDateNow()
+
+> **getDateNow**(): `string`
+
+Defined in: [src/utils/rides/getDate.ts:2](https://github.com/zynqly-smartkassa/smart-kassa/blob/de54eaa3e5027d345b94c25040896cec3a2cb70b/frontend/src/utils/rides/getDate.ts#L2)
+
+## Returns
+
+`string`

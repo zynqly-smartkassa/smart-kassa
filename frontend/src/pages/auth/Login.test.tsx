@@ -60,10 +60,11 @@ describe("Login Page", () => {
 
     vi.clearAllMocks();
     
-    renderWithRouter(<Login />, "/login", [
-      { path: "/register", element: <Register /> },
-      {path: "/", element: <Home></Home>}
-    ]);
+   renderWithRouter(<Login />, ["/login"], [
+  { path: "/login", element: <Login /> },
+  { path: "/register", element: <Register /> },
+  { path: "/", element: <Home /> }
+]);
 
     email = screen.getByTestId(/email/i);
     password = screen.getByTestId("password");

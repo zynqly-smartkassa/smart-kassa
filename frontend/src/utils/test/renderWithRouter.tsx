@@ -9,18 +9,16 @@ interface RouteConfig {
 }
 
 export function renderWithRouter(
-  ui: React.ReactElement,
-  initialPath = "/",
-  extraRoutes: RouteConfig[] = []
+  _ui: React.ReactElement,
+  initialEntries: string[] = ["/"],
+  routes: RouteConfig[] = []
 ) {
   return render(
     <StoreProvider>
-      <MemoryRouter initialEntries={[initialPath]}>
+      <MemoryRouter initialEntries={initialEntries}>
         <Routes>
-          {/* Main element: f.e: First element will be Register */}
-          <Route path={initialPath} element={ui} />
-          {/* additional Routes: f.e switch to login  */}
-          {extraRoutes.map((route) => (
+          {/* Alle Routen dynamisch hinzufügen */}
+          {routes.map((route) => (
             <Route key={route.path} path={route.path} element={route.element} />
           ))}
         </Routes>
