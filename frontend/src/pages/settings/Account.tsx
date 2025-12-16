@@ -20,6 +20,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { deleteAccount, logOut } from "@/utils/auth";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "redux/store";
+import { useState } from "react";
+import {
+  handleLogoutError,
+  handleDeleteAccountError,
+} from "@/utils/errorHandling";
+import { toastMessages } from "@/content/auth/toastMessages";
 
 const Account = () => {
   const form = useForm({
@@ -37,6 +48,10 @@ const Account = () => {
   }) => {
     console.log("Form submitted:", values);
   };
+
+  const navigator = useNavigate();
+  const dispatch: AppDispatch = useDispatch();
+  const [deletePassword, setDeletePassword] = useState("");
 
   return (
     <div className="flex flex-col gap-16">
@@ -175,52 +190,173 @@ const Account = () => {
         </div>
       </div>
 
-      {/* Delete Account Section */}
-      <div className="flex flex-col md:flex-row gap-10 items-start">
-        <div className="w-full md:w-64">
-          <h3 className="font-extrabold text-lg">Delete account</h3>
-          <p className="text-sm font-light max-w-xs">
-            No longer want to use our service? This action is permanent and
-            cannot be undone.
-          </p>
+      {/* Log Out & Delete Account Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        {/* Log Out Section */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <h3 className="font-extrabold text-lg">Log out</h3>
+            <p className="text-sm font-light mt-1">
+              Log out of your account. You can log back in anytime.
+            </p>
+          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                className="
+              bg-violet-400 text-white font-extrabold w-full md:w-56 py-3
+              transition-all duration-200
+              hover:bg-red-500
+              hover:shadow-md
+              hover:scale-[1.02]
+              active:scale-[0.98]
+            "
+              >
+                Log out
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Log out of your account?</DialogTitle>
+                <DialogDescription>
+                  You will be logged out of your account. You can log back in
+                  anytime with your credentials.
+                  <br />
+                  <Button
+                    onClick={async () => {
+                      toast.promise(
+                        async () => {
+                          await logOut(dispatch);
+                        },
+                        {
+                          loading: "Abmelden...",
+                          success: async () => {
+                            await navigator("/register");
+                            return toastMessages.logout.success.title;
+                          },
+                          error: (err) => handleLogoutError(err),
+                          className: "mt-5 md:mt-0",
+                        }
+                      );
+                    }}
+                    className=" my-4
+              bg-violet-400 text-white font-extrabold w-full md:w-56 py-3
+              transition-all duration-200
+              hover:bg-red-500
+              hover:shadow-md
+              hover:scale-[1.02]
+              active:scale-[0.98]
+            "
+                  >
+                    Log out
+                  </Button>
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </div>
-        <Dialog>
-          <DialogTrigger>
-            <Button
-              className="
-            bg-violet-400 text-white font-extrabold w-full md:w-56 py-3
-            transition-all duration-200
-            hover:bg-red-500
-            hover:shadow-md
-            hover:scale-[1.02]
-            active:scale-[0.98]
-          "
-            >
-              Delete my account
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Are you absolutely sure?</DialogTitle>
-              <DialogDescription>
-                This action cannot be undone. This will permanently delete your
-                account and remove your data from our servers.
-                <Button
-                  className=" my-4
-            bg-violet-400 text-white font-extrabold w-full md:w-56 py-3
-            transition-all duration-200
-            hover:bg-red-500
-            hover:shadow-md
-            hover:scale-[1.02]
-            active:scale-[0.98]
-          "
-                >
-                  Delete my account
-                </Button>
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+
+        {/* Delete Account Section */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <h3 className="font-extrabold text-lg text-red-600">
+              Delete account
+            </h3>
+            <p className="text-sm font-light mt-1">
+              No longer want to use our service? This action is permanent and
+              cannot be undone.
+            </p>
+          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                className="
+              bg-red-500 text-white font-extrabold w-full md:w-56 py-3
+              transition-all duration-200
+              hover:bg-red-600
+              hover:shadow-md
+              hover:scale-[1.02]
+              active:scale-[0.98]
+            "
+              >
+                Delete my account
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="text-red-600">
+                  Are you absolutely sure?
+                </DialogTitle>
+                <DialogDescription className="flex flex-col gap-4">
+                  <p>
+                    This action cannot be undone. This will permanently delete
+                    your account and remove your data from our servers.
+                  </p>
+
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="delete-password"
+                      className="text-sm font-semibold text-gray-900 dark:text-gray-100"
+                    >
+                      Enter your password to confirm:
+                    </label>
+                    <Input
+                      id="delete-password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      className="h-11 bg-gray-100 dark:bg-gray-700 border border-red-400 focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={async () => {
+                      if (!deletePassword) {
+                        toast.error(
+                          "Bitte geben Sie Ihr Passwort ein, um zu bestätigen",
+                          {
+                            className: "mt-5 md:mt-0",
+                          }
+                        );
+                        return;
+                      }
+                      toast.promise(
+                        async () => {
+                          await deleteAccount(deletePassword, dispatch);
+                        },
+                        {
+                          loading: "Konto wird gelöscht...",
+                          success: async () => {
+                            setDeletePassword("");
+                            await navigator("/register");
+                            return toastMessages.deleteAccount.success.title;
+                          },
+                          error: (err) => handleDeleteAccountError(err),
+                          className: "mt-5 md:mt-0",
+                        }
+                      );
+                    }}
+                    disabled={!deletePassword}
+                    className=" my-2
+              bg-red-500 text-white font-extrabold w-full md:w-56 py-3
+              transition-all duration-200
+              hover:bg-red-600
+              hover:shadow-md
+              hover:scale-[1.02]
+              active:scale-[0.98]
+              disabled:opacity-50
+              disabled:cursor-not-allowed
+              disabled:hover:scale-100
+            "
+                  >
+                    Delete my account
+                  </Button>
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     </div>
   );

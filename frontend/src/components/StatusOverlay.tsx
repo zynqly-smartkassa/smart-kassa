@@ -26,9 +26,9 @@ const StatusOverlay: React.FC<StatusOverlayProps> = ({
   }, [isLoading]);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 backdrop-blur-sm">
+    <div className="fixed inset-0 flex items-center justify-center z-40 bg-black/30 backdrop-blur-sm">
       <div
-        className={`px-8 py-6 rounded-2xl shadow-xl max-w-xs text-center transition-colors
+        className={`px-8 py-6 relative rounded-2xl shadow-xl max-w-xs text-center transition-colors
           ${isError ? "bg-red-600 text-white" : "bg-purple-700 text-white"}`}
       >
         <p className="text-lg font-semibold">

@@ -27,6 +27,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useWarningToast } from "../../hooks/useToast";
 import { register } from "../../utils/auth";
 import { toast } from "sonner";
+import { handleRegisterError } from "../../utils/errorHandling";
 import type {
   Container,
   PasswordContainer,
@@ -107,51 +108,29 @@ function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      await register(
-        firstname,
-        lastname,
-        email,
-        telefonnummer,
-        password,
-        firmenbuchnummer,
-        atu,
-        dispatch // to set Global User Variable (Injected)
-      );
-      toast.success(t.success.title, {
+    toast.promise(
+      async () => {
+        await register(
+          firstname,
+          lastname,
+          email,
+          telefonnummer,
+          password,
+          firmenbuchnummer,
+          atu,
+          dispatch // to set Global User Variable (Injected)
+        );
+      },
+      {
+        loading: "Registrierung...",
+        success: async () => {
+          await navigator("/");
+          return t.success.title;
+        },
+        error: (err) => handleRegisterError(err),
         className: "mt-5 md:mt-0",
-      });
-
-      await navigator("/");
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        if (error.message === "Email already exists") {
-          toast.error(t.error.emailAlreadyInUse, {
-            className: "mt-5 md:mt-0",
-          });
-        }
-        if (error.message === "FN already exists") {
-          toast.error(t.error.fnAlreadyInUse, {
-            className: "mt-5 md:mt-0",
-          });
-        }
-        if (error.message === "Phonenumber already exists") {
-          toast.error(t.error.phoneNumberAlreadyInUse, {
-            className: "mt-5 md:mt-0",
-          });
-        }
-        if (error.message === "ATU already exists") {
-          toast.error(t.error.atuAlreadyInUse, {
-            className: "mt-5 md:mt-0",
-          });
-        }
-      } else {
-        toast.error(t.error.title, {
-          className: "mt-5 md:mt-0",
-        });
       }
-    }
+    );
   };
 
   const nameContainer: Container[] = [

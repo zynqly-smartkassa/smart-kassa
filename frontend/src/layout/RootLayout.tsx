@@ -6,7 +6,10 @@ import { AppSidebar } from "@/components/AppSidebar";
 
 import { Bell } from "lucide-react";
 import SearchInput from "@/components/SearchInput";
-import { Capacitor } from "@capacitor/core";
+import { isMobile } from "@/hooks/use-mobile";
+import type { AppDispatch, RootState } from "redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { setLink } from "../../redux/slices/footerLinksSlice";
 
 interface IfooterLinks {
   name: string;
@@ -24,8 +27,10 @@ interface IfooterLinks {
 export default function RootLayout() {
   // to know which path is active for the underline in the footer
   const [active, setActive] = useState(true);
-  const isMobile = Capacitor.isNativePlatform();
-  const [path, setPath] = useState(isMobile ? "start Ride" : "home");
+  const dispatch: AppDispatch = useDispatch();
+  const footerLinksIndex = useSelector(
+    (state: RootState) => state.setFooterLink.linkIndex
+  );
   const footerLinks: IfooterLinks[] = [
     {
       name: "Start Ride",
@@ -35,6 +40,11 @@ export default function RootLayout() {
     { name: "Home", path: "/" },
     { name: "Account", path: "/settings" },
   ];
+
+  useEffect(() => {
+    dispatch(setLink(1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -94,7 +104,7 @@ export default function RootLayout() {
     backdrop-blur-md bg-white/60 dark:bg-black/40
     border-t border-zinc-300 dark:border-zinc-800
     px-4
-    fixed bottom-0 left-0 md:hidden z-30
+    fixed bottom-0 left-0 md:hidden z-[41]
   "
           >
             <nav className="grid grid-cols-3 h-full place-items-center text-sm font-medium">
@@ -107,8 +117,6 @@ export default function RootLayout() {
                 const displayPath = isOnWeb
                   ? element.onWeb!.path
                   : element.path;
-                const lower =
-                  displayName.charAt(0).toLowerCase() + displayName.slice(1);
 
                 return (
                   <Link
@@ -117,13 +125,13 @@ export default function RootLayout() {
             hover:text-violet-500 relative px-2 py-1
             ${
               // underline color
-              path === lower
+              index === footerLinksIndex
                 ? "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[3px] after:bg-violet-500 after:transition-all after:duration-300"
                 : "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[3px] after:bg-transparent after:transition-all after:duration-300"
             }
           `}
                     to={displayPath}
-                    onClick={() => setPath(lower)}
+                    onClick={() => dispatch(setLink(index))}
                   >
                     {displayName}
                   </Link>

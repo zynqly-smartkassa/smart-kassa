@@ -10,7 +10,8 @@ import {
   setUnauthenticated,
 } from "../../redux/slices/authSlice";
 import { toast } from "sonner";
-import { Capacitor } from "@capacitor/core";
+import { isMobile } from "@/hooks/use-mobile";
+import { handleTokenError } from "../utils/errorHandling";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -27,7 +28,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const dispatch: AppDispatch = useDispatch();
   const navigator = useNavigate();
   const toastShownRef = useRef(false);
-  const isMobile = Capacitor.isNativePlatform();
   const user = useSelector((state: RootState) => state.user);
 
   // Check if the user is getting loaded currently
@@ -38,7 +38,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     async function getJWTTokens() {
       try {
-        if (isMobile && !toastShownRef.current) {
+        if (isMobile && !toastShownRef.current && isAuthenticated) {
           await navigator("/ride");
         }
 
@@ -47,7 +47,9 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           if (!userData) {
             throw new Error("User Data invalid");
           }
-
+          if (isMobile && !toastShownRef.current) {
+            await navigator("/ride");
+          }
           dispatch(
             signInUser({
               id: userData.id,
@@ -70,13 +72,14 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           });
           toastShownRef.current = true;
         }
-      } catch {
+      } catch (error) {
+        handleTokenError(error);
         await navigator("/register");
         dispatch(setUnauthenticated());
       }
     }
     getJWTTokens();
-  }, [dispatch, isAuthenticated, isMobile, navigator, user.firstName]);
+  }, [dispatch, isAuthenticated, navigator, user.firstName]);
 
   // had to also use the authenticate value so it doesn't show home page for split second to non-loged in Users
   if (!isAuthenticated || isLoading) {

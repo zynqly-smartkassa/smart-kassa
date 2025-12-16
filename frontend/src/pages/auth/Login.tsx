@@ -22,6 +22,7 @@ import { useWarningToast } from "../../hooks/useToast";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../../redux/store";
 import { login } from "../../utils/auth";
+import { handleLoginError } from "../../utils/errorHandling";
 import type {
   Container,
   LoginShowError,
@@ -60,31 +61,20 @@ function Login() {
   const invalidPassword: PASSWORD_VALIDATOR = useInvalidPassword(password);
 
   async function handleLogin() {
-    try {
-      await login(email, password, dispatch);
-      handleToast(true);
-      await navigator("/");
-    } catch (error) {
-      console.error(error);
-      handleToast(false);
-      return false;
-    }
-  }
-
-  async function handleToast(isLoginSuccessful: boolean) {
-    if (isLoginSuccessful) {
-      toast(t.success.title, {
-        position: "top-center",
-        closeButton: true,
+    toast.promise(
+      async () => {
+        await login(email, password, dispatch);
+      },
+      {
+        loading: "Anmelden...",
+        success: async () => {
+          await navigator("/");
+          return t.success.title;
+        },
+        error: (err) => handleLoginError(err),
         className: "mt-5 md:mt-0",
-      });
-    } else {
-      toast(t.error.title, {
-        position: "top-center",
-        closeButton: true,
-        className: "mt-5 md:mt-0",
-      });
-    }
+      }
+    );
   }
 
   useWarningToast(toastState.showWarning, t.warning.title, dispatch);
