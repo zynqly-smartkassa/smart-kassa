@@ -407,7 +407,8 @@ const Ride = () => {
         </MapContainer>
 
         <div className="w-full flex justify-center">
-          <Select>
+          <Select
+          onValueChange={(value) => setRideType(value)}>
             <SelectTrigger data-testid="select-trigger"
              className="w-[180px] border-2 border-violet-300 rounded-md">
               <SelectValue placeholder="Art der Fahrt" />
@@ -415,15 +416,13 @@ const Ride = () => {
             <SelectContent>
               <SelectItem
                 value="botenfahrt"
-                data-testid="botenfahrt"
-                onClick={() => setRideType("botenfahrt")}
+                data-testid="botenfahrt"   
               >
                 Botenfahrt
               </SelectItem>
               <SelectItem
                 value="taxifahrt"
                 data-testid="taxifahrt"
-                onClick={() => setRideType("taxifahrt")}
               >
                 Taxifahrt
               </SelectItem>

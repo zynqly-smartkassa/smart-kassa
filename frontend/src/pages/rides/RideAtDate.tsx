@@ -1,5 +1,5 @@
 
-import { MapPin, Clock, Route, Timer, Bike, Car } from "lucide-react";
+import { MapPinPlus, Flag, Clock, Route, Timer, Bike, Car } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -46,6 +46,7 @@ function handleSort(rides: AllRide[], sortAfter: string, isDescending: boolean
 }
 
 function handleRideType(rides: AllRide[], rideType: string) {
+
   if (rideType === "botenfahrt") {
     return rides.filter((element) => element.ride_type === "botenfahrt")
   } else if (rideType === "taxifahrt") {
@@ -63,22 +64,24 @@ const RideAtDate = ({ rides, sortAfter, isDescending, rideType }: RideAtDateArgs
     return <>There are no rides for this date...</>
   }
 
-  handleSort(rides, sortAfter, isDescending);
-  rides = handleRideType(rides, rideType);
+  const filteredRides = handleRideType(rides, rideType);
+  handleSort(filteredRides, sortAfter, isDescending);
 
   return (
     <ul className='w-full grid grid-cols-1 md:grid-cols-2
      xl:grid-cols-3 gap-4 2xl:grid-cols-4 3xl:grid-cols-5'>
-      {rides && rides.map((ride, index) => (
+      {filteredRides && filteredRides.map((ride, index) => (
         <li data-testid="ride-item" data-ride={JSON.stringify(ride)}
-         key={index} className='w-full max-w-[600px]'>
-         <Card onClick={() => navigator(`/all-rides/${ride.ride_id}`)}
-          data-testid={`ride-item-${ride.ride_id}`}> 
+          key={index} className='w-full'>
+          <Card onClick={() => navigator(`/all-rides/${ride.ride_id}`)}
+            data-testid={`ride-item-${ride.ride_id}`}
+            className="bg-sidebar transition-all duration-200 ease-out
+                        hover:-translate-y-1 hover:shadow-lg cursor-pointer">
             <CardHeader className="space-y-1">
               {/* Start Address */}
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                <MapPin className="w-4 h-4 text-indigo-600" />
-                {ride.start_address.split(",").slice(2, 4).join(", ")}
+                <span className="text-xl">🏁</span> 
+                {ride.end_address.split(",").slice(2, 4).join(", ")}
               </CardTitle>
 
               <CardDescription className="flex gap-4 text-sm text-gray-600">
@@ -96,8 +99,9 @@ const RideAtDate = ({ rides, sortAfter, isDescending, rideType }: RideAtDateArgs
             <CardContent className="space-y-3 text-sm">
 
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-green-600" />
-                <span>{ride.end_address.split(",").slice(0, 2).join(", ")}</span>
+
+                <MapPinPlus className="w-4 h-4 text-indigo-600" />
+                <span>{ride.start_address.split(",").slice(0, 2).join(", ")}</span>
               </div>
 
               <div className="flex flex-col gap-1">

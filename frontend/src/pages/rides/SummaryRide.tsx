@@ -75,6 +75,10 @@ export const DrawMap = (data: DrawMapArgs) => {
     }
 
     const drawer = setInterval(addToLine, 250);
+
+    return () => {
+      clearInterval(drawer);
+    }
   }, [])
 
   return null;
@@ -82,13 +86,13 @@ export const DrawMap = (data: DrawMapArgs) => {
 
 export const SummaryRide = ({ ride }: SummaryRideArgs) => {
   const navigator = useNavigate();
+
   const labelClass = 'text-gray-500 text-sm'
   const valueClass = 'font-bold text-lg';
 
   if (!ride) {
     return <StatusOverlay text='Ride data could not be loaded. Please try again or check if the ride still exists.' 
     isError={true}></StatusOverlay>
-
   }
 
   const wholeRide: [number, number][] = ride.whole_ride;
