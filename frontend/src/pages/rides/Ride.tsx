@@ -40,18 +40,17 @@ import { driverIcon, locationIcon } from "../../utils/icons";
  * @author Umejr Dzinovic
  */
 
-
 // This will create the route itself between start and end address
 export const RoutingMachine = ({
   start,
   end,
   setRoutingError,
-  routingRef
+  routingRef,
 }: {
   start: [number, number];
   end: [number, number];
-  setRoutingError: (text: string) => void
-  routingRef: React.MutableRefObject<L.Routing.Control | null>; 
+  setRoutingError: (text: string) => void;
+  routingRef: React.MutableRefObject<L.Routing.Control | null>;
 }) => {
   const map = useMap();
 
@@ -100,13 +99,14 @@ export const RoutingMachine = ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     routingControl.on("routingerror", (e: any) => {
       console.error("Routing failed:", e);
-      setRoutingError("Die Route konnte nicht berechnet werden. Bitte probiere es später erneut.");
+      setRoutingError(
+        "Die Route konnte nicht berechnet werden. Bitte probiere es später erneut."
+      );
     });
 
     routingRef.current = routingControl;
 
     routingControlRef.current = routingControl;
-
   }, [end, map, start, setRoutingError]);
 
   // We are not building new control object, we are instead setting
@@ -298,8 +298,8 @@ const Ride = () => {
           duration: formatTime(timer),
           distance: distance,
           ride_type: rideType,
-          whole_ride: wholeRide // botenfahrt
-        }
+          whole_ride: wholeRide, // botenfahrt
+        };
         try {
           const data = await sendRide(newRide);
           const ride_id = data.ride_info.ride_id;
@@ -443,10 +443,11 @@ const Ride = () => {
           onBlur={() => setShowDestinationHint(true)}
           onFocus={() => setShowDestinationHint(false)}
           className={`w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150
-      ${isDestinationInvalid && showDestinationHint
-              ? "border-red-500"
-              : "border-violet-300"
-            }`}
+      ${
+        isDestinationInvalid && showDestinationHint
+          ? "border-red-500"
+          : "border-violet-300"
+      }`}
           disabled={isRideActive}
         />
 

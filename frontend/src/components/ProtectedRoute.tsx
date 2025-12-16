@@ -10,6 +10,9 @@ import {
   setUnauthenticated,
 } from "../../redux/slices/authSlice";
 import { toast } from "sonner";
+import { isMobile } from "@/hooks/use-mobile";
+import { handleTokenError } from "../utils/errorHandling";
+import { setLink } from "../../redux/slices/footerLinksSlice";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -26,6 +29,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const dispatch: AppDispatch = useDispatch();
   const navigator = useNavigate();
   const toastShownRef = useRef(false);
+  const user = useSelector((state: RootState) => state.user);
 
   // Check if the user is getting loaded currently
   const { isLoading, isAuthenticated } = useSelector(
@@ -35,17 +39,20 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     async function getJWTTokens() {
       try {
-        const userData: USER_DTO = await verifyAccessToken();
-        if (!userData) {
-          throw new Error("User Data invalid");
+        if (isMobile && !toastShownRef.current && isAuthenticated) {
+          dispatch(setLink(0));
+          await navigator("/ride");
         }
-
+ 
         if (!isAuthenticated) {
           const userData: USER_DTO = await verifyAccessToken();
           if (!userData) {
             throw new Error("User Data invalid");
           }
-
+          if (isMobile && !toastShownRef.current) {
+            dispatch(setLink(0));
+            await navigator("/ride");
+          }
           dispatch(
             signInUser({
               id: userData.id,
@@ -55,26 +62,27 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
               phoneNumber: userData.phoneNumber,
             })
           );
-
+ 
           dispatch(setAuthenticated());
         }
-
+ 
         // Only show toast once per session
         if (!toastShownRef.current) {
-          toast.success(`Welcome back ${userData.firstName}!`, {
+          toast.success(`Welcome back ${user.firstName}!`, {
             className: "mt-5 md:mt-0",
             position: "top-center",
+            closeButton: true,
           });
           toastShownRef.current = true;
         }
-      } catch {
+      } catch (error) {
+        handleTokenError(error);
         await navigator("/register");
         dispatch(setUnauthenticated());
       }
     }
     getJWTTokens();
-  }, [dispatch, navigator]);
-
+  }, [dispatch, isAuthenticated, navigator, user.firstName]);
   // had to also use the authenticate value so it doesn't show home page for split second to non-loged in Users
   if (!isAuthenticated || isLoading) {
     return (

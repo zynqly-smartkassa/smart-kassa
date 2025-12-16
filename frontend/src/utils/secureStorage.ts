@@ -1,7 +1,5 @@
+import { isMobile } from "../hooks/use-mobile";
 import { Preferences } from "@capacitor/preferences";
-import { Capacitor } from "@capacitor/core";
-
-const isMobile = Capacitor.isNativePlatform();
 
 /**
  * Secure storage utility that uses Capacitor Preferences on mobile

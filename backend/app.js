@@ -24,6 +24,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+// API-Routes
 import refreshRoutes from "./routes/refresh.js";
 import registerRoutes from "./routes/register.js";
 import loginRoutes from "./routes/login.js";
@@ -31,6 +32,8 @@ import verifyRoutes from "./routes/verify.js";
 import fahrtRoutes from "./routes/fahrten.js";
 import rideRoutes from "./routes/ride.js";
 import allridesRoutes from "./routes/all-rides.js";
+import logOutRoutes from "./routes/logout.js";
+import deleteAccountRoutes from "./routes/deleteAccount.js";
 
 /**
  * Middleware Configuration
@@ -46,6 +49,7 @@ app.use(
       "https://localhost",
       "http://localhost:5173",
       "capacitor://localhost",
+      "http://localhost:5173",
       process.env.DEBUG_URL, // to test/debug
     ],
     credentials: true, // Allow cookies to be sent
@@ -72,6 +76,8 @@ app.use("/verify", verifyRoutes);
 app.use("/fahrten", fahrtRoutes);
 app.use("/ride", rideRoutes);
 app.use("/all-rides", allridesRoutes);
+app.use("/logout", logOutRoutes);
+app.use("/account", deleteAccountRoutes);
 
 /**
  * Health Check Endpoint

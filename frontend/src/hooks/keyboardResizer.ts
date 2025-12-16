@@ -1,10 +1,8 @@
-import { Capacitor } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
+import { isMobile } from "./use-mobile";
 
 export function resizeKeyboard() {
-  const isCapacitor = Capacitor.isNativePlatform();
-
-  if (isCapacitor) {
+  if (isMobile) {
     Keyboard.addListener("keyboardWillShow", (info) => {
       window.scrollBy(0, info.keyboardHeight);
     });

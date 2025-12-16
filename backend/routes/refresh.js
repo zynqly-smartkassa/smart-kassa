@@ -25,11 +25,17 @@ const router = express.Router();
  * @returns {Object} 500 - Internal server error
  */
 router.post("/", async (req, res) => {
-  // Extract refresh token from httpOnly cookie
-  const refreshToken = req.cookies.refreshToken;
+  /**
+   * Extract refresh token from httpOnly cookie
+   * if User is on Mobile, refresh token is being sent in the request body
+   */
+  let refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
-    return res.status(401).json({ error: "Refresh token required" });
+    if (!req.body.refreshToken) {
+      return res.status(401).json({ error: "Refresh token required" });
+    }
+    refreshToken = req.body.refreshToken;
   }
 
   try {

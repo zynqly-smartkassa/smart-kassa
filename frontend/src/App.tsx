@@ -6,10 +6,10 @@ import RootLayout from "./layout/RootLayout";
 import Settings from "./pages/settings/Settings";
 import { useEffect } from "react";
 import { StatusBar } from "@capacitor/status-bar";
-import { Capacitor } from "@capacitor/core";
 import Ride from "./pages/rides/Ride";
 import AllRides from "./pages/rides/AllRides";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { isMobile } from "./hooks/use-mobile";
 
 /**
  * The Routes are all declared here
@@ -17,8 +17,6 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
  */
 
 function App() {
-  const isMobile = Capacitor.isNativePlatform();
-
   /**
    * to set the Statusbar Color on the Mobile App
    */
@@ -26,7 +24,7 @@ function App() {
     if (isMobile) {
       StatusBar.setBackgroundColor({ color: "#000000" });
     }
-  }, [isMobile]);
+  }, []);
 
   return (
     <Router>
@@ -38,8 +36,6 @@ function App() {
             <ProtectedRoute>
               <RootLayout />
             </ProtectedRoute>
-
-
           }
         >
           <Route path="/" element={<Home />} />

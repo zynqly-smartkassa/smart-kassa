@@ -12,10 +12,13 @@ import {
   useSidebar,
 } from "../components/ui/sidebar";
 import { sidebarSections } from "@/content/sidebar/sidebar";
-import { Capacitor } from "@capacitor/core";
 import { useState, useEffect } from "react";
 
 import { Link } from "react-router-dom";
+import { isMobile } from "@/hooks/use-mobile";
+import type { AppDispatch } from "redux/store";
+import { useDispatch } from "react-redux";
+import { setLink } from "../../redux/slices/footerLinksSlice";
 
 export function AppSidebar() {
   // to close the Side Bar when a menu item is clicked
@@ -23,7 +26,7 @@ export function AppSidebar() {
 
   const [isMd, setIsMd] = useState(false);
   const mdBreakpoint = 768;
-  const isMobile = Capacitor.isNativePlatform();
+  const dispatch: AppDispatch = useDispatch();
 
   /**
    * Important to not close Side Bar on Desktop
@@ -50,10 +53,32 @@ export function AppSidebar() {
     }
   }
 
+  function setFooterLink(path: string) {
+    switch (path) {
+      case "/":
+        dispatch(setLink(1));
+        break;
+      case "/ride":
+        dispatch(setLink(0));
+        break;
+      case "/settings":
+        dispatch(setLink(2));
+        break;
+      default:
+        break;
+    }
+  }
+
   return (
     <Sidebar className="hidden lg:flex w-full max-w-64 z-50">
       <SidebarHeader className="flex pt-10 md:pt-5 flex-row justify-between items-center">
-        <Link to="/" onClick={() => closeSideBar()}>
+        <Link
+          to="/"
+          onClick={() => {
+            closeSideBar();
+            dispatch(setLink(1));
+          }}
+        >
           <img
             src="/Logo.png"
             width={120}
@@ -79,7 +104,10 @@ export function AppSidebar() {
                 {section.items.map(
                   (item, index) =>
                     (isMobile || !item.onlyMobile) && (
-                      <SidebarMenuItem key={index}>
+                      <SidebarMenuItem
+                        key={index}
+                        onClick={() => setFooterLink(item.path)}
+                      >
                         <SidebarMenuButton>
                           <Link
                             to={item.path}
