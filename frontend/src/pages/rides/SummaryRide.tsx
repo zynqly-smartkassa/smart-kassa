@@ -68,7 +68,7 @@ export const DrawMap = (data: DrawMapArgs) => {
         if (routePolyline.current) {
           map.flyToBounds(routePolyline.current.getBounds(), {
             padding: [40, 40],
-            duration: 1.5
+            duration: 1
           });
         }
       }
@@ -87,8 +87,8 @@ export const DrawMap = (data: DrawMapArgs) => {
 export const SummaryRide = ({ ride }: SummaryRideArgs) => {
   const navigator = useNavigate();
 
-  const labelClass = 'text-gray-500 text-sm'
-  const valueClass = 'font-bold text-lg';
+  const labelClass = 'text-gray-500 text-sm md:text-lg'
+  const valueClass = 'font-bold text-lg md:text-2xl';
 
   if (!ride) {
     return <StatusOverlay text='Ride data could not be loaded. Please try again or check if the ride still exists.' 
@@ -99,7 +99,7 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
 
   return (
 
-    <div className='w-full flex flex-col gap-8 items-center z-20'>
+    <div className='w-full flex flex-col gap-8 md:gap-6 items-center z-20'>
 
       <Button variant={"ghost"} onClick={() => navigator("/all-rides")}
         className='self-start p-0'>
@@ -124,7 +124,6 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
 
-
           <DrawMap whole_ride={wholeRide} />
         </MapContainer>
       )}
@@ -138,14 +137,15 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
         </div>
 
         {/* Ride Finished successfuly and Ride statistics */}
-        <div className='flex flex-col gap-2 w-full'>
+        <div className='flex flex-col gap-2  w-full md:flex-row md:gap-8'>
           <div className='flex flex-row gap-1 items-center'>
             <BadgeCheck size={28} fill="#10B981" color='green'></BadgeCheck>
             <span className={valueClass}>Ride finished successfully</span>
           </div>
 
           <div className='flex flex-row gap-8'>
-            <div className='flex flex-col text-left w-1/3'>
+            <div className='flex flex-col text-left w-1/3
+            md:w-full md:flex-row md:gap-1 md:items-center'>
               <span className={labelClass}>Car:</span>
               <span className={valueClass}>{ride.vehicle_id}</span>
             </div>
@@ -153,7 +153,7 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
 
             <div className='bg-gray-500/30 w-0.5 h-full'></div>
 
-            <div className='flex flex-col text-left w-1/3'>
+            <div className='flex flex-col text-left w-1/3 md:w-full'>
               <span className={labelClass}>Ride info:</span>
               <span className={valueClass}>{ride.ride_type
                 .charAt(0).toUpperCase() + ride.ride_type.slice(1)}</span>
