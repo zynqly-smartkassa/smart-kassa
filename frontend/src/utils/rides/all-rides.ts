@@ -4,7 +4,7 @@ export async function getAllRides(
   user_id: number
 ) {
   try {
-    const { data } = await axios.post("http://localhost:3000/all-rides", {user_id}, {
+    const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/all-rides`, {user_id}, {
       headers:  {
         "Content-Type": "application/json"
       },

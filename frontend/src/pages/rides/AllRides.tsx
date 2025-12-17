@@ -15,7 +15,7 @@ import {
   SelectValue
 } from "../../components/ui/select";
 import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useSelector } from "react-redux";
 import type { RootState } from "redux/store";
@@ -26,6 +26,7 @@ const AllRides = () => {
   const [isAscending, setIsAscending] = useState(false);
   const [sortAfter, setSortAfter] = useState("date");
   const [rideType, setRideType] = useState("every");
+  const navigator = useNavigate();
 
   const [rides, setRides] = useState<AllRide[] | null>(null);
   const { id } = useParams();
@@ -44,12 +45,12 @@ const AllRides = () => {
 
   const ride_id = Number(id);
 
-  if (!rides) {
-    return <>Loading rides...</>;
+  if (rides && rides.length === 0) {
+    return <>No Rides yet</>
   }
 
-  if (rides.length === 0) {
-    return <>No Rides yet</>
+  if (!rides) {
+    return <>Loading rides...</>;
   }
 
   // Test if all-rides was called with a id, if so find the exact route
@@ -59,8 +60,11 @@ const AllRides = () => {
 
     if (ride) {
       return <SummaryRide ride={ride}></SummaryRide>
-    };
-
+    } else {
+      console.log("Navigating back")
+      // since id was not found, navigate to main all-rides
+      navigator("/all-rides");
+    }
   }
 
   const ridesToday = getRidesToday(rides);

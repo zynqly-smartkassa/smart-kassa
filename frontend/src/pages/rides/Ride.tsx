@@ -298,7 +298,7 @@ const Ride = () => {
           duration: formatTime(timer),
           distance: distance,
           ride_type: rideType,
-          whole_ride: wholeRide, // botenfahrt
+          whole_ride: wholeRide, // botenfahrt/taxifahrt
         };
         try {
           const data = await sendRide(newRide);
