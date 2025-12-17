@@ -73,8 +73,39 @@ git commit -m "feat: adds user login"
 | **style:**    | You change formatting or a harmless typo               |
 | **refactor:** | You reorganize or improve code structure               |
 | **test:**     | You add or modify tests                                |
-| **perf:**     | You improve performance                                |
+| **perf:**     | You improve perf                               |
 | **chore:**    | You change project configuration                       |
 | **ci:**       | You adjust CI/CD pipelines                             |
 | **build:**    | You modify build processes or dependencies             |
 
+
+## Merge Commit Convention
+
+Merge commits document **why** and **what** is being integrated between branches. They summarize a completed unit of work (feature set, fixes, refactors) and must be readable without inspecting individual commits.
+
+### Merge Commit Template
+
+```text
+<type>(<scope>): merge <source-branch> into <target-branch>
+
+Short summary of the integrated changes.
+Optional second line for important context, risks, or behavior changes.
+```
+
+**Rules:**
+
+* Use the same commit `type` definitions as above (`feat`, `fix`, `refactor`, etc.).
+* Use scopes when helpful (e.g. `auth`, `map`, `frontend`, `backend`).
+* Do **not** list technical merge details (conflicts, files changed).
+* If behavior changes for consumers, clearly state it.
+
+### Example Merge Commit
+
+```text
+feat(auth,map): merge backend and frontend into develop
+
+Updates JWT handling for mobile clients without cookie support.
+Fixes multiple Leaflet issues to improve map stability and user experience.
+```
+
+This ensures merge commits serve as high-level documentation of integration steps across branches.
