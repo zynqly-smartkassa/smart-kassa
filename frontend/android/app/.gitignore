@@ -1,0 +1,12 @@
+/build/*
+!/build/.npmkeep
+
+.gradle/
+.idea/
+build/
+app/.gradle/
+app/build/
+app/src/main/assets/
+capacitor-cordova-android-plugins/.gradle/
+capacitor-cordova-android-plugins/build/
+local.properties

@@ -1,60 +1,91 @@
-import { Button } from "../components/ui/button";
-import { homeContent } from "../content/home/homeContent";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { motion } from "framer-motion"; // <-- hinzugefügt
-/**
- * @returns Home Page
- */
+import { useSelector } from "react-redux";
+
+import type { RootState } from "../../redux/store";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import Balance from "../components/Balance";
+
+export type RidesStats = {
+  day: string;
+  rides: number;
+};
+
+const ridesData: RidesStats[] = [
+  { day: "Mon", rides: 42 },
+  { day: "Tue", rides: 57 },
+  { day: "Wed", rides: 31 },
+  { day: "Thu", rides: 68 },
+  { day: "Fri", rides: 75 },
+  { day: "Sat", rides: 54 },
+  { day: "Sun", rides: 39 },
+];
+
+export type DailyStats = {
+  hour: string;
+  rides: number;
+};
+
+const dailyRidesData: DailyStats[] = [
+  { hour: "00:00", rides: 1 },
+  { hour: "03:00", rides: 4 },
+  { hour: "06:00", rides: 5 },
+  { hour: "09:00", rides: 7 },
+];
+
+export type MonthlyWeekStats = {
+  week: string;
+  rides: number;
+};
+
+const monthlyWeekRidesData: MonthlyWeekStats[] = [
+  { week: "Week 1", rides: 120 },
+  { week: "Week 2", rides: 145 },
+  { week: "Week 3", rides: 110 },
+  { week: "Week 4", rides: 150 },
+];
+
 function Home() {
+  const user = useSelector((state: RootState) => state.user);
 
   return (
-    <div className="w-full flex-1 flex flex-col gap-4">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold">{homeContent.pageTitle}</h2>
-        <h3>{homeContent.pageSubtitle}</h3>
-      </div>
+    <div className="w-full flex flex-col justify-center items-center gap-4">
+      {/* HEADER */}
+      <Tabs defaultValue="today" className="w-full flex flex-col">
+        {/* ABOVE TEXT LEFT + TABS LIST RIGHT) */}
+        <div className="w-full flex flex-col gap-4 md:flex-row justify-between items-center md:items-end">
+          <div className="flex flex-col">
+            <h2 className="ml-2 text-lg text-center md:text-start font-light">
+              Hi {user.firstName || "Thomas"},
+            </h2>
 
-     {homeContent.sections.map((section, index) => (
-  <motion.div
-    key={index}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4, delay: index * 0.1 }}
-    whileHover={{ scale: 1.02 }}
-  >
-    <Card
-      className={`
-        flex-1 max-w-[400px] mx-auto
-        ${section.color} 
-        rounded-xl
-        flex flex-col items-center justify-center gap-8 p-4
-      `}
-    >
-      <CardHeader className="p-0 text-center">
-        <CardTitle className="font-extrabold text-2xl">
-          {section.title}
-        </CardTitle>
-        <img
-          src={section.image}
-          width={120}
-          height={80}
-          alt="Fahrten-Bild"
-          className="object-cover"
-        />
-      </CardHeader>
+            <div className="w-full flex items-center gap-2 text-3xl">
+              <span>👋</span>
+              <span className="font-bold">Welcome Back!</span>
+            </div>
+          </div>
 
-      <CardContent className="p-0">
-        <div className="grid grid-cols-2 gap-8">
-          {section.buttons.map((element, index) => (
-            <Button className="px-6 py-3 text-lg" key={index}>
-              {element}
-            </Button>
-          ))}
+          {/* TabsList stays on the right and aligned with the header */}
+          <TabsList className="grid grid-cols-3 w-full md:w-auto max-w-[400px]">
+            <TabsTrigger value="today">Today</TabsTrigger>
+            <TabsTrigger value="week">Week</TabsTrigger>
+            <TabsTrigger value="month">Month</TabsTrigger>
+          </TabsList>
         </div>
-      </CardContent>
-    </Card>
-  </motion.div>
-))}
+
+        {/* CONTENT SECTION – FULL WIDTH BELOW */}
+        <div className="w-full mt-4">
+          <TabsContent value="today">
+            <Balance entry={dailyRidesData} duration="day" />
+          </TabsContent>
+
+          <TabsContent value="week">
+            <Balance entry={ridesData} duration="week" />
+          </TabsContent>
+
+          <TabsContent value="month">
+            <Balance entry={monthlyWeekRidesData} duration="month" />
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 }

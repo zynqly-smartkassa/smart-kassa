@@ -15,19 +15,17 @@ dotenv.config();
  * @param {string} payload.userId - The user's unique identifier
  * @param {string} payload.email - The user's email address
  * @param {string} payload.name - The user's full name
- * @param {string} payload.business - The user's business name
  * @returns {string} Signed JWT access token (expires in 5 minutes)
  * @example
  * const token = generateAccessToken({
  *   userId: 123,
  *   email: "user@example.com",
  *   name: "John Doe",
- *   business: "ACME Corp"
  * });
  */
 export function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: "5m",
+    expiresIn: "15m",
   });
 }
 
@@ -41,7 +39,7 @@ export function generateAccessToken(payload) {
  */
 export function generateRefreshToken(payload) {
   return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: "1d",
+    expiresIn: "30d", 
   });
 }
 

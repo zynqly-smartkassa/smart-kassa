@@ -32,24 +32,27 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).send({ error: "Missing required fields" });
+  }
+
   try {
-    // Query database for user account by email
+    // Query database for user by email
     const result = await pool.query(
       `SELECT 
-        account.account_id,
-        account.password_hash,
-        users.id AS user_id,
-        users.email
-      FROM account
-      JOIN users
-        ON users.id = account.users_id
-      WHERE account.email = $1`,
+        users.user_id,
+        users.password_hash,
+        users.email,
+        users.first_name,
+        users.last_name
+      FROM users
+      WHERE users.email = $1`,
       [email]
     );
 
     // Check if user exists
     if (result.rows.length === 0) {
-      return res.status(400).json({ error: "Account not found" });
+      return res.status(400).json({ error: "User not found" });
     }
 
     const user = result.rows[0];
@@ -62,32 +65,31 @@ router.post("/", async (req, res) => {
 
     // Prepare payload for access token (includes user info for API requests)
     const payload = {
-      userId: user.userId,
+      userId: user.user_id,
       email: user.email,
       name: `${user.first_name} ${user.last_name}`,
-      business: user.business,
     };
 
     // Generate both access and refresh tokens
     const accessToken = generateAccessToken(payload);
-    const refreshToken = generateRefreshToken({ userId: user.userId });
+    const refreshToken = generateRefreshToken({ userId: user.user_id });
 
     // Calculate refresh token expiration (30 days from now)
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    // Update account record with new refresh token and expiration
+    // Update session record with new refresh token and expiration
     await pool.query(
-      `INSERT INTO account (token_expiress_at, refresh_token)
-      VALUES ($1, $2)`,
-      [expiresAt, refreshToken]
+      `UPDATE session SET expires_at = $1, refresh_token = $2 WHERE user_id = $3`,
+      [expiresAt, refreshToken, user.user_id]
     );
 
     // Store refresh token in httpOnly cookie (not accessible via JavaScript)
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true, // Prevents XSS attacks
       secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "lax", // CSRF protection
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: "/",
     });
 
     // Return access token and user info to client
@@ -95,15 +97,14 @@ router.post("/", async (req, res) => {
       message: "Login successful",
       accessToken,
       user: {
-        id: user.userId,
-        name: `${user.first_name} ${user.last_name}`,
+        userId: user.user_id,
         email: user.email,
-        business: user.business,
+        name: `${user.first_name} ${user.last_name}`,
       },
     });
   } catch (err) {
     console.error("Error in /login:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -113,7 +114,7 @@ router.post("/", async (req, res) => {
  * @route GET /login
  * @access Public
  */
-router.get("/", (req, res) => {
+router.get("/", (_, res) => {
   res.send("Server running on route /login");
 });
 

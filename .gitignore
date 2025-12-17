@@ -10,6 +10,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+#vscode
+.vscode
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -147,3 +150,9 @@ vite.config.ts.timestamp-*
 
 # Tools
 .claude/
+
+# Code Editor
+.vscode
+
+# Frontend Documentation folder
+frontend/docs

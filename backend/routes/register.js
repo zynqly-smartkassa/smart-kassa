@@ -24,9 +24,8 @@ const router = express.Router();
  * @body {string} first_name - User's first name (required)
  * @body {string} last_name - User's last name (required)
  * @body {string} email - User's email address (required, unique)
- * @body {string} phone_number - User's phone number (optional)
+ * @body {string} phone_number - User's phone number (required, unique)
  * @body {string} password - User's password (required, will be hashed)
- * @body {string} business - User's business name (required)
  * @body {string} fn - User's fn number (required)
  * @body {string} atu - User's atu number (required)
  * @returns {Object} 201 - User created with access token and user info
@@ -41,7 +40,6 @@ router.post("/", async (req, res) => {
     email,
     phone_number,
     password,
-    business,
     fn,
     atu,
   } = req.body;
@@ -52,12 +50,12 @@ router.post("/", async (req, res) => {
       !first_name ||
       !last_name ||
       !email ||
+      !phone_number ||
       !password ||
-      !business ||
       !fn ||
       !atu
     ) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).send({ error: "Missing required fields" });
     }
 
     // Check for duplicate email
@@ -73,65 +71,108 @@ router.post("/", async (req, res) => {
     // Hash password using Argon2 (secure password hashing)
     const hashedPassword = await argon2.hash(password);
 
-    // Insert user into users table and return the generated user_id
-    const userRes = await pool.query(
-      `INSERT INTO users (first_name, last_name, email, phone_number, business)
-      VALUES ($1, $2, $3, $4, $5)
+    // tokens and values for payload, response etc. values initialized in try catch that are needed else where
+    let accessToken;
+    let refreshToken;
+    let userId;
+
+    try {
+      // Begin of database transaction, if an operation fails, all queries roll back
+      await pool.query("BEGIN");
+
+      // Insert company into company table and return the generated company_id
+      const companyRes = await pool.query(
+        `INSERT INTO company (fn, atu)
+        VALUES($1, $2)
+        RETURNING company_id`,
+        [fn, atu]
+      );
+
+      const companyId = await companyRes.rows[0].company_id;
+
+      // Insert user into users table and return the generated user_id
+      const userRes = await pool.query(
+        `INSERT INTO users (company_id, first_name, last_name, email, phone_number, password_hash, created_on)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
       RETURNING user_id`,
-      [first_name, last_name, email, phone_number, business]
-    );
+        [companyId, first_name, last_name, email, phone_number, hashedPassword]
+      );
 
-    const userId = userRes.rows[0].user_id;
+      const userId = await userRes.rows[0].user_id;
 
-    // Prepare payload for access token (includes user info for API requests)
-    const payload = {
-      userId: userId,
-      email: email,
-      name: `${first_name} ${last_name}`,
-      business: business,
-    };
+      // Prepare payload for access token (includes user info for API requests)
+      const payload = {
+        userId: userId,
+        email: email,
+        name: `${first_name} ${last_name}`,
+      };
 
-    // Generate both access and refresh tokens
-    const accessToken = generateAccessToken(payload);
-    const refreshToken = generateRefreshToken({ userId: userId });
+      // Generate both access and refresh tokens
+      accessToken = generateAccessToken(payload);
+      refreshToken = generateRefreshToken({ userId: userId });
 
-    // Insert account record with hashed password and refresh token
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-    await pool.query(
-      `INSERT INTO account (user_id, name, password_hash, created_on, refresh_token, token_expiress_at, fn, atu)
-       VALUES ($1, $2, $3, NOW(), $4, $5, $6, $7)`,
-      [
-        userId,
-        `${first_name} ${last_name}`,
-        hashedPassword,
-        refreshToken,
-        expiresAt,
-        fn,
-        atu,
-      ]
-    );
+      // Insert account record with hashed password and refresh token
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+
+      await pool.query(
+        `INSERT INTO session (user_id, refresh_token, created_at, expires_at)
+       VALUES ($1, $2, NOW(), $3)`,
+        [userId, refreshToken, expiresAt]
+      );
+
+      await pool.query("COMMIT");
+    } catch (error) {
+      await pool.query("ROLLBACK");
+      const errorResponse = error;
+      console.error(errorResponse);
+      if (
+        /^Key \(phone_number\)=\(\+?\d+\s?\d+\) already exists\.$/.test(
+          error.detail
+        )
+      ) {
+        return res.status(409).send({
+          error: `Ein Account mit der Telefonnumer '${phone_number}' existiert bereits.`,
+        });
+      }
+
+      if (/Key \(fn\)=\(([^)]+)\)/.test(error.detail)) {
+        return res.status(409).send({
+          error: `Ein Account mit der FN '${fn}' existiert bereits.`,
+        });
+      }
+
+      if (/^Key \(atu\)=\(ATU\d+\) already exists\.$/.test(error.detail)) {
+        return res.status(409).send({
+          error: `Ein Account mit der ATU-Nummer '${atu}' existiert bereits.`,
+        });
+      }
+
+      return res
+        .status(500)
+        .send({ error: errorResponse, message: "Internal Server Error" });
+    }
 
     // Store refresh token in httpOnly cookie (not accessible via JavaScript)
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true, // Prevents XSS attacks
       secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "lax", // CSRF protection
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: "/",
     });
 
     // Return access token and user info to client
-    res.status(201).json({
+    return res.status(201).json({
       message: "User registered successfully",
       accessToken,
       user: {
         id: userId,
         name: `${first_name} ${last_name}`,
         email: email,
-        business: business,
       },
     });
   } catch (err) {
-    console.error("Error in /register:", err);
+    console.error("Error in /register: ", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

@@ -27,6 +27,7 @@ export const authContent = {
       fn: "Firmenbuchnummer (FN)",
       phone: "Telefonnummer",
       password: shared.labels.password,
+      confirmPassword: shared.labels.password + " bestätigen"
     },
     placeholders: {
       vorname: "Max",
@@ -36,6 +37,7 @@ export const authContent = {
       fn: "FN123456a",
       phone: "+43 660 1234567",
       password: shared.placeholders.password,
+      confirmPassword: shared.placeholders.password,
     },
     buttons: {
       register: "Jetzt registrieren",
@@ -52,11 +54,11 @@ export const authContent = {
       subtitle: "Melden Sie sich mit Ihren Zugangsdaten an",
     },
     labels: {
-      identifier: "E-Mail",
+      email: "E-Mail",
       password: shared.labels.password,
     },
     placeholders: {
-      identifier: "beispiel@domain.at",
+      email: "beispiel@domain.at",
       password: shared.placeholders.password,
     },
     links: {

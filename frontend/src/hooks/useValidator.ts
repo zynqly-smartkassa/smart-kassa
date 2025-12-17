@@ -34,6 +34,23 @@ export const useInvalidPassword = (password: string) => {
   return passwordInvalidData;
 };
 
+export const useInvalidConfirmPassword = (password: string, confirmPassword: string) => {
+
+  const missing = confirmPassword === "";
+  const matching = confirmPassword === password ? true : false;
+
+  const invalid = missing || !matching;
+
+  const isInvalid = {
+    invalid: invalid,
+    missing:  missing,
+    matching: matching
+  } 
+  
+  return isInvalid;
+  
+};
+
 export const useInvalidATU = (atu: string) => {
   const cleaned = atu.trim().replace(/[\s/]/g, "");
 
@@ -50,4 +67,11 @@ export const useInvalidTelefonnummer = (telefon: string) => {
   const telefonIsInvalid =
     telefon === "" || !/^[\d\s+()-]{7,20}$/.test(telefon) || telefon.length < 7;
   return telefonIsInvalid;
+};
+
+// Adress-Validation
+export const isValidAddressInput = (input: string) => {
+  // Erlaubte Zeichen: Buchstaben, Zahlen, Leerzeichen, Kommas, Punkte, Bindestriche
+  const regex = /^[a-zA-Z0-9\s.,-]*$/;
+  return regex.test(input);
 };

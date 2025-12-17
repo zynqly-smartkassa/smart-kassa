@@ -9,7 +9,10 @@ export interface HomePageContent {
   pageSubtitle: string;
   sections: HomeSection[];
 }
+
 export const homeContent = {
+  hello: "Servus, ",
+
   pageTitle: "Home",
   pageSubtitle: "Navigiere zu deinem Service",
 
