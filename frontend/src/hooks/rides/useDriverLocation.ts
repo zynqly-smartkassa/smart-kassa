@@ -94,7 +94,7 @@ export const useDriverLocation = (isRideActive: boolean) => {
     let lat = driverLocation?.[0] ?? 48.21;
     let lng = driverLocation?.[1] ?? 16.36;
 
-    let interval: number | undefined;
+    let interval : NodeJS.Timeout;
     // TEST/DEBUG: Simulates driver movement for development
     if (isRideActive) {
       interval = setInterval(() => {
