@@ -1,5 +1,5 @@
 
-import { MapPinPlus, Flag, Clock, Route, Timer, Bike, Car } from "lucide-react";
+import { MapPinPlus, Clock, Route, Timer, Bike, Car } from "lucide-react";
 import {
   Card,
   CardContent,

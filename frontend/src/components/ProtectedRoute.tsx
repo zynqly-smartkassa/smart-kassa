@@ -64,17 +64,17 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           );
  
           dispatch(setAuthenticated());
+
+          // Only show toast once per session
+          if (!toastShownRef.current) {
+            toast.success(`Welcome back ${userData.firstName}!`, {
+              className: "mt-5 md:mt-0",
+              position: "top-center",
+            });
+            toastShownRef.current = true;
+          }
         }
- 
-        // Only show toast once per session
-        if (!toastShownRef.current) {
-          toast.success(`Welcome back ${user.firstName}!`, {
-            className: "mt-5 md:mt-0",
-            position: "top-center",
-            closeButton: true,
-          });
-          toastShownRef.current = true;
-        }
+
       } catch (error) {
         handleTokenError(error);
         await navigator("/register");

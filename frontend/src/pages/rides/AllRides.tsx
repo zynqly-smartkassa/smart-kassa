@@ -57,10 +57,7 @@ const AllRides = () => {
   if (ride_id) {
     const ride = rides.find(r => Number(r.ride_id) === ride_id);
 
-    if (!ride) {
-      //return <StatusOverlay text="Ride not found!" isError={true}></StatusOverlay>;
-      return <>Loading ride</>;
-    } else {
+    if (ride) {
       return <SummaryRide ride={ride}></SummaryRide>
     };
 
