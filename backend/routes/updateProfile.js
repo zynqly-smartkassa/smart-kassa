@@ -4,76 +4,58 @@ import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-/**
- * PUT /account/me
- * Updates authenticated user's profile data
- * Fields: name, email, image, theme
- * Uses access token
- */
+// PUT /account/me
 router.put("/me", authenticateToken, async (req, res) => {
-  const { name, email, image, theme } = req.body;
+  const { first_name, last_name, email } = req.body;
   const user_id = req.user.userId;
 
-  // Validate theme if provided
-  if (theme && !["light", "dark", "system"].includes(theme)) {
-    return res.status(400).json({
-      error: "Invalid theme",
-      message: "Theme must be light, dark, or system",
-    });
-  }
-
-  // Build dynamic update object
   const fields = [];
   const values = [];
-  let index = 1;
+  let idx = 1;
 
-  if (name) {
-    fields.push(`name = $${index++}`);
-    values.push(name);
+  if (first_name !== undefined) {
+    fields.push(`first_name = $${idx++}`);
+    values.push(first_name);
   }
-
-  if (email) {
-    fields.push(`email = $${index++}`);
+  if (last_name !== undefined) {
+    fields.push(`last_name = $${idx++}`);
+    values.push(last_name);
+  }
+  if (email !== undefined) {
+    fields.push(`email = $${idx++}`);
     values.push(email);
-  }
-
-  if (image) {
-    fields.push(`image = $${index++}`);
-    values.push(image);
-  }
-
-  if (theme) {
-    fields.push(`theme = $${index++}`);
-    values.push(theme);
   }
 
   if (fields.length === 0) {
     return res.status(400).json({
       error: "No data provided",
-      message: "At least one field must be updated",
+      message: "Send first_name/last_name/email",
     });
   }
 
   try {
     const result = await pool.query(
-      `UPDATE users SET ${fields.join(", ")} WHERE user_id = $${index}`,
+      `UPDATE users
+       SET ${fields.join(", ")}
+       WHERE user_id = $${idx}
+       RETURNING user_id, first_name, last_name, email`,
       [...values, user_id]
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({
-        error: "User not found",
-      });
+      return res.status(404).json({ error: "User not found" });
     }
 
     return res.status(200).json({
       message: "Profile updated successfully",
+      user: result.rows[0],
     });
-  } catch (error) {
-    console.error("Update Profile Error:", error);
-    return res.status(500).json({
-      message: "Internal Server Error",
-    });
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(409).json({ error: "Email already in use" });
+    }
+    console.error("Update profile error:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
