@@ -34,6 +34,7 @@ import { AuthStorage } from "../../utils/secureStorage";
 import axios, { AxiosError } from "axios";
 import { refreshAccessToken } from "../../utils/jwttokens";
 import { toast } from "sonner";
+// import { QRCodeSVG } from "qrcode.react";
 
 const Invoices = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -147,11 +148,18 @@ const Invoices = () => {
                   </div>
 
                   <CardDescription className="card-description-small">
-                    {blob.pathname.split("/").pop()}
+                    {blob.pathname.split("/")[1]}
                   </CardDescription>
+
+                  {/* <div className="my-4 flex space-y-4 flex-col items-center">
+                    <p className="text-sm text-muted-foreground font-bold">
+                      Scan To see online
+                    </p>
+                    <QRCodeSVG value={blob.url} />
+                  </div> */}
                 </CardContent>
 
-                <CardFooter className="flex flex-col gap-2 pt-4">
+                <CardFooter className="flex flex-col gap-2 pt-2">
                   <Button asChild className="w-full" variant="link">
                     <a
                       href={blob.url}

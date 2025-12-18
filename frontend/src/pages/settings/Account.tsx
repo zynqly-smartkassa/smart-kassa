@@ -7,9 +7,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-
 import { useForm } from "react-hook-form";
 import { Form } from "@/components/ui/form";
 import {
@@ -25,7 +23,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../../redux/store";
-import { useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import {
   handleLogoutError,
   handleDeleteAccountError,
@@ -35,9 +33,134 @@ import axios, { AxiosError } from "axios";
 import { AuthStorage } from "@/utils/secureStorage";
 import { updateUser } from "../../../redux/slices/userSlice";
 import { refreshAccessToken } from "@/utils/jwttokens";
+import { Label } from "@/components/ui/label";
+import { User } from "lucide-react";
 
 const Account = () => {
   const dispatch: AppDispatch = useDispatch();
+  const [preview, setPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchAvatar(retryFetch: boolean = true) {
+      try {
+        let accessToken: string | null;
+        if (retryFetch) {
+          accessToken = await AuthStorage.getAccessToken();
+        } else {
+          accessToken = await refreshAccessToken();
+        }
+
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/list-blobs/avatar`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        retryFetch = true;
+        const incomingPreview = await response.data.actualFiles[0].url;
+        setPreview(incomingPreview);
+        setLoading(true);
+        return;
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          const isAuthError =
+            error.status === 403 ||
+            error.status === 401 ||
+            error.response?.data?.path === "auth middleware";
+
+          if (isAuthError && retryFetch) {
+            // First retry with refreshed token
+            retryFetch = false;
+            return await fetchAvatar(false);
+          } else if (isAuthError && !retryFetch) {
+            // Second attempt failed - session expired
+            setLoading(true);
+            toast.error("Session expired. Please log in again.");
+            return;
+          } else {
+            setLoading(true);
+            toast.error(
+              "Could not load Ressources, check your Internet Connection"
+            );
+            return;
+          }
+        } else {
+          setLoading(true);
+          toast.error("An unexpected error occurred.");
+          return;
+        }
+      }
+    }
+
+    fetchAvatar();
+  }, []);
+
+  async function changeAvatar(avatarFile: File, retryFetch: boolean = true) {
+    try {
+      let accessToken: string | null;
+      if (retryFetch) {
+        accessToken = await AuthStorage.getAccessToken();
+      } else {
+        accessToken = await refreshAccessToken();
+      }
+
+      const formData = new FormData();
+      formData.append("newAvatar", avatarFile);
+
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/list-blobs/avatar`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      retryFetch = true;
+      setPreview(response.data.url);
+      return;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const isAuthError =
+          error.status === 403 ||
+          error.status === 401 ||
+          error.response?.data?.path === "auth middleware";
+
+        if (isAuthError && retryFetch) {
+          // First retry with refreshed token
+          retryFetch = false;
+          return await changeAvatar(avatarFile, false);
+        } else if (isAuthError && !retryFetch) {
+          // Second attempt failed - session expired
+          toast.error("Session expired. Please log in again.");
+          return;
+        } else {
+          toast.error(
+            "Could not load Ressources, check your Internet Connection"
+          );
+          return;
+        }
+      } else {
+        toast.error("An unexpected error occurred.");
+        return;
+      }
+    }
+  }
+
+  const onSelectFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      toast.info("Select a File");
+      return;
+    }
+
+    const selectedFile = e.target.files[0];
+    await changeAvatar(selectedFile);
+  };
 
   async function updateProfile(retry: boolean = true) {
     let accessToken: string | null;
@@ -165,27 +288,38 @@ const Account = () => {
           <div className="flex flex-row gap-8 items-center">
             <Avatar>
               <AvatarImage
-                src="https://github.com/shadcn.png"
-                alt="@shadcn"
-                className="rounded-xl w-28 h-28"
+                src={
+                  preview ||
+                  "https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8="
+                }
+                alt="Profilce Picture"
+                className="rounded-full w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 object-cover"
               />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarFallback>
+                <User className={loading ? "" : "animate-pulse"} />
+              </AvatarFallback>
             </Avatar>
 
             <div className="flex flex-col gap-2 items-start">
-              <Button
-                className="
-                  px-8 py-3 font-extrabold border-2 border-violet-400
-                  transition-all duration-200
-                  hover:bg-violet-100
-                  hover:dark:bg-violet-700/50
-                  hover:border-violet-500
-                  hover:scale-[1.02]
-                  active:scale-[0.98]
-                "
+              <Label
+                htmlFor="AvatarChanger"
+                className="underline cursor-pointer"
               >
-                Change avatar
-              </Button>
+                Choose a new Profile Picture
+              </Label>
+              <input
+                type="file"
+                alt="Change Avatar"
+                about="Change Avatar"
+                title="Avatarinput"
+                accept=".jpg, .png, .webp, .svg"
+                id="AvatarChanger"
+                className="
+                text-xs hidden
+                "
+                onChange={onSelectFile}
+              />
+
               <p className="text-xs font-light">JPG, GIF or PNG. 1MB max.</p>
             </div>
           </div>
