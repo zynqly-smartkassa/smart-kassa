@@ -48,8 +48,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       }
 
       if (!isAuthenticated) {
-        console.log("getting user");
-        const userData: USER_DTO = await verifyAccessToken(dispatch);
+        const userData: USER_DTO = await verifyAccessToken();
         if (!userData) {
           throw new Error("User Data invalid");
         }

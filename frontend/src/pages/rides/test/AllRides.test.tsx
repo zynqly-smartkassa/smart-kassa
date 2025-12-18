@@ -8,7 +8,7 @@ import userEvent from "@testing-library/user-event";
 import { getRidesToday, getRidesYesterday } from "../../../utils/rides/getRides";
 import { getDateFormat, getDateNow, getDateYesterday } from "../../../utils/rides/getDate";
 import { date, distance, duration, timeToSeconds } from "../../../utils/rides/sort";
-import type { AllRide } from "constants/AllRide";
+import type { AllRide } from "../../../../constants/AllRide";
 
 const rides: AllRide[] = [
   {

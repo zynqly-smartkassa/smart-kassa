@@ -18,7 +18,7 @@ const config: CapacitorConfig = {
   server:
     process.env.NODE_ENV === "development"
       ? {
-          url: "http://192.168.0.167:5173",
+          url: "http://192.168.56.1:5173",
           cleartext: true,
         }
       : undefined,

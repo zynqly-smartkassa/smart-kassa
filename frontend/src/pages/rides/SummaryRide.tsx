@@ -9,7 +9,7 @@ import L from "leaflet";
 import "leaflet-routing-machine";
 import { useEffect, useRef } from 'react';
 import { durationToMinutes, formatMinutes } from '../../utils/rides/summaryMinutes';
-import type { AllRide } from 'constants/AllRide';
+import type { AllRide } from '../../../constants/AllRide';
 import { driverIcon, locationIcon } from '../../utils/icons';
 import StatusOverlay from '../../components/StatusOverlay';
 

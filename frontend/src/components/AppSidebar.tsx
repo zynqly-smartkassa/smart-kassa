@@ -16,7 +16,7 @@ import { useState, useEffect } from "react";
 
 import { Link } from "react-router-dom";
 import { isMobile } from "@/hooks/use-mobile";
-import type { AppDispatch } from "redux/store";
+import type { AppDispatch } from "../../redux/store";
 import { useDispatch } from "react-redux";
 import { setLink } from "../../redux/slices/footerLinksSlice";
 

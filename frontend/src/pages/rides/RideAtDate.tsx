@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card"
-import type { AllRide } from "constants/AllRide";
+import type { AllRide } from "../../../constants/AllRide";
 import { date, distance, duration } from "../../utils/rides/sort";
 import { useNavigate } from "react-router-dom";
 

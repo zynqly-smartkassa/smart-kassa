@@ -4,7 +4,7 @@ import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineContent from '@mui/lab/TimelineContent';
-import type { AllRide } from 'constants/AllRide';
+import type { AllRide } from '../../../constants/AllRide';
 
 export interface dataArgs {
   label: string;

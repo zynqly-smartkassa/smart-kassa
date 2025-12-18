@@ -14,7 +14,7 @@ import { fillField, type InfoField, expectValidationMessage } from "../../utils/
 import { validationMessages } from "../../content/auth/validationMessages";
 import { useInvalidPassword } from "../../hooks/useValidator";
 import * as authModule from "../../utils/auth";
-import type { USER_DTO } from "constants/User";
+import type { USER_DTO } from "../../../constants/User";
 import Home from "../Home";
 
 // ResizeObserver Mock (Recharts) "Unused"

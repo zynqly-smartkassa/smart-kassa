@@ -24,15 +24,80 @@ import { deleteAccount, logOut } from "@/utils/auth";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "redux/store";
+import type { AppDispatch, RootState } from "../../../redux/store";
 import { useState } from "react";
 import {
   handleLogoutError,
   handleDeleteAccountError,
 } from "@/utils/errorHandling";
 import { toastMessages } from "@/content/auth/toastMessages";
+import axios, { AxiosError } from "axios";
+import { AuthStorage } from "@/utils/secureStorage";
+import { updateUser } from "../../../redux/slices/userSlice";
+import { refreshAccessToken } from "@/utils/jwttokens";
 
 const Account = () => {
+  const dispatch: AppDispatch = useDispatch();
+
+  async function updateProfile(retry: boolean = true) {
+    let accessToken: string | null;
+    if (retry) {
+      accessToken = await AuthStorage.getAccessToken();
+    } else {
+      accessToken = await refreshAccessToken();
+    }
+
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/account/me`,
+        {
+          first_name: firstName,
+          last_name: lastName,
+          email: email,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      dispatch(
+        updateUser({
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+        })
+      );
+
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const isAuthError =
+          error.status === 403 ||
+          error.status === 401 ||
+          error.response?.data?.path === "auth middleware";
+
+        if (isAuthError && retry) {
+          await updateProfile(false);
+        } else if (isAuthError && !retry) {
+          // Second attempt failed - session expired
+          toast.error("Session expired. Please log in again.");
+        } else if (error.status === 409) {
+          toast.error(
+            "This email is already in use. Please use a different email."
+          );
+        } else if (error.status === 400) {
+          toast.error("Invalid input. Please check your information.");
+        } else {
+          toast.error("Failed to update profile. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+    }
+  }
+
   const user = useSelector((state: RootState) => state.user);
 
   const form = useForm({
@@ -43,11 +108,14 @@ const Account = () => {
     },
   });
 
-  const { firstName, lastName, email } = form.getValues();
+  // Watch all form fields for changes
+  const { firstName, lastName, email } = form.watch();
+
+  // Check if any field has changed from the original user values
   const toRevert =
-    user.email !== email ||
-    user.firstName !== firstName ||
-    user.lastName !== lastName;
+    user.email !== email.trim() ||
+    user.firstName !== firstName.trim() ||
+    user.lastName !== lastName.trim();
 
   const revertChanges = () => {
     if (toRevert) {
@@ -55,23 +123,20 @@ const Account = () => {
       form.setValue("firstName", user.firstName);
       form.setValue("lastName", user.lastName);
       toast.success("Changes discarded.", {
-        description: "Your unsaved progress has been removed.",
         duration: 3000, // 3 Sekunden sind ideal
         icon: "🗑️",
+        className: "text-black dark:text-white",
       });
     }
   };
 
-  const onSubmit = (values: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  }) => {
-    console.log("Form submitted:", values);
+  const onSubmit = async () => {
+    if (toRevert) {
+      await updateProfile();
+    }
   };
 
   const navigator = useNavigate();
-  const dispatch: AppDispatch = useDispatch();
   const [deletePassword, setDeletePassword] = useState("");
 
   return (
@@ -195,23 +260,36 @@ const Account = () => {
 
               <Button
                 type="submit"
-                className="
-                  btn-primary
-                "
-              >
-                Save
-              </Button>
-              <Button
-                onClick={revertChanges}
-                type="button"
-                className="
+                className={
+                  toRevert
+                    ? "btn-primary ml-2"
+                    : `
                   ml-2 bg-white dark:bg-black border-violet-400 border-2 dark:border-0 black:text-white font-extrabold px-8 py-3
                   transition-all duration-200
                   hover:bg-violet-400 hover:text-white
                   hover:shadow-md
                   hover:scale-[1.02]
                   active:scale-[0.98]
-                "
+                `
+                }
+              >
+                Save
+              </Button>
+              <Button
+                onClick={revertChanges}
+                type="button"
+                className={
+                  toRevert
+                    ? "btn-primary ml-2"
+                    : `
+                  ml-2 bg-white dark:bg-black border-violet-400 border-2 dark:border-0 black:text-white font-extrabold px-8 py-3
+                  transition-all duration-200
+                  hover:bg-violet-400 hover:text-white
+                  hover:shadow-md
+                  hover:scale-[1.02]
+                  active:scale-[0.98]
+                `
+                }
               >
                 Revert Changes
               </Button>
@@ -279,11 +357,7 @@ const Account = () => {
           </div>
           <Dialog>
             <DialogTrigger asChild>
-              <Button
-                className="btn-danger"
-              >
-                Delete my account
-              </Button>
+              <Button className="btn-danger">Delete my account</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -400,7 +474,6 @@ export default Account;
 //           <Button
 //             onClick={async () => {
 //               await AuthStorage.clearAccessToken();
-//               console.log("deleted access token");
 //             }}
 //             className=" my-4
 //       bg-violet-400 text-white font-extrabold w-full md:w-56 py-3
