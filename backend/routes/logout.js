@@ -30,16 +30,10 @@ router.post("/", authenticateToken, async (req, res) => {
       [refreshToken, user_id]
     );
 
-    if (result.rowCount === 0) {
-      console.error("Logout Error: User not found");
-      return res.status(400).json({ error: "User not found" });
-    }
-
     res.clearCookie("refreshToken", {
       httpOnly: true, // Prevents XSS attacks
       secure: process.env.NODE_ENV === "production", // HTTPS only in production
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       path: "/",
     });
 
