@@ -1,4 +1,12 @@
 
+/**
+ * Gets the current date and time as a formatted string.
+ * 
+ * Returns the current timestamp in the format "YYYY-MM-DD HH:MM:SS" with
+ * zero-padding for all components.
+ * 
+ * @returns {string} Current date and time as "YYYY-MM-DD HH:MM:SS".
+ */
 export function getDateNow() {
   const now = new Date();
 
@@ -15,7 +23,14 @@ export function getDateNow() {
   return formatted
 }
 
-
+/**
+ * Gets yesterday's date and time as a formatted string.
+ * 
+ * Returns yesterday's timestamp (24 hours ago) in the format "YYYY-MM-DD HH:MM:SS"
+ * with zero-padding for all components.
+ * 
+ * @returns {string} Yesterday's date and time as "YYYY-MM-DD HH:MM:SS".
+ */
 export function getDateYesterday() {
   const now = new Date();
 
@@ -35,7 +50,15 @@ export function getDateYesterday() {
   return formatted
 }
 
-
+/**
+ * Formats a Date object to a date-only string.
+ * 
+ * Converts a Date object to "YYYY-MM-DD" format with zero-padding,
+ * excluding time components.
+ * 
+ * @param {Date} date - The Date object to format.
+ * @returns {string} Formatted date string as "YYYY-MM-DD".
+ */
 export function getDateFormat(date: Date) {
 
   const year = date.getFullYear();

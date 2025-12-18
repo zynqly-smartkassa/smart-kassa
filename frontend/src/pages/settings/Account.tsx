@@ -23,52 +23,138 @@ import {
 import { deleteAccount, logOut } from "@/utils/auth";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../../redux/store";
 import { useState } from "react";
 import {
   handleLogoutError,
   handleDeleteAccountError,
 } from "@/utils/errorHandling";
 import { toastMessages } from "@/content/auth/toastMessages";
+import axios, { AxiosError } from "axios";
+import { AuthStorage } from "@/utils/secureStorage";
+import { updateUser } from "../../../redux/slices/userSlice";
+import { refreshAccessToken } from "@/utils/jwttokens";
 
 const Account = () => {
+  const dispatch: AppDispatch = useDispatch();
+
+  async function updateProfile(retry: boolean = true) {
+    let accessToken: string | null;
+    if (retry) {
+      accessToken = await AuthStorage.getAccessToken();
+    } else {
+      accessToken = await refreshAccessToken();
+    }
+
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/account/me`,
+        {
+          first_name: firstName,
+          last_name: lastName,
+          email: email,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      dispatch(
+        updateUser({
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+        })
+      );
+
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const isAuthError =
+          error.status === 403 ||
+          error.status === 401 ||
+          error.response?.data?.path === "auth middleware";
+
+        if (isAuthError && retry) {
+          await updateProfile(false);
+        } else if (isAuthError && !retry) {
+          // Second attempt failed - session expired
+          toast.error("Session expired. Please log in again.");
+        } else if (error.status === 409) {
+          toast.error(
+            "This email is already in use. Please use a different email."
+          );
+        } else if (error.status === 400) {
+          toast.error("Invalid input. Please check your information.");
+        } else {
+          toast.error("Failed to update profile. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+    }
+  }
+
+  const user = useSelector((state: RootState) => state.user);
+
   const form = useForm({
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
     },
   });
 
-  const onSubmit = (values: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  }) => {
-    console.log("Form submitted:", values);
+  // Watch all form fields for changes
+  const { firstName, lastName, email } = form.watch();
+
+  // Check if any field has changed from the original user values
+  const toRevert =
+    user.email !== email.trim() ||
+    user.firstName !== firstName.trim() ||
+    user.lastName !== lastName.trim();
+
+  const revertChanges = () => {
+    if (toRevert) {
+      form.setValue("email", user.email);
+      form.setValue("firstName", user.firstName);
+      form.setValue("lastName", user.lastName);
+      toast.success("Changes discarded.", {
+        duration: 3000, // 3 Sekunden sind ideal
+        icon: "🗑️",
+        className: "text-black dark:text-white",
+      });
+    }
+  };
+
+  const onSubmit = async () => {
+    if (toRevert) {
+      await updateProfile();
+    }
   };
 
   const navigator = useNavigate();
-  const dispatch: AppDispatch = useDispatch();
   const [deletePassword, setDeletePassword] = useState("");
 
   return (
-    <div className="flex flex-col gap-16">
+    <div className="settings-page-container">
       {/* Page Header */}
-      <div className="pb-6 border-b border-gray-300">
-        <h2 className="text-3xl font-extrabold">Account Settings</h2>
-        <p className="text-base text-gray-600 dark:text-gray-500 mt-2">
+      <div className="page-header-container">
+        <h2 className="page-title">Account Settings</h2>
+        <p className="subheader">
           Manage your account information, avatar, and email settings.
         </p>
       </div>
 
       {/* Information Section */}
-      <div className="flex flex-col md:flex-row gap-10 items-start border-b border-gray-300 pb-10">
+      <div className="section-container">
         {/* Left Label Column */}
         <div className="w-full md:w-64">
-          <h3 className="font-extrabold text-lg">Information</h3>
-          <p className="text-sm font-light mt-1">
+          <h3 className="section-header">Information</h3>
+          <p className="section-description">
             Use an address where you can receive mail.
           </p>
         </div>
@@ -174,16 +260,57 @@ const Account = () => {
 
               <Button
                 type="submit"
-                className="
-                  bg-violet-400 text-white font-extrabold px-8 py-3
+
+                className={
+                  toRevert
+                    ? "btn-main ml-2"
+                    : `
+                  ml-2 bg-white dark:bg-black border-violet-400 border-2 dark:border-0 black:text-white font-extrabold px-8 py-3
                   transition-all duration-200
-                  hover:bg-violet-500
+                  hover:bg-violet-400 hover:text-white
                   hover:shadow-md
                   hover:scale-[1.02]
                   active:scale-[0.98]
-                "
+                `
+                }
               >
                 Save
+              </Button>
+              <Button
+                onClick={revertChanges}
+                type="button"
+                className={
+                  toRevert
+                    ? "btn-primary ml-2"
+                    : `
+                  ml-2 bg-white dark:bg-black border-violet-400 border-2 dark:border-0 black:text-white font-extrabold px-8 py-3
+                  transition-all duration-200
+                  hover:bg-violet-400 hover:text-white
+                  hover:shadow-md
+                  hover:scale-[1.02]
+                  active:scale-[0.98]
+                `
+                }
+              >
+                Save
+              </Button>
+              <Button
+                onClick={revertChanges}
+                type="button"
+                className={
+                  toRevert
+                    ? "btn-primary ml-2"
+                    : `
+                  ml-2 bg-white dark:bg-black border-violet-400 border-2 dark:border-0 black:text-white font-extrabold px-8 py-3
+                  transition-all duration-200
+                  hover:bg-violet-400 hover:text-white
+                  hover:shadow-md
+                  hover:scale-[1.02]
+                  active:scale-[0.98]
+                `
+                }
+              >
+                Revert Changes
               </Button>
             </form>
           </Form>
@@ -195,25 +322,14 @@ const Account = () => {
         {/* Log Out Section */}
         <div className="flex flex-col gap-4">
           <div>
-            <h3 className="font-extrabold text-lg">Log out</h3>
-            <p className="text-sm font-light mt-1">
+            <h3 className="section-header">Log out</h3>
+            <p className="section-description">
               Log out of your account. You can log back in anytime.
             </p>
           </div>
           <Dialog>
             <DialogTrigger asChild>
-              <Button
-                className="
-              bg-violet-400 text-white font-extrabold w-full md:w-56 py-3
-              transition-all duration-200
-              hover:bg-red-500
-              hover:shadow-md
-              hover:scale-[1.02]
-              active:scale-[0.98]
-            "
-              >
-                Log out
-              </Button>
+              <Button className="btn-main-action">Log out</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -239,14 +355,7 @@ const Account = () => {
                         }
                       );
                     }}
-                    className=" my-4
-              bg-violet-400 text-white font-extrabold w-full md:w-56 py-3
-              transition-all duration-200
-              hover:bg-red-500
-              hover:shadow-md
-              hover:scale-[1.02]
-              active:scale-[0.98]
-            "
+                    className="btn-main-action"
                   >
                     Log out
                   </Button>
@@ -259,28 +368,15 @@ const Account = () => {
         {/* Delete Account Section */}
         <div className="flex flex-col gap-4">
           <div>
-            <h3 className="font-extrabold text-lg text-red-600">
-              Delete account
-            </h3>
-            <p className="text-sm font-light mt-1">
+            <h3 className="section-header-danger">Delete account</h3>
+            <p className="section-description">
               No longer want to use our service? This action is permanent and
               cannot be undone.
             </p>
           </div>
           <Dialog>
             <DialogTrigger asChild>
-              <Button
-                className="
-              bg-red-500 text-white font-extrabold w-full md:w-56 py-3
-              transition-all duration-200
-              hover:bg-red-600
-              hover:shadow-md
-              hover:scale-[1.02]
-              active:scale-[0.98]
-            "
-              >
-                Delete my account
-              </Button>
+              <Button className="btn-danger">Delete my account</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -397,7 +493,6 @@ export default Account;
 //           <Button
 //             onClick={async () => {
 //               await AuthStorage.clearAccessToken();
-//               console.log("deleted access token");
 //             }}
 //             className=" my-4
 //       bg-violet-400 text-white font-extrabold w-full md:w-56 py-3

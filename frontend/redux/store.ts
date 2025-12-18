@@ -3,6 +3,7 @@ import toastSlice from "./slices/toastSlice";
 import userSlice from "./slices/userSlice";
 import authSlice from "./slices/authSlice";
 import footerLinkSlice from "./slices/footerLinksSlice";
+import invoicesSlice from "./slices/invoices";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     user: userSlice,
     authState: authSlice,
     setFooterLink: footerLinkSlice,
+    setBills: invoicesSlice,
   },
 });
 

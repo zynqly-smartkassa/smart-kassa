@@ -59,7 +59,7 @@ export const AuthStorage = {
   /**
    * Save access token
    */
-  async setTokens(accessToken: string): Promise<void> {
+  async setAccessToken(accessToken: string): Promise<void> {
     await SecureStorage.set("accessToken", accessToken);
   },
 

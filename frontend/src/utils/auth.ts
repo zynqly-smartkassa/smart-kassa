@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { AuthStorage } from "./secureStorage";
 import type { AppDispatch } from "../../redux/store";
 import { signInUser, signOutUser } from "../../redux/slices/userSlice";
+import { refreshAccessToken } from "./jwttokens";
 
 export async function register(
   firstName: string,
@@ -33,7 +34,7 @@ export async function register(
     }
 
     const accessToken = await data.accessToken;
-    await AuthStorage.setTokens(accessToken);
+    await AuthStorage.setAccessToken(accessToken);
 
     dispatch(
       signInUser({
@@ -136,7 +137,7 @@ export async function login(
       throw new Error("Response is empty");
     }
 
-    await AuthStorage.setTokens(accessToken);
+    await AuthStorage.setAccessToken(accessToken);
 
     const user = data.user;
     dispatch(
@@ -197,9 +198,15 @@ export async function login(
   }
 }
 
-export async function logOut(dispatch: AppDispatch) {
+export async function logOut(dispatch: AppDispatch, retry: boolean = true) {
   try {
-    const accessToken = await AuthStorage.getAccessToken();
+    let accessToken: string | null;
+    if (retry) {
+      accessToken = await AuthStorage.getAccessToken();
+    } else {
+      accessToken = await refreshAccessToken();
+    }
+
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/logout`,
       {},
@@ -231,6 +238,17 @@ export async function logOut(dispatch: AppDispatch) {
       // Handle response status codes
       const status = error.response?.status;
       const errorMessage = error.response?.data?.error;
+      const path = error.response?.data?.path;
+
+      // Check for auth errors and retry with refreshed token
+      const isAuthError =
+        status === 403 || status === 401 || path === "auth middleware";
+
+      if (isAuthError && retry) {
+        return await logOut(dispatch, false);
+      } else if (isAuthError && !retry) {
+        throw new Error("Session Expired");
+      }
 
       if (status === 400) {
         if (errorMessage === "Fields missing") {
@@ -256,9 +274,18 @@ export async function logOut(dispatch: AppDispatch) {
   }
 }
 
-export async function deleteAccount(password: string, dispatch: AppDispatch) {
+export async function deleteAccount(
+  password: string,
+  dispatch: AppDispatch,
+  retry: boolean = true
+) {
   try {
-    const accessToken = await AuthStorage.getAccessToken();
+    let accessToken: string | null;
+    if (retry) {
+      accessToken = await AuthStorage.getAccessToken();
+    } else {
+      accessToken = await refreshAccessToken();
+    }
 
     const response = await axios.delete(
       `${import.meta.env.VITE_API_URL}/account`,
@@ -295,6 +322,18 @@ export async function deleteAccount(password: string, dispatch: AppDispatch) {
       // Handle response status codes
       const status = error.response?.status;
       const errorMessage = error.response?.data?.error;
+      const path = error.response?.data?.path;
+
+      // Check for auth errors (except invalid password) and retry with refreshed token
+      const isAuthError =
+        (status === 403 || status === 401 || path === "auth middleware") &&
+        errorMessage !== "Invalid password";
+
+      if (isAuthError && retry) {
+        return await deleteAccount(password, dispatch, false);
+      } else if (isAuthError && !retry) {
+        throw new Error("Session Expired");
+      }
 
       if (status === 400) {
         if (errorMessage === "Fields missing") {
@@ -303,19 +342,9 @@ export async function deleteAccount(password: string, dispatch: AppDispatch) {
         if (errorMessage === "User not found") {
           throw new Error("User Not Found");
         }
-        throw new Error("Missing Fields");
-      } else if (status === 401) {
-        if (errorMessage === "Invalid password") {
-          throw new Error("Invalid Password");
-        }
-        // From auth middleware
-        if (errorMessage === "Acces token required") {
-          throw new Error("Unauthorized");
-        }
-        throw new Error("Unauthorized");
-      } else if (status === 403) {
-        // From auth middleware
-        throw new Error("Unauthorized");
+        throw new Error("Invalid Request");
+      } else if (status === 401 && errorMessage === "Invalid password") {
+        throw new Error("Invalid Password");
       } else if (
         status === 500 ||
         status === 502 ||

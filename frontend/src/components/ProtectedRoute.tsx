@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { isMobile } from "@/hooks/use-mobile";
 import { handleTokenError } from "../utils/errorHandling";
 import { setLink } from "../../redux/slices/footerLinksSlice";
+import StatusOverlay from "./StatusOverlay";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -47,7 +48,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       }
 
       if (!isAuthenticated) {
-        console.log("getting user");
         const userData: USER_DTO = await verifyAccessToken();
         if (!userData) {
           throw new Error("User Data invalid");
@@ -69,7 +69,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
         // Only show toast once per session
         if (!toastShownRef.current) {
-          toast.success(`Welcome back ${userData.firstName}!`, {
+          toast.success(`Welcome back ${userData.firstName || "User"}!`, {
             className: "mt-5 md:mt-0",
             position: "top-center",
             closeButton: true,
@@ -90,11 +90,13 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   // had to also use the authenticate value so it doesn't show home page for split second to non-loged in Users
   if (!isAuthenticated || isLoading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <p className="text-lg font-semibold">Loading...</p>
-      </div>
+    
+    <StatusOverlay text="Loading Service" isLoading={true} errorFallback={
+      ["Unser Service ist leider fehlgeschlagen, bitte versuchen sie es nacher erneut!"]
+    } />
+  
     );
-  }
+  } 
 
   return <>{children}</>;
 };

@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/ta
 
 import { getAllRides } from "../../utils/rides/all-rides";
 import { useEffect, useState } from "react";
-import type { AllRide } from 'constants/AllRide';
+import type { AllRide } from '../../../constants/AllRide';
 import RideAtDate from "./RideAtDate";
 import { ListFilter, ArrowUp, ArrowDown } from 'lucide-react';
 
@@ -18,40 +18,59 @@ import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useSelector } from "react-redux";
-import type { RootState } from "redux/store";
+import type { RootState } from "../../../redux/store";
 
+/**
+ * Component that displays all rides for the logged-in user with filtering and sorting capabilities.
+ * 
+ * This component provides a comprehensive view of all rides with the following features:
+ * - Tab-based filtering to show rides from today, yesterday, or all time
+ * - Sorting by date, distance, or duration in ascending or descending order
+ * - Ride type filtering (all rides, botenfahrt only, or taxifahrt only)
+ * - Individual ride summary view when accessed with a ride ID parameter
+ * - Responsive design with mobile and desktop layouts
+ * 
+ * The component fetches all rides on mount and provides an interactive UI for managing
+ * and viewing ride history. If a ride ID is provided in the URL, it displays the detailed
+ * summary for that specific ride instead of the list view.
+ * 
+ * @returns {JSX.Element} The rides overview interface with filtering, sorting, and navigation options.
+ */
 const AllRides = () => {
 
   const [isDescending, setIsDescending] = useState(true);
   const [isAscending, setIsAscending] = useState(false);
   const [sortAfter, setSortAfter] = useState("date");
-  const [rideType, setRideType] = useState("every");
-  const navigator = useNavigate();
-
+  const [rideType, setRideType] = useState("all");
+  const [loading, setIsLoading] = useState(true);
   const [rides, setRides] = useState<AllRide[] | null>(null);
   const { id } = useParams();
   const user_id = useSelector((state: RootState) => state.user.id)
+  const navigator = useNavigate();
 
 
   useEffect(() => {
     (async () => {
       const data = await
-        getAllRides(Number(user_id))
+        getAllRides(Number(user_id)) //Number(user_id)
 
       if (!data || !data.rides) throw new Error("No rides found");
       setRides(data.rides);
+      setIsLoading(false);
     })();
   }, []);
 
   const ride_id = Number(id);
 
-  if (rides && rides.length === 0) {
-    return <>No Rides yet</>
+  if (loading) {
+    return <>Loading rides...</>
   }
 
   if (!rides) {
-    return <>Loading rides...</>;
+    return <>Unfortunately there are no rides yet...</>
   }
+
+  
 
   // Test if all-rides was called with a id, if so find the exact route
 
@@ -61,7 +80,6 @@ const AllRides = () => {
     if (ride) {
       return <SummaryRide ride={ride}></SummaryRide>
     } else {
-      console.log("Navigating back")
       // since id was not found, navigate to main all-rides
       navigator("/all-rides");
     }
@@ -80,9 +98,9 @@ const AllRides = () => {
         md:items-center">
 
           <div className="flex flex-col gap-1 text-center md:text-left">
-            <h2 data-testid="h2text" className="text-3xl font-extrabold">Rides</h2>
-            <p className="text-base text-gray-600 dark:text-gray-500">
-              Visit, sort and sceify every ride you took!
+            <h2 data-testid="h2text" className="page-title">Rides</h2>
+            <p className="subheader">
+              Visit and sort every ride you took!
             </p>
           </div>
 
@@ -91,7 +109,7 @@ const AllRides = () => {
             <TabsList className="grid grid-cols-3 md:w-auto max-w-[400px] ">
               <TabsTrigger value="today" data-testid="show-today">Today</TabsTrigger>
               <TabsTrigger value="yesterday" data-testid="show-yesterday">Yesterday</TabsTrigger>
-              <TabsTrigger value="every" data-testid="show-every">Every</TabsTrigger>
+              <TabsTrigger value="all" data-testid="show-all">All</TabsTrigger>
             </TabsList>
             <div className="w-full md:w-auto flex flex-row justify-between
            items-center md:gap-6">
@@ -144,7 +162,7 @@ const AllRides = () => {
                   data-testid="asc"></ArrowUp>
               </div>
 
-              <Select defaultValue="every"
+              <Select defaultValue="all"
                 onValueChange={(value) => setRideType(value)}>
                 <SelectTrigger className="w-[180px] border-2 
               border-violet-300 rounded-md md:text-lg"
@@ -153,11 +171,11 @@ const AllRides = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem
-                    value="every"
+                    value="all"
                     className="md:text-lg"
-                    data-testid="only-every"
+                    data-testid="only-all"
                   >
-                    Every
+                    All
                   </SelectItem>
                   <SelectItem
                     value="botenfahrt"
@@ -191,7 +209,7 @@ const AllRides = () => {
             <RideAtDate rides={ridesYesterday} sortAfter={sortAfter}
               isDescending={isDescending} rideType={rideType}></RideAtDate>
           </TabsContent>
-          <TabsContent value="every">
+          <TabsContent value="all">
             <RideAtDate rides={rides} sortAfter={sortAfter}
               isDescending={isDescending} rideType={rideType}></RideAtDate>
           </TabsContent>

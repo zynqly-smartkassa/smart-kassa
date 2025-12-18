@@ -42,7 +42,7 @@ const Balance = ({ entry, duration }: BalanceData) => {
           {metrics.map((data: Metric, index: number) => (
             <Card
               key={index}
-              className="w-full rounded-xl border border-border/40 bg-card
+              className="w-full rounded-xl border border-border/40 bg-sidebar
                shadow-sm hover:shadow-md transition-shadow"
             >
               <CardHeader className="flex flex-row justify-between
@@ -71,7 +71,7 @@ const Balance = ({ entry, duration }: BalanceData) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="w-full lg:col-span-1 rounded-xl border border-border/40 bg-card
+        <Card className="w-full lg:col-span-1 rounded-xl border border-border/40 bg-sidebar
                shadow-sm hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle className="text-xl md:text-3xl">Balance</CardTitle>
@@ -80,18 +80,21 @@ const Balance = ({ entry, duration }: BalanceData) => {
             <ChartContainer
               config={radialSeriesConfig}
               className="mx-auto aspect-square max-h-[250px]"
+
             >
               <RadialBarChart
                 data={chartData}
-                startAngle={0}
-                endAngle={360}
+                startAngle={180}
+                endAngle={-180}
                 innerRadius="30%"
                 outerRadius="80%"
+
               >
                 <RadialBar
                   dataKey="value"
                   background
-                  isAnimationActive={true}>
+                  isAnimationActive={true}
+                >
                   <LabelList
                     dataKey="name"
                     position="insideStart"
@@ -131,7 +134,7 @@ const Balance = ({ entry, duration }: BalanceData) => {
           </CardFooter>
         </Card>
 
-        <Card className="w-full lg:col-span-2 rounded-xl border border-border/40 bg-card
+        <Card className="w-full lg:col-span-2 rounded-xl border border-border/40 bg-sidebar
                shadow-sm hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle className="text-xl md:text-3xl">Overview</CardTitle>

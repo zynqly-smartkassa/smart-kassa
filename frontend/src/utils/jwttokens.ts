@@ -7,7 +7,6 @@ import { AuthStorage } from "./secureStorage";
  */
 export async function verifyAccessToken() {
   try {
-    console.log("got accesstoken");
     const accessToken = await AuthStorage.getAccessToken();
 
     if (!accessToken) {
@@ -36,7 +35,6 @@ export async function verifyAccessToken() {
     try {
       const newAccessToken = await refreshAccessToken();
 
-      console.log("geting new access token");
       // Retry verification with the new access token
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/verify`,
@@ -63,9 +61,8 @@ export async function verifyAccessToken() {
 /**
  * Refresh access token using refresh token from cookie
  */
-async function refreshAccessToken() {
+export async function refreshAccessToken() {
   try {
-    console.log("Getting access Token");
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/refresh`,
       {},
@@ -76,11 +73,9 @@ async function refreshAccessToken() {
       throw new Error("Empty Response");
     }
 
-    console.log("about to set token");
     const { accessToken } = await response.data;
 
-    await AuthStorage.setTokens(accessToken);
-    console.log("Setted accessToken");
+    await AuthStorage.setAccessToken(accessToken);
     return accessToken;
   } catch (error) {
     console.error(error);

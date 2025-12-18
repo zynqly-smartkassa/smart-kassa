@@ -2,23 +2,23 @@ import SingleNotification from "./SingleNotification";
 
 const Notifications = () => {
   return (
-    <div className="flex flex-col gap-16">
+    <div className="settings-page-container">
 
       {/* Page Header */}
-      <div className="pb-6 border-b border-gray-300">
-        <h2 className="text-3xl font-extrabold">Notification Settings</h2>
-        <p className="text-base text-gray-600 dark:text-gray-500 mt-2">
+      <div className="page-header-container">
+        <h2 className="page-title">Notification Settings</h2>
+        <p className="subheader">
           Manage your notifications. Turn on or off the notifications you want to receive.
         </p>
       </div>
 
       {/* Email Notifications Section */}
-      <div className="flex flex-col md:flex-row gap-10 items-start border-b border-gray-300 pb-10">
-        
+      <div className="section-container">
+
         {/* Left Label Column */}
         <div className="w-full md:w-64">
-          <h3 className="font-extrabold text-lg">Email notifications</h3>
-          <p className="text-sm font-light mt-1">
+          <h3 className="section-header">Email notifications</h3>
+          <p className="section-description">
             Get emails to find out what's going on when you're not online. You can turn these off.
           </p>
         </div>
@@ -34,12 +34,12 @@ const Notifications = () => {
       </div>
 
       {/* Second Notification Section */}
-      <div className="flex flex-col md:flex-row gap-10 items-start border-b border-gray-300 pb-10">
-        
+      <div className="section-container">
+
         {/* Left Label Column */}
         <div className="w-full md:w-64">
-          <h3 className="font-extrabold text-lg">Second Notification Section</h3>
-          <p className="text-sm font-light mt-1 max-w-xs">
+          <h3 className="section-header">Second Notification Section</h3>
+          <p className="section-description max-w-xs">
             Set some notifications
           </p>
         </div>
