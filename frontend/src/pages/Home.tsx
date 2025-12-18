@@ -63,7 +63,7 @@ function Home() {
         <div className="w-full flex flex-col gap-4 md:flex-row justify-between items-center md:items-end">
           <div className="flex flex-col">
             <h2 className="ml-2 text-lg text-center md:text-start font-light">
-              Hi {user.firstName || "Thomas"},
+              Hi {user.firstName},
             </h2>
 
             <div className="w-full flex items-center gap-2 text-3xl">
