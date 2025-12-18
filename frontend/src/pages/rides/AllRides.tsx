@@ -97,8 +97,8 @@ const AllRides = () => {
         md:items-center">
 
           <div className="flex flex-col gap-1 text-center md:text-left">
-            <h2 data-testid="h2text" className="text-3xl font-extrabold">Rides</h2>
-            <p className="text-base text-gray-600 dark:text-gray-500">
+            <h2 data-testid="h2text" className="page-title">Rides</h2>
+            <p className="subheader">
               Visit, sort and sceify every ride you took!
             </p>
           </div>

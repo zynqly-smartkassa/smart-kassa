@@ -165,13 +165,13 @@ function Login() {
                 <div className="flex items-center mb-2">
                   <label
                     htmlFor="password"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="form-label"
                   >
                     {l.labels.password}
                   </label>
                   <a
                     href="#"
-                    className="ml-auto inline-block text-sm text-muted-foreground font-extrabold underline hover:text-violet-400"
+                    className="auth-link-small"
                   >
                     {l.links.forgotPassword}
                   </a>
@@ -186,7 +186,7 @@ function Login() {
           <CardFooter className="flex-col gap-2">
             <Button
               type="submit"
-              className="w-full bg-black text-white dark:bg-white dark:text-black"
+              className="btn-auth-submit"
               variant="default"
               disabled={formUnvalid}
               data-testid="login"
@@ -201,7 +201,7 @@ function Login() {
                 <p>{l.footer.text}</p>
                 <Link
                   to="/register"
-                  className="font-extrabold underline hover:text-violet-400"
+                  className="auth-link"
                   data-testid="registerLink"
                 >
                   {l.footer.link}

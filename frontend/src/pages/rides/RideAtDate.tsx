@@ -117,8 +117,8 @@ const RideAtDate = ({ rides, sortAfter, isDescending, rideType }: RideAtDateArgs
                         hover:-translate-y-1 hover:shadow-lg cursor-pointer">
             <CardHeader className="space-y-1">
               {/* Start Address */}
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                <span className="text-xl">🏁</span> 
+              <CardTitle className="flex items-center gap-2 card-title-standard">
+                <span className="text-xl">🏁</span>
                 {ride.end_address.split(",").slice(2, 4).join(", ")}
               </CardTitle>
 

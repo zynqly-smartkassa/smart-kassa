@@ -1,0 +1,131 @@
+/* ========================================
+   STANDARD/CONSISTENT UI CLASSES
+   ======================================== */
+
+/* ========================================
+   LAYOUT CONTAINERS
+   ======================================== */
+
+/* Main container for settings pages with vertical spacing */
+.settings-page-container {
+  @apply flex flex-col gap-16;
+}
+
+/* Container for page header sections with bottom border */
+.page-header-container {
+  @apply pb-6 border-b border-gray-300;
+}
+
+/* Container for settings sections with responsive layout and bottom border */
+.section-container {
+  @apply flex flex-col md:flex-row gap-10 items-start border-b border-gray-300 pb-10;
+}
+
+/* ========================================
+   TYPOGRAPHY - HEADERS
+   ======================================== */
+
+/* Main page title (h2) - Large, bold header for page names */
+.page-title {
+  @apply text-3xl font-extrabold;
+}
+
+/* Section header (h3) - Bold header for content sections */
+.section-header {
+  @apply font-extrabold text-lg;
+}
+
+/* Section header variant for danger/delete actions */
+.section-header-danger {
+  @apply font-extrabold text-lg text-red-600;
+}
+
+/* ========================================
+   TYPOGRAPHY - PARAGRAPHS & TEXT
+   ======================================== */
+
+/* Subheader text that appears below main page headings */
+.subheader {
+  @apply text-base font-semibold text-gray-600 dark:text-gray-400 mt-2;
+}
+
+/* Section description text that appears below section headers */
+.section-description {
+  @apply text-sm font-light mt-1;
+}
+
+/* ========================================
+   TYPOGRAPHY - LINKS
+   ======================================== */
+
+/* Authentication page links with hover effect */
+.auth-link {
+  @apply font-extrabold underline hover:text-violet-400;
+}
+
+/* Small authentication link with muted color */
+.auth-link-small {
+  @apply ml-auto inline-block text-sm text-muted-foreground font-extrabold underline hover:text-violet-400;
+}
+
+/* ========================================
+   FORMS - LABELS & INPUTS
+   ======================================== */
+
+/* Standard form label styling */
+.form-label {
+  @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+/* primary button used for all types of functions */
+.btn-primary {
+   @apply bg-violet-400 text-white font-extrabold px-8 py-3
+                  transition-all duration-200
+                  hover:bg-violet-500
+                  hover:shadow-md
+                  hover:scale-[1.02]
+                  active:scale-[0.98]
+}
+
+/* Primary action button with violet background and hover effects */
+.btn-primary-action {
+  @apply bg-violet-400 text-white font-extrabold w-full md:w-56 py-3
+         transition-all duration-200
+         hover:bg-red-500
+         hover:shadow-md
+         hover:scale-[1.02]
+         active:scale-[0.98];
+}
+
+/* Dangerous functionalities */
+.btn-danger {
+  @apply bg-red-500 text-white font-extrabold w-full md:w-56 py-3
+              transition-all duration-200
+              hover:bg-red-600
+              hover:shadow-md
+              hover:scale-[1.02]
+              active:scale-[0.98]
+}
+
+/* Authentication submit button with theme-aware colors */
+.btn-auth-submit {
+  @apply w-full bg-black text-white dark:bg-white dark:text-black;
+}
+
+/* ========================================
+   CARDS
+   ======================================== */
+
+/* Card title for invoice/ride cards */
+.card-title-standard {
+  @apply text-lg font-semibold;
+}
+
+/* Card description for invoice cards with small text */
+.card-description-small {
+  @apply mt-3 text-xs;
+}

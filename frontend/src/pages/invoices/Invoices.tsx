@@ -81,8 +81,8 @@ const Invoices = () => {
   return (
     <section className="flex flex-col w-full">
       <div className="flex flex-col gap-1 pb-4">
-        <h2 className="text-3xl font-extrabold">Invoices</h2>
-        <p className="text-base text-gray-600 dark:text-gray-500">
+        <h2 className="page-title">Invoices</h2>
+        <p className="subheader">
           View and download all your generated invoices
         </p>
       </div>
@@ -94,7 +94,7 @@ const Invoices = () => {
             blobs.map((blob) => (
               <Card
                 key={blob.pathname}
-                className="rounded-xl border border-border/40 bg-gray-300/60 dark:bg-black/30 shadow-sm hover:shadow-md transition-shadow"
+                className="rounded-xl border border-border/40 bg-sidebar dark:bg-sidebar shadow-sm hover:shadow-md transition-shadow"
               >
                 <CardHeader className="flex flex-row justify-between items-start pb-2">
                   <div className="flex items-center gap-2">
@@ -102,7 +102,7 @@ const Invoices = () => {
                       <FileText className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg font-semibold">
+                      <CardTitle className="card-title-standard">
                         Invoice
                       </CardTitle>
                     </div>
@@ -115,7 +115,7 @@ const Invoices = () => {
                     <span>{formatDate(blob.uploadedAt.toString())}</span>
                   </div>
 
-                  <CardDescription className="mt-3 text-xs">
+                  <CardDescription className="card-description-small">
                     {blob.pathname.split("/").pop()}
                   </CardDescription>
                 </CardContent>
@@ -198,7 +198,7 @@ const Invoices = () => {
                       <FileText className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg font-semibold">
+                      <CardTitle className="card-title-standard">
                         Invoice
                       </CardTitle>
                     </div>
