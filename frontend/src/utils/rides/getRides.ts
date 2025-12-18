@@ -1,4 +1,4 @@
-import type { AllRide } from "constants/AllRide";
+import type { AllRide } from "../../../constants/AllRide";
 
 /**
  * Pads a number with a leading zero if less than 10.

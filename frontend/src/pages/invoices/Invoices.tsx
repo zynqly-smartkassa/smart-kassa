@@ -1,10 +1,8 @@
 import { type ListBlobResultBlob } from "@vercel/blob";
-import { AuthStorage } from "@/utils/secureStorage";
-import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setBills } from "../../../redux/slices/invoices";
-import type { AppDispatch, RootState } from "redux/store";
+import type { AppDispatch, RootState } from "../../../redux/store";
 import {
   Empty,
   EmptyContent,
@@ -32,6 +30,10 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
+import { AuthStorage } from "../../utils/secureStorage";
+import axios, { AxiosError } from "axios";
+import { refreshAccessToken } from "../../utils/jwttokens";
+import { toast } from "sonner";
 
 const Invoices = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -39,27 +41,56 @@ const Invoices = () => {
   const [loading, setLoading] = useState(true);
   const [blobs, setBlobs] = useState<ListBlobResultBlob[]>([]);
   const navigator = useNavigate();
+  const retryRef = useRef(true);
 
   const fetchBills = useCallback(async () => {
     if (!bills || bills.length === 0) {
-      const accessToken = await AuthStorage.getAccessToken();
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_API_URL}/list-blobs/invoices`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+      try {
+        let accessToken: string | null;
+        if (retryRef.current) {
+          accessToken = await AuthStorage.getAccessToken();
+        } else {
+          accessToken = await refreshAccessToken();
         }
-      );
-      dispatch(setBills(data.actualFiles));
-      setBlobs(data.actualFiles);
-      setLoading(false);
+
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_API_URL}/list-blobs/invoices`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        dispatch(setBills(data.actualFiles));
+        setBlobs(data.actualFiles);
+        setLoading(false);
+        retryRef.current = true; // Reset retry flag on success
+      } catch (error) {
+        setLoading(false);
+        if (error instanceof AxiosError) {
+          const isAuthError =
+            error.status === 403 ||
+            error.status === 401 ||
+            error.response?.data?.path === "auth middleware";
+
+          if (isAuthError && retryRef.current) {
+            // First retry with refreshed token
+            retryRef.current = false;
+            return await fetchBills();
+          } else if (isAuthError && !retryRef.current) {
+            // Second attempt failed - session expired
+            toast.error("Session expired. Please log in again.");
+          } else {
+            toast.error("Failed to load invoices. Please try again.");
+          }
+        } else {
+          toast.error("An unexpected error occurred.");
+        }
+      }
     } else {
       setBlobs(bills);
       setLoading(false);
     }
-
-    console.log(bills);
   }, [dispatch, bills]);
 
   useEffect(() => {

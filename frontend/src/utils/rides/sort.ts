@@ -1,4 +1,4 @@
-import type { AllRide } from "constants/AllRide";
+import type { AllRide } from "../../../constants/AllRide";
 
 /**
  * Converts a ride date string to milliseconds timestamp.

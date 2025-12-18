@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/ta
 
 import { getAllRides } from "../../utils/rides/all-rides";
 import { useEffect, useState } from "react";
-import type { AllRide } from 'constants/AllRide';
+import type { AllRide } from '../../../constants/AllRide';
 import RideAtDate from "./RideAtDate";
 import { ListFilter, ArrowUp, ArrowDown } from 'lucide-react';
 
@@ -18,7 +18,7 @@ import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useSelector } from "react-redux";
-import type { RootState } from "redux/store";
+import type { RootState } from "../../../redux/store";
 
 /**
  * Component that displays all rides for the logged-in user with filtering and sorting capabilities.
@@ -80,7 +80,6 @@ const AllRides = () => {
     if (ride) {
       return <SummaryRide ride={ride}></SummaryRide>
     } else {
-      console.log("Navigating back")
       // since id was not found, navigate to main all-rides
       navigator("/all-rides");
     }

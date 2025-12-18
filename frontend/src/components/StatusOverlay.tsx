@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { X } from 'lucide-react';
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Args for the StatusOverlay component.
@@ -47,7 +47,6 @@ const StatusOverlay: React.FC<StatusOverlayProps> = ({
     }, 1000);
 
     const timeout = setTimeout(() => {
-      console.log("Ausfuhrung")
       if (isLoading) {
         setStillLoading(true);
       }

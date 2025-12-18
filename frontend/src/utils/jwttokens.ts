@@ -1,14 +1,12 @@
 import axios, { AxiosError } from "axios";
 import { AuthStorage } from "./secureStorage";
-import type { AppDispatch } from "redux/store";
 
 /**
  * Method to check if access token is valid or not
  * @returns User Data if access token is valid
  */
-export async function verifyAccessToken(dispatch: AppDispatch) {
+export async function verifyAccessToken() {
   try {
-    console.log("got accesstoken");
     const accessToken = await AuthStorage.getAccessToken();
 
     if (!accessToken) {
@@ -35,9 +33,8 @@ export async function verifyAccessToken(dispatch: AppDispatch) {
     await AuthStorage.clearAccessToken();
 
     try {
-      const newAccessToken = await refreshAccessToken(dispatch);
+      const newAccessToken = await refreshAccessToken();
 
-      console.log("geting new access token");
       // Retry verification with the new access token
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/verify`,
@@ -64,9 +61,8 @@ export async function verifyAccessToken(dispatch: AppDispatch) {
 /**
  * Refresh access token using refresh token from cookie
  */
-export async function refreshAccessToken(dispatch: AppDispatch) {
+export async function refreshAccessToken() {
   try {
-    console.log("Getting access Token");
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/refresh`,
       {},
@@ -77,11 +73,9 @@ export async function refreshAccessToken(dispatch: AppDispatch) {
       throw new Error("Empty Response");
     }
 
-    console.log("about to set token");
     const { accessToken } = await response.data;
 
-    await AuthStorage.setAccessToken(accessToken, dispatch);
-    console.log("Setted accessToken");
+    await AuthStorage.setAccessToken(accessToken);
     return accessToken;
   } catch (error) {
     console.error(error);

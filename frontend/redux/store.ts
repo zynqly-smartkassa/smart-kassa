@@ -4,7 +4,6 @@ import userSlice from "./slices/userSlice";
 import authSlice from "./slices/authSlice";
 import footerLinkSlice from "./slices/footerLinksSlice";
 import invoicesSlice from "./slices/invoices";
-import accessTokenSlice from "./slices/accessTokenSlice";
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +12,6 @@ export const store = configureStore({
     authState: authSlice,
     setFooterLink: footerLinkSlice,
     setBills: invoicesSlice,
-    accessTokenState: accessTokenSlice,
   },
 });
 
