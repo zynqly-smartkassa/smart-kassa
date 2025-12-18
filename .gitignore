@@ -153,6 +153,7 @@ vite.config.ts.timestamp-*
 
 # Code Editor
 .vscode
+.idea
 
 # Frontend Documentation folder
 frontend/docs
