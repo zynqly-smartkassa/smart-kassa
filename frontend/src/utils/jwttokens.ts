@@ -1,11 +1,12 @@
 import axios, { AxiosError } from "axios";
 import { AuthStorage } from "./secureStorage";
+import type { AppDispatch } from "redux/store";
 
 /**
  * Method to check if access token is valid or not
  * @returns User Data if access token is valid
  */
-export async function verifyAccessToken() {
+export async function verifyAccessToken(dispatch: AppDispatch) {
   try {
     console.log("got accesstoken");
     const accessToken = await AuthStorage.getAccessToken();
@@ -34,7 +35,7 @@ export async function verifyAccessToken() {
     await AuthStorage.clearAccessToken();
 
     try {
-      const newAccessToken = await refreshAccessToken();
+      const newAccessToken = await refreshAccessToken(dispatch);
 
       console.log("geting new access token");
       // Retry verification with the new access token
@@ -63,7 +64,7 @@ export async function verifyAccessToken() {
 /**
  * Refresh access token using refresh token from cookie
  */
-async function refreshAccessToken() {
+export async function refreshAccessToken(dispatch: AppDispatch) {
   try {
     console.log("Getting access Token");
     const response = await axios.post(
@@ -79,7 +80,7 @@ async function refreshAccessToken() {
     console.log("about to set token");
     const { accessToken } = await response.data;
 
-    await AuthStorage.setTokens(accessToken);
+    await AuthStorage.setAccessToken(accessToken, dispatch);
     console.log("Setted accessToken");
     return accessToken;
   } catch (error) {

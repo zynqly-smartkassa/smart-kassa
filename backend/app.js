@@ -34,6 +34,7 @@ import rideRoutes from "./routes/ride.js";
 import allridesRoutes from "./routes/all-rides.js";
 import logOutRoutes from "./routes/logout.js";
 import deleteAccountRoutes from "./routes/deleteAccount.js";
+import listBlobsRoutes from "./routes/list-blobs.js";
 
 /**
  * Middleware Configuration
@@ -78,6 +79,7 @@ app.use("/ride", rideRoutes);
 app.use("/all-rides", allridesRoutes);
 app.use("/logout", logOutRoutes);
 app.use("/account", deleteAccountRoutes);
+app.use("/list-blobs", listBlobsRoutes);
 
 /**
  * Health Check Endpoint

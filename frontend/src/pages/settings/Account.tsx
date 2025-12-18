@@ -23,8 +23,8 @@ import {
 import { deleteAccount, logOut } from "@/utils/auth";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "redux/store";
 import { useState } from "react";
 import {
   handleLogoutError,
@@ -33,13 +33,34 @@ import {
 import { toastMessages } from "@/content/auth/toastMessages";
 
 const Account = () => {
+  const user = useSelector((state: RootState) => state.user);
+
   const form = useForm({
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
     },
   });
+
+  const { firstName, lastName, email } = form.getValues();
+  const toRevert =
+    user.email !== email ||
+    user.firstName !== firstName ||
+    user.lastName !== lastName;
+
+  const revertChanges = () => {
+    if (toRevert) {
+      form.setValue("email", user.email);
+      form.setValue("firstName", user.firstName);
+      form.setValue("lastName", user.lastName);
+      toast.success("Changes discarded.", {
+        description: "Your unsaved progress has been removed.",
+        duration: 3000, // 3 Sekunden sind ideal
+        icon: "🗑️",
+      });
+    }
+  };
 
   const onSubmit = (values: {
     firstName: string;
@@ -184,6 +205,20 @@ const Account = () => {
                 "
               >
                 Save
+              </Button>
+              <Button
+                onClick={revertChanges}
+                type="button"
+                className="
+                  ml-2 bg-white dark:bg-black border-violet-400 border-2 dark:border-0 black:text-white font-extrabold px-8 py-3
+                  transition-all duration-200
+                  hover:bg-violet-400 hover:text-white
+                  hover:shadow-md
+                  hover:scale-[1.02]
+                  active:scale-[0.98]
+                "
+              >
+                Revert Changes
               </Button>
             </form>
           </Form>

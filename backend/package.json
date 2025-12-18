@@ -12,6 +12,7 @@
     "node": ">=18.18"
   },
   "dependencies": {
+    "@vercel/blob": "^2.0.0",
     "argon2": "^0.44.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

@@ -1,5 +1,7 @@
+import type { AppDispatch } from "redux/store";
 import { isMobile } from "../hooks/use-mobile";
 import { Preferences } from "@capacitor/preferences";
+import { setAccessTokenState } from "../../redux/slices/accessTokenSlice";
 
 /**
  * Secure storage utility that uses Capacitor Preferences on mobile
@@ -59,8 +61,12 @@ export const AuthStorage = {
   /**
    * Save access token
    */
-  async setTokens(accessToken: string): Promise<void> {
+  async setAccessToken(
+    accessToken: string,
+    dispatch: AppDispatch
+  ): Promise<void> {
     await SecureStorage.set("accessToken", accessToken);
+    dispatch(setAccessTokenState(accessToken));
   },
 
   /**
