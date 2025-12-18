@@ -131,7 +131,7 @@ async function setup() {
   // tabs from the tabslist
   const today = await screen.findByTestId("show-today");
   const yesterday = await screen.findByTestId("show-yesterday");
-  const every = await screen.findByTestId("show-every");
+  const all = await screen.findByTestId("show-all");
 
   // DESC and ASC
 
@@ -178,7 +178,7 @@ async function setup() {
   }
 
   return {
-    tabs: { today, yesterday, every },
+    tabs: { today, yesterday, all },
     order: { desc, asc },
     getRidesFromDom: getRidesFromDom,
     select: { selectItem, isSelected }
@@ -208,7 +208,7 @@ describe("AllRides", () => {
   it("should be able to switch between each tab correctly", async () => {
 
     const { tabs } = await setup();
-    const { today, yesterday, every } = tabs;
+    const { today, yesterday, all } = tabs;
 
     // Today is the clicked one at the start!
 
@@ -218,9 +218,9 @@ describe("AllRides", () => {
 
     expect(yesterday).toHaveAttribute("aria-selected", "true");
 
-    await userEvent.click(every);
+    await userEvent.click(all);
 
-    expect(every).toHaveAttribute("aria-selected", "true");
+    expect(all).toHaveAttribute("aria-selected", "true");
   });
 
   // -----------------------------
@@ -285,10 +285,10 @@ describe("AllRides", () => {
   it("should show all the rides with out any sorted elements", async () => {
 
     const { tabs } = await setup()
-    const { every } = tabs;
+    const { all } = tabs;
 
-    await userEvent.click(every);
-    expect(every).toHaveAttribute("aria-selected", "true");
+    await userEvent.click(all);
+    expect(all).toHaveAttribute("aria-selected", "true");
 
     // Unsorted
     expect(rides).toHaveLength(rides.length);
@@ -309,7 +309,7 @@ describe("AllRides", () => {
     const { selectItem, isSelected } = select;
 
     // This means 'every" is active on default
-    await isSelected("select-only-trigger", "only-every");
+    await isSelected("select-only-trigger", "only-all");
 
     await selectItem("select-only-trigger", "only-botenfahrt");
     await isSelected("select-only-trigger", "only-botenfahrt");
@@ -328,11 +328,11 @@ describe("AllRides", () => {
    */
   it("checks if sort method: 'date' (DESC) is selected on default", async () => {
     const { tabs, order, select } = await setup()
-    const { every } = tabs;
+    const { all } = tabs;
     const { desc, asc } = order;
     const { isSelected: isSelectTrue } = select;
 
-    await userEvent.click(every);
+    await userEvent.click(all);
 
     // This means desc is active at beginning
     expect(desc).toHaveClass("text-violet-400");
@@ -346,7 +346,7 @@ describe("AllRides", () => {
     // This means 'date" is active on default
     isSelectTrue("select-filter-trigger", "date");
 
-    expect(every).toBeInTheDocument();
+    expect(all).toBeInTheDocument();
   });
 
 
@@ -361,12 +361,12 @@ describe("AllRides", () => {
    */
   it("sorts after 'date' (default) DESC as well as ASC correctly", async () => {
     const { tabs, order, getRidesFromDom: ridesDom, select } = await setup()
-    const { every } = tabs;
+    const { all } = tabs;
     const { desc, asc } = order;
     const { isSelected } = select;
 
     // load all-rides
-    await userEvent.click(every);
+    await userEvent.click(all);
 
     // since 'date' is selected on default
     await isSelected("select-filter-trigger", "date");
@@ -428,12 +428,12 @@ describe("AllRides", () => {
    */
   it("sorts after 'distance' DESC as well as ASC correctly", async () => {
     const { tabs, order, getRidesFromDom: ridesDom, select } = await setup()
-    const { every } = tabs;
+    const { all } = tabs;
     const { desc, asc } = order;
     const { selectItem, isSelected } = select;
 
     // load all-rides
-    await userEvent.click(every);
+    await userEvent.click(all);
 
     await selectItem("select-filter-trigger", "distance");
     await isSelected("select-filter-trigger", "distance");
@@ -484,13 +484,13 @@ describe("AllRides", () => {
    */
   it("sorts after 'duration' DESC as well as ASC correctly", async () => {
     const { tabs, order, getRidesFromDom: ridesDom, select } = await setup()
-    const { every } = tabs;
+    const { all } = tabs;
     const { selectItem, isSelected } = select;
 
     const { desc, asc } = order;
 
     // load all-rides
-    await userEvent.click(every);
+    await userEvent.click(all);
 
     await selectItem("select-filter-trigger", "duration");
     await isSelected("select-filter-trigger", "duration");

@@ -8,8 +8,8 @@ import { useEffect } from "react";
 import { StatusBar } from "@capacitor/status-bar";
 import Ride from "./pages/rides/Ride";
 import AllRides from "./pages/rides/AllRides";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import { isMobile } from "./hooks/use-mobile";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 /**
  * The Routes are all declared here

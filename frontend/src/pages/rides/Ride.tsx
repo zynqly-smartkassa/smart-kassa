@@ -36,10 +36,21 @@ import { driverIcon, locationIcon } from "../../utils/icons";
 /**
  * The Rides page, where a driver can start/end a Ride
  * @returns Rides Page
- * @author Casper Zielinski
- * @author Umejr Dzinovic
  */
 
+/**
+ * Component that creates and manages the routing between start and end locations on a Leaflet map.
+ * 
+ * This component uses Leaflet Routing Machine to calculate and display routes. It supports both
+ * OSRM demo mode and Mapbox routing modes. The route is non-draggable and doesn't show alternatives.
+ * 
+ * @param {Object} args - The args for the component.
+ * @param {[number, number]} args.start - Start coordinates as [latitude, longitude].
+ * @param {[number, number]} args.end - End coordinates as [latitude, longitude].
+ * @param {(text: string) => void} args.setRoutingError - Callback to handle routing errors.
+ * @param {React.MutableRefObject<L.Routing.Control | null>} args.routingRef - Reference to the routing control for external manipulation.
+ * @returns {null} This component doesn't render any JSX, it only manipulates the Leaflet map.
+ */
 // This will create the route itself between start and end address
 export const RoutingMachine = ({
   start,
@@ -125,6 +136,20 @@ export const RoutingMachine = ({
   return null;
 };
 
+/**
+ * Component that recenters the map as the driver moves and tracks the complete ride path.
+ * 
+ * This memoized component smoothly pans the map to follow the driver's location and records
+ * coordinate points when the driver moves more than 50 meters. It maintains the complete route
+ * in the wholeRide array for later visualization.
+ * 
+ * @param {Object} args - The args for the component.
+ * @param {number} args.lat - Current latitude of the driver.
+ * @param {number} args.lng - Current longitude of the driver.
+ * @param {[number, number][]} args.wholeRide - Array containing all recorded coordinate points of the ride.
+ * @param {React.Dispatch<React.SetStateAction<[number, number][]>>} args.setWholeRide - State setter to update the ride path.
+ * @returns {null} This component doesn't render any JSX, it only manipulates the Leaflet map.
+ */
 // memo from react ensures that this element is only rendered new, if and only if the lat and lng have actually updated itself
 export const RecenterMap = memo(
   ({
@@ -169,6 +194,17 @@ export const RecenterMap = memo(
   }
 );
 
+/**
+ * Component that automatically zooms the map to the driver's location when a ride starts.
+ * 
+ * This component performs a one-time zoom animation to zoom level 16 centered on the driver's
+ * location. It only executes once per mount to avoid repeated zooming during the ride.
+ * 
+ * @param {Object} args - The args for the component.
+ * @param {number} args.lat - Latitude of the driver's location to zoom to.
+ * @param {number} args.lng - Longitude of the driver's location to zoom to.
+ * @returns {null} This component doesn't render any JSX, it only manipulates the Leaflet map.
+ */
 // When the driver clicks on "start Ride" we will automatically zoom onto the driver
 export const ZoomDriver = ({ lat, lng }: { lat: number; lng: number }) => {
   const map = useMap();
@@ -185,6 +221,19 @@ export const ZoomDriver = ({ lat, lng }: { lat: number; lng: number }) => {
   return null;
 };
 
+/**
+ * Component that tracks and accumulates the total distance traveled during a ride.
+ * 
+ * This component calculates the distance between consecutive GPS positions and updates
+ * the total distance counter. It only adds to the distance when the driver has moved
+ * more than 5 meters to filter out GPS noise.
+ * 
+ * @param {Object} args - The args for the component.
+ * @param {number} args.lat - Current latitude of the driver.
+ * @param {number} args.lng - Current longitude of the driver.
+ * @param {React.Dispatch<React.SetStateAction<number>>} args.setDist - State setter to update the total distance traveled.
+ * @returns {null} This component doesn't render any JSX, it only tracks distance.
+ */
 export const DistanceTracker = ({
   lat,
   lng,
@@ -216,6 +265,22 @@ export const DistanceTracker = ({
   return null;
 };
 
+/**
+ * Main Ride component that manages the complete ride lifecycle for drivers.
+ * 
+ * This component provides the interface for drivers to:
+ * - View their current GPS location on a map
+ * - Enter and geocode destination addresses
+ * - Calculate routes to destinations
+ * - Start and end rides with timer and distance tracking
+ * - Select ride type (Botenfahrt/Taxifahrt)
+ * - Automatically save completed rides to the backend
+ * 
+ * The component integrates GPS tracking, map visualization, routing, and ride state management.
+ * It handles loading states, errors, and automatically navigates to the ride summary after completion.
+ * 
+ * @returns {JSX.Element} The complete ride management interface.
+ */
 const Ride = () => {
   const dispatch: AppDispatch = useDispatch();
   const navigator = useNavigate();
@@ -331,11 +396,14 @@ const Ride = () => {
 
   // Simle loading state
   if (!driverLocation) {
-    return <StatusOverlay text="Warte auf GPS-Daten…" isLoading={true} />;
+    return <StatusOverlay text="Warte auf GPS-Daten" isLoading={true} errorFallback={
+      ["Zynqly benötigt Zugriff auf deinen Standort.",
+        "Ist die Standortermittlung auf deinem Gerät aktiviert?"]
+    } />;
   }
 
   if (isLoading) {
-    return <StatusOverlay text="Fahrt wird verarbeitet..." isLoading={true} />;
+    return <StatusOverlay text="Fahrt wird verarbeitet" isLoading={true} />;
   }
 
   if (routingError) {
@@ -347,25 +415,26 @@ const Ride = () => {
       <h2 className="hidden md:block font-bold text-3xl text-left">Rides</h2>
       <div className="md:hidden flex flex-col gap-2">
         <p className="w-full text-5xl font-bold text-center"
-        data-testid="timer">
+          data-testid="timer">
           {formatTime(timer)}
         </p>
 
-        <MapContainer
-          center={driverLocation ?? [48.210033, 16.363449]}
-          zoom={13}
-          style={{ height: "500px", width: "100%" }}
-          preferCanvas={true}
-        >
-          {/* TileLayer actually shows the individual layers of the whole map */}
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
+        {driverLocation && (
+          <MapContainer
+            center={driverLocation}
+            zoom={13}
+            style={{ height: "500px", width: "100%" }}
+            preferCanvas={true}
+          >
+            {/* TileLayer actually shows the individual layers of the whole map */}
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
 
-          {/* This will ensure that the markers get clustered into one "container" marker */}
-          <MarkerClusterGroup>
-            {driverLocation && (
+            {/* This will ensure that the markers get clustered into one "container" marker */}
+            <MarkerClusterGroup>
+
               <>
                 {/* Driver current location */}
                 <Marker position={driverLocation} icon={driverIcon}></Marker>
@@ -376,51 +445,52 @@ const Ride = () => {
                   setWholeRide={setWholeRide}
                 />
               </>
+
+
+              {/* Marker for destination address */}
+              {destinationCoords && (
+                <Marker position={destinationCoords} icon={locationIcon}></Marker>
+              )}
+            </MarkerClusterGroup>
+
+            {/* Destination-Routing */}
+            {routingStartCoords && destinationCoords && (
+              <RoutingMachine
+                start={routingStartCoords}
+                end={destinationCoords}
+                setRoutingError={setRoutingError}
+                routingRef={routingRef}
+              />
             )}
 
-            {/* Marker for destination address */}
-            {destinationCoords && (
-              <Marker position={destinationCoords} icon={locationIcon}></Marker>
-            )}
-          </MarkerClusterGroup>
 
-          {/* Destination-Routing */}
-          {routingStartCoords && destinationCoords && (
-            <RoutingMachine
-              start={routingStartCoords}
-              end={destinationCoords}
-              setRoutingError={setRoutingError}
-              routingRef={routingRef}
-            />
-          )}
-
-          {driverLocation && (
             <DistanceTracker
               lat={driverLocation[0]}
               lng={driverLocation[1]}
               setDist={setDistance}
             ></DistanceTracker>
-          )}
 
-          {isRideActive && (
-            <ZoomDriver
-              lat={driverLocation[0]}
-              lng={driverLocation[1]}
-            ></ZoomDriver>
-          )}
-        </MapContainer>
+
+            {isRideActive && (
+              <ZoomDriver
+                lat={driverLocation[0]}
+                lng={driverLocation[1]}
+              ></ZoomDriver>
+            )}
+          </MapContainer>
+        )}
 
         <div className="w-full flex justify-center">
           <Select
-          onValueChange={(value) => setRideType(value)}>
+            onValueChange={(value) => setRideType(value)}>
             <SelectTrigger data-testid="select-trigger"
-             className="w-[180px] border-2 border-violet-300 rounded-md">
+              className="w-[180px] border-2 border-violet-300 rounded-md">
               <SelectValue placeholder="Art der Fahrt" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
                 value="botenfahrt"
-                data-testid="botenfahrt"   
+                data-testid="botenfahrt"
               >
                 Botenfahrt
               </SelectItem>
@@ -443,11 +513,10 @@ const Ride = () => {
           onBlur={() => setShowDestinationHint(true)}
           onFocus={() => setShowDestinationHint(false)}
           className={`w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150
-      ${
-        isDestinationInvalid && showDestinationHint
-          ? "border-red-500"
-          : "border-violet-300"
-      }`}
+      ${isDestinationInvalid && showDestinationHint
+              ? "border-red-500"
+              : "border-violet-300"
+            }`}
           disabled={isRideActive}
         />
 
@@ -466,7 +535,7 @@ const Ride = () => {
         </AnimatePresence>
 
         <Button
-        data-testid="calculate-route"
+          data-testid="calculate-route"
           onClick={() => {
             if (!destination) {
               toast("Bitte geben sie eine Adresse ein!", {
@@ -499,7 +568,7 @@ const Ride = () => {
 
         <div className="w-full grid grid-cols-2 gap-4">
           <Button
-          data-testid="start-ride"
+            data-testid="start-ride"
             className={`py-6 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition duration-150 ease-in-out`}
             onClick={() => {
               if (!destination) {
@@ -528,7 +597,7 @@ const Ride = () => {
           </Button>
 
           <Button
-          data-testid="end-ride"
+            data-testid="end-ride"
             className={`py-6 font-semibold text-white bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition duration-150 ease-in-out`}
             onClick={() => {
               setIsRideActive(false);

@@ -10,17 +10,37 @@ import "leaflet-routing-machine";
 import { useEffect, useRef } from 'react';
 import { durationToMinutes, formatMinutes } from '../../utils/rides/summaryMinutes';
 import type { AllRide } from 'constants/AllRide';
-import { driverIcon } from '../../utils/icons';
+import { driverIcon, locationIcon } from '../../utils/icons';
 import StatusOverlay from '../../components/StatusOverlay';
 
+/**
+ * Args for the SummaryRide component.
+ * 
+ * @property {AllRide} ride - The ride object containing all details about the completed ride.
+ */
 interface SummaryRideArgs {
   ride: AllRide
 };
 
+/**
+ * Args for the DrawMap component.
+ * 
+ * @property {[number, number][]} whole_ride - Array of coordinate pairs [latitude, longitude] representing the complete route of the ride.
+ */
 interface DrawMapArgs {
   whole_ride: [number, number][]
 }
 
+/**
+ * Component that animates the drawing of a ride route on a Leaflet map.
+ * 
+ * This component draws an animated polyline on the map showing the complete ride path.
+ * It places markers at the start and end locations and animates a driver icon moving along the route.
+ * The animation runs at 250ms intervals per coordinate point.
+ * 
+ * @param {DrawMapArgs} data - The args containing the ride coordinates.
+ * @returns {null} This component doesn't render any JSX, it only manipulates the Leaflet map.
+ */
 export const DrawMap = (data: DrawMapArgs) => {
 
   const map = useMap();
@@ -37,7 +57,7 @@ export const DrawMap = (data: DrawMapArgs) => {
   useEffect(() => {
 
     // Fixed Start marker
-    L.marker(wholeRide[0]).addTo(map);
+    L.marker(wholeRide[0], {icon: locationIcon}).addTo(map);
 
     routePolyline.current = L.polyline([], { color: 'violet' }).addTo(map);
     animatedMarker.current = L.marker(wholeRide[0], { icon: driverIcon }).addTo(map);
@@ -53,12 +73,16 @@ export const DrawMap = (data: DrawMapArgs) => {
       let i = currentIndex.current;
       if (i < wholeRide.length) {
 
-        if (!wholeRide[i + 1]) {
-          L.marker(wholeRide[i]).addTo(map);
-        }
-
         routePolyline.current?.addLatLng(wholeRide[i]);
         animatedMarker.current?.setLatLng(wholeRide[i]);
+
+        if (!wholeRide[i + 1]) {
+          L.marker(wholeRide[i], {icon: locationIcon}).addTo(map);
+          // At the last index, adjust the driver icon a little bit so it can 
+          // float over the Location Marker instead beneath it
+          animatedMarker.current?.setLatLng([wholeRide[i][0] - 0.00014, 
+          wholeRide[i][1] - 0.00017]);
+        }
 
         currentIndex.current = ++i;
       } else {
@@ -84,6 +108,16 @@ export const DrawMap = (data: DrawMapArgs) => {
   return null;
 }
 
+/**
+ * Component that displays a detailed summary of a completed ride.
+ * 
+ * This component shows comprehensive ride information including an animated map visualization,
+ * ride statistics (ID, vehicle, type), timeline with start/end locations and times, and total duration.
+ * If ride data is missing or incomplete, appropriate error messages are displayed.
+ * 
+ * @param {SummaryRideArgs} args - The args containing the ride data to display.
+ * @returns {JSX.Element} A detailed ride summary view with map and statistics.
+ */
 export const SummaryRide = ({ ride }: SummaryRideArgs) => {
   const navigator = useNavigate();
 
@@ -114,7 +148,7 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
       )}
       {ride.whole_ride && (
         <MapContainer
-          center={[48.210033, 16.363449]}
+          center={wholeRide[0]}
           zoom={13}
           style={{ height: "500px", width: "100%" }}
         >
@@ -123,6 +157,7 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
+
 
           <DrawMap whole_ride={wholeRide} />
         </MapContainer>

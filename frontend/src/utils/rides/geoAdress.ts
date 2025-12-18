@@ -4,7 +4,17 @@ import {
   type HttpResponse,
 } from "@capacitor/core";
 
-// Calls the link and converts the adress into lat and lng coordinates
+/**
+ * Converts a human-readable address string into geographic coordinates (latitude, longitude).
+ * 
+ * This function uses the OpenStreetMap Nominatim API to geocode addresses. It includes
+ * a custom User-Agent header as required by Nominatim's usage policy. The function is
+ * compatible with both mobile (via CapacitorHttp) and web platforms.
+ * 
+ * @param {string} address - The address to geocode (e.g., "Mariahilfer Straße 120, Wien").
+ * @returns {Promise<[number, number] | null>} A promise that resolves to coordinates as [latitude, longitude] or null if geocoding fails.
+ * @throws {Error} Logs errors to console but returns null instead of throwing.
+ */
 export async function geocodeAddress(
   address: string
 ): Promise<[number, number] | null> {

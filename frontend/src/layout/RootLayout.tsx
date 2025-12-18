@@ -22,7 +22,18 @@ interface IfooterLinks {
 }
 
 /**
- * @returns the Root layout
+ * Root layout component that provides the main application structure and navigation.
+ * 
+ * This component serves as the main layout wrapper for all pages, providing:
+ * - Responsive sidebar navigation with automatic behavior on desktop/mobile
+ * - Header with search functionality, notifications, and user account access
+ * - Footer navigation for mobile devices with dynamic links based on screen size
+ * - Main content area where child routes are rendered via Outlet
+ * 
+ * The layout adapts between desktop (sidebar always visible) and mobile (collapsible sidebar
+ * with bottom navigation) automatically based on screen size.
+ * 
+ * @returns {JSX.Element} The root layout with sidebar, header, footer, and content area.
  */
 export default function RootLayout() {
   // to know which path is active for the underline in the footer

@@ -12,6 +12,14 @@ import type { AllRide } from "constants/AllRide";
 import { date, distance, duration } from "../../utils/rides/sort";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * Args for the RideAtDate component.
+ * 
+ * @property {AllRide[]} rides - Array of rides to display.
+ * @property {string} sortAfter - The field to sort by (date, distance, or duration).
+ * @property {boolean} isDescending - Whether to sort in descending order.
+ * @property {string} rideType - The type of rides to filter (all, botenfahrt, or taxifahrt).
+ */
 interface RideAtDateArgs {
   rides: AllRide[];
   sortAfter: string
@@ -19,6 +27,12 @@ interface RideAtDateArgs {
   rideType: string
 }
 
+/**
+ * Formats a distance value in meters to a human-readable string.
+ * 
+ * @param {number} meters - The distance in meters to format.
+ * @returns {string} Formatted distance string with unit (m or km).
+ */
 function formatDistance(meters: number): string {
   if (meters < 1000) {
     return `${meters.toFixed(2)} m`;
@@ -28,6 +42,13 @@ function formatDistance(meters: number): string {
   }
 }
 
+/**
+ * Sorts the rides array based on the specified field and order.
+ * 
+ * @param {AllRide[]} rides - The array of rides to sort (modified in place).
+ * @param {string} sortAfter - The field to sort by (date, distance, or duration).
+ * @param {boolean} isDescending - Whether to sort in descending order.
+ */
 function handleSort(rides: AllRide[], sortAfter: string, isDescending: boolean
 ) {
   switch (sortAfter) {
@@ -45,6 +66,13 @@ function handleSort(rides: AllRide[], sortAfter: string, isDescending: boolean
   }
 }
 
+/**
+ * Filters rides by type.
+ * 
+ * @param {AllRide[]} rides - The array of rides to filter.
+ * @param {string} rideType - The type to filter by (botenfahrt, taxifahrt, or all).
+ * @returns {AllRide[]} Filtered array of rides.
+ */
 function handleRideType(rides: AllRide[], rideType: string) {
 
   if (rideType === "botenfahrt") {
@@ -56,6 +84,16 @@ function handleRideType(rides: AllRide[], rideType: string) {
   return rides;
 }
 
+/**
+ * Component that displays a grid of ride cards with filtering and sorting capabilities.
+ * 
+ * This component renders ride information in a responsive card grid layout. Each card shows
+ * key ride details including destination, distance, duration, start/end addresses and times,
+ * and ride type. Cards are clickable and navigate to the detailed ride summary.
+ * 
+ * @param {RideAtDateArgs} args - The args containing rides data and display preferences.
+ * @returns {JSX.Element} A grid of ride cards or a message if no rides are available.
+ */
 const RideAtDate = ({ rides, sortAfter, isDescending, rideType }: RideAtDateArgs) => {
 
   const navigator = useNavigate();

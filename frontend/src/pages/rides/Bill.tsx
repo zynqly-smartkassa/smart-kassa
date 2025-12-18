@@ -4,7 +4,14 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 
-
+/**
+ * Interface representing a single line item in the bill.
+ * 
+ * @property {string} label - Description of the charge.
+ * @property {string} value - Monetary value as a formatted string.
+ * @property {boolean} [isSubTotal] - Optional flag to indicate if this is a subtotal line.
+ * @property {boolean} [isTotal] - Optional flag to indicate if this is the total line.
+ */
 interface BillDetail {
   label: string;
   value: string;
@@ -36,6 +43,17 @@ const billDetails: BillDetail[] = [
   },
 ];
 
+/**
+ * Component that displays a detailed bill summary for a completed ride.
+ * 
+ * This component shows:
+ * - A QR code for viewing the detailed bill on another device
+ * - Itemized bill details including base fare, ride charges, pause charges, and taxes
+ * - Subtotal and total amount calculations
+ * - Navigation back to the previous page
+ * 
+ * @returns {JSX.Element} The bill summary interface with QR code and itemized charges.
+ */
 const Bill = () => {
   const navigator = useNavigate();
   return (

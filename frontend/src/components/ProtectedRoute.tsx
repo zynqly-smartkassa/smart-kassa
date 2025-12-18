@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner";
 import { isMobile } from "@/hooks/use-mobile";
 import { handleTokenError } from "../utils/errorHandling";
+import StatusOverlay from "./StatusOverlay";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -84,9 +85,11 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   // had to also use the authenticate value so it doesn't show home page for split second to non-loged in Users
   if (!isAuthenticated || isLoading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <p className="text-lg font-semibold">Loading...</p>
-      </div>
+    
+    <StatusOverlay text="Loading Service" isLoading={true} errorFallback={
+      ["Unser Service ist leider fehlgeschlagen, bitte versuchen sie es nacher erneut!"]
+    } />
+  
     );
   }
 

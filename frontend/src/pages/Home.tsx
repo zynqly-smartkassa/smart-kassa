@@ -43,6 +43,15 @@ const monthlyWeekRidesData: MonthlyWeekStats[] = [
   { week: "Week 4", rides: 150 },
 ];
 
+/**
+ * Home component that displays the main dashboard with statistics and ride data.
+ * 
+ * This component provides a personalized welcome message and displays ride statistics
+ * in different time periods (today, week, month) using tabs. Each tab shows a balance
+ * chart with ride data for the selected period.
+ * 
+ * @returns {JSX.Element} The home dashboard with statistics and user greeting.
+ */
 function Home() {
   const user = useSelector((state: RootState) => state.user);
 
