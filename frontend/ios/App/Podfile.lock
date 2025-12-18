@@ -1,0 +1,53 @@
+PODS:
+  - Capacitor (7.4.4):
+    - CapacitorCordova
+  - CapacitorCordova (7.4.4)
+  - CapacitorGeolocation (7.1.6):
+    - Capacitor
+    - IONGeolocationLib (= 1.0.1)
+  - CapacitorKeyboard (7.0.3):
+    - Capacitor
+  - CapacitorPreferences (7.0.2):
+    - Capacitor
+  - CapacitorStatusBar (7.0.3):
+    - Capacitor
+  - IONGeolocationLib (1.0.1)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorGeolocation (from `../../node_modules/@capacitor/geolocation`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorPreferences (from `../../node_modules/@capacitor/preferences`)"
+  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+
+SPEC REPOS:
+  trunk:
+    - IONGeolocationLib
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorGeolocation:
+    :path: "../../node_modules/@capacitor/geolocation"
+  CapacitorKeyboard:
+    :path: "../../node_modules/@capacitor/keyboard"
+  CapacitorPreferences:
+    :path: "../../node_modules/@capacitor/preferences"
+  CapacitorStatusBar:
+    :path: "../../node_modules/@capacitor/status-bar"
+
+SPEC CHECKSUMS:
+  Capacitor: 358dd1c3fdd71d969547b17e159fd8a7736cb45f
+  CapacitorCordova: bf648a636f3c153f652d312ae145fb508b6ffced
+  CapacitorGeolocation: a65213fef581c7b8c5d486abbd5a6d00192a179e
+  CapacitorKeyboard: 62f36104f26d53d8b3a2a43f2a69fe714f1777d5
+  CapacitorPreferences: 65107ed7437d96ee72583df5763985e3c0ff2bc2
+  CapacitorStatusBar: 0659ddc7b1713764a05831463d215b177a15d054
+  IONGeolocationLib: 20f9d0248a0b5264511fb57a37e25dd2badf797a
+
+PODFILE CHECKSUM: 0ae013cc3b8978f9c2c47e93c54dc35090e5ae6b
+
+COCOAPODS: 1.16.2

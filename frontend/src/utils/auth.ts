@@ -33,7 +33,7 @@ export async function register(
     }
 
     const accessToken = await data.accessToken;
-    await AuthStorage.setTokens(accessToken);
+    await AuthStorage.setAccessToken(accessToken, dispatch);
 
     dispatch(
       signInUser({
@@ -136,7 +136,7 @@ export async function login(
       throw new Error("Response is empty");
     }
 
-    await AuthStorage.setTokens(accessToken);
+    await AuthStorage.setAccessToken(accessToken, dispatch);
 
     const user = data.user;
     dispatch(

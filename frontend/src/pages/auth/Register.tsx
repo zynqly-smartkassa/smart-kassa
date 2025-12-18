@@ -368,7 +368,7 @@ function Register() {
           <CardFooter className="flex-col gap-2">
             <Button
               type="submit"
-              className="w-full bg-black text-white dark:bg-white dark:text-black"
+              className="btn-auth-submit"
               disabled={formUnvalid}
               data-testid="register"
             >
@@ -382,7 +382,7 @@ function Register() {
                 <p>{r.footer.text}</p>
                 <Link
                   to="/login"
-                  className="font-extrabold underline hover:text-violet-400"
+                  className="auth-link"
                   data-testid="loginLink"
                 >
                   {r.footer.link}

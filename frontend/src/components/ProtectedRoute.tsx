@@ -49,7 +49,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
       if (!isAuthenticated) {
         console.log("getting user");
-        const userData: USER_DTO = await verifyAccessToken();
+        const userData: USER_DTO = await verifyAccessToken(dispatch);
         if (!userData) {
           throw new Error("User Data invalid");
         }
@@ -70,7 +70,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
         // Only show toast once per session
         if (!toastShownRef.current) {
-          toast.success(`Welcome back ${userData.firstName}!`, {
+          toast.success(`Welcome back ${userData.firstName || "User"}!`, {
             className: "mt-5 md:mt-0",
             position: "top-center",
             closeButton: true,
