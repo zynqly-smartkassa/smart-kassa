@@ -32,6 +32,9 @@ import { useNavigate } from "react-router-dom";
 import StatusOverlay from "../../components/StatusOverlay";
 import { ROUTING_CONFIG } from "../../utils/config";
 import { driverIcon, locationIcon } from "../../utils/icons";
+import type { NotificationsArgs } from "redux/slices/notificationsSlice";
+import { add } from "../../../redux/slices/notificationsSlice"
+import { useNotificationCheck } from "@/hooks/useNotificationCheck";
 
 /**
  * The Rides page, where a driver can start/end a Ride
@@ -342,6 +345,8 @@ const Ride = () => {
     routingRef.current = null;
   }, [setDestinationCoords, setDestination, setTimer, setIsRouteCalculated]);
 
+  const hasNotSendDistanceRide = useNotificationCheck("distance-ride");
+
   useEffect(() => {
     if (!isRideActive && isSuccessful && driverLocation && destinationCoords) {
       setIsLoading(true);
@@ -368,6 +373,19 @@ const Ride = () => {
         try {
           const data = await sendRide(newRide);
           const ride_id = data.ride_info.ride_id;
+
+          if (distance >= 100.0 && hasNotSendDistanceRide) {
+            const notification: NotificationsArgs = {
+              id: "distance-ride",
+              icon: "flame",
+              title: "First ride over 100 meters 🔥",
+              desc: "You successfully finished a ride with over 100 meters!",
+              date: getDateNow(),
+              read: false,
+              color: "yellow"
+            }
+            dispatch(add(notification))
+          }
           reInitialize();
           navigator(`/all-rides/${ride_id}`);
         } catch (error) {
@@ -377,22 +395,8 @@ const Ride = () => {
         }
       })();
     }
-  }, [
-    isRideActive,
-    isSuccessful,
-    driverLocation,
-    destinationCoords,
-    startTime,
-    endTime,
-    timer,
-    distance,
-    rideType,
-    dispatch,
-    reInitialize,
-    user_id,
-    navigator,
-    wholeRide,
-  ]);
+  }, [isRideActive, isSuccessful, driverLocation, destinationCoords,
+     startTime, endTime, timer, distance, rideType, dispatch, reInitialize, user_id, navigator, wholeRide, hasNotSendDistanceRide]);
 
   // Simle loading state
   if (!driverLocation) {
