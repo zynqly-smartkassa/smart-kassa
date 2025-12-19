@@ -6,6 +6,7 @@ import footerLinkSlice from "./slices/footerLinksSlice";
 import invoicesSlice from "./slices/invoices";
 import accessTokenSlice from "./slices/accessTokenSlice";
 import notificationsSlice from "./slices/notificationsSlice";
+import newNotificationsSlice from "./slices/newNotificationsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,7 +16,8 @@ export const store = configureStore({
     setFooterLink: footerLinkSlice,
     setBills: invoicesSlice,
     accessTokenState: accessTokenSlice,
-    notificationsState: notificationsSlice
+    notificationsState: notificationsSlice,
+    newNotificationsState: newNotificationsSlice
   },
    devTools: process.env.NODE_ENV !== "production",
 });

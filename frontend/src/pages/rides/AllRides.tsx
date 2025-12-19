@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { type AppDispatch, type RootState } from "../../../redux/store";
 import type { NotificationsArgs } from "../../../redux/slices/notificationsSlice"
 import { add } from "../../../redux/slices/notificationsSlice"
+import { invert } from "../../../redux/slices/newNotificationsSlice"
 import { getDateNow } from "@/utils/rides/getDate";
 
 /**
@@ -70,35 +71,29 @@ const AllRides = () => {
       if (data.rides.length >= 13) {
         const notification: NotificationsArgs = {
           icon: "trophy",
-          title: "Your first ride",
+          title: "Your first ride ✅",
           desc: "You successfully finished your first ride!",
           date: getDateNow(),
           read: false,
           color: "amber"
         }
         dispatch(add(notification))
+        dispatch(invert(true));
+        console.log("Invert wurde nun von all-rides auf true gesetzt!")
         console.log(notification)
       }
 
       if (data.rides.length >= 5) {
-        const notification: NotificationsArgs = {
-          icon: "flame",
-          title: "5-Rides Streak",
-          desc: "You successfully finished 5 rides!",
-          date: getDateNow(),
-          read: false,
-          color: "red"
-        };
-         const notification2: NotificationsArgs = {
+         const notification: NotificationsArgs = {
           icon: "leaf",
-          title: "5-Rides Streak",
+          title: "5-Rides Streak ⭐",
           desc: "You successfully finished 5 rides!",
           date: getDateNow(),
           read: false,
           color: "green"
         }
         dispatch(add(notification))
-        dispatch(add(notification2))
+        dispatch(invert(true));
       }
        
     })();

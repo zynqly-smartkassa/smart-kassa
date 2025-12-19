@@ -10,19 +10,37 @@ import clsx from "clsx";
 
 import type { NotificationsArgs } from "../../redux/slices/notificationsSlice"
 
-import { Trophy, Flame, Frame, type LucideIcon, Leaf } from "lucide-react";
+import { Trophy, Flame, Frame, type LucideIcon, Leaf, Trash2, HandMetal } from "lucide-react";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "redux/store";
-import { markAsRead } from "../../redux/slices/notificationsSlice"
+import { markAsRead, deleteOne } from "../../redux/slices/notificationsSlice"
 import { formatTimeAgo } from "@/utils/rides/summaryMinutes";
 
 const iconMap = {
   trophy: Trophy,
   flame: Flame,
   frame: Frame,
-  leaf: Leaf
+  leaf: Leaf,
+  handmetal: HandMetal
 };
 
+/**
+ * Individual notification message card component.
+ * 
+ * Displays a single notification with an icon, title, description, and timestamp.
+ * The message can be marked as read by clicking on it and deleted using the trash icon.
+ * Unread messages are visually highlighted with a violet accent.
+ * 
+ * @param {NotificationsArgs} props - The notification properties.
+ * @param {string} props.id - Unique identifier for the notification.
+ * @param {string} props.icon - Icon name to display (trophy, flame, frame, leaf, handmetal).
+ * @param {string} props.title - Notification title.
+ * @param {string} props.desc - Notification description text.
+ * @param {string} props.date - Date string in "YYYY-MM-DD HH:MM:SS" format.
+ * @param {boolean} props.read - Whether the notification has been read.
+ * @param {string} props.color - Color theme for the icon (amber, red, green, yellow, emerald).
+ * @returns {JSX.Element} A card component displaying the notification message.
+ */
 const Message = ({ id, icon, title, desc, date, read, color }: NotificationsArgs) => {
 
   const dispatch = useDispatch<AppDispatch>();
@@ -32,7 +50,7 @@ const Message = ({ id, icon, title, desc, date, read, color }: NotificationsArgs
   return (
     <Card
       className={`
-        relative border-x-0 border-t-0 rounded-none
+        relative border-0 rounded-none
         flex flex-row gap-4 items-center px-6 py-6
         transition-colors ${read ? "dark:bg-sidebar" : ""}
         ${!read ? "bg-violet-200" : ""}
@@ -47,13 +65,17 @@ const Message = ({ id, icon, title, desc, date, read, color }: NotificationsArgs
       {/* Icon */}
       <div
         className={clsx(
-          "p-2 rounded-full", 
-             color === "amber"
-              ? "bg-amber-500/10 text-amber-500"
-              : color === "red"
-                ? "bg-red-500/10 text-red-500"
-                : color === "green" 
-                  ? "bg-green-500/10 text-green-500"
+          "p-2 rounded-full",
+          color === "amber"
+            ? "bg-amber-500/10 text-amber-500"
+            : color === "red"
+              ? "bg-red-500/10 text-red-500"
+              : color === "green"
+                ? "bg-green-500/10 text-green-500"
+                : color === "yellow" 
+                  ? "bg-yellow-500/10 text-yellow-500"
+                   : color === "emerald" 
+                  ? "bg-emerald-500/10 text-emerald-500"
                   : "" // fallback
         )}
       >
@@ -74,19 +96,24 @@ const Message = ({ id, icon, title, desc, date, read, color }: NotificationsArgs
         </CardHeader>
 
         <div className="flex flex-col gap-1">
-                <CardContent className={`p-0 text-base  leading-relaxed
+          <CardContent className={`p-0 text-base  leading-relaxed
           ${!read ? "text-slate-700  dark:text-slate-700" : "text-slate-600  dark:text-slate-400"}`}>
-          {desc}
-        </CardContent>
+            {desc}
+          </CardContent>
 
-        <CardFooter className={`p-0 text-xs  font-extralight
+          <CardFooter className={`p-0 text-xs  font-extralight
           ${!read ? "text-slate-600 dark:text-slate-600" : "text-slate-500 dark:text-slate-500"}`}>
-          
-          {formatTimeAgo(date)}
-        </CardFooter>
+
+            {formatTimeAgo(date)}
+          </CardFooter>
         </div>
-      
+
       </div>
+
+      <button onClick={() => id && dispatch(deleteOne(id))}>
+        <Trash2 className={`w-5 h-5 ${!read ? "text-slate-700  dark:text-slate-700" :
+           "text-slate-600  dark:text-slate-400"}`} />
+      </button>
     </Card>
   );
 };

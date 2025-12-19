@@ -32,6 +32,9 @@ import { useNavigate } from "react-router-dom";
 import StatusOverlay from "../../components/StatusOverlay";
 import { ROUTING_CONFIG } from "../../utils/config";
 import { driverIcon, locationIcon } from "../../utils/icons";
+import type { NotificationsArgs } from "redux/slices/notificationsSlice";
+import { add } from "../../../redux/slices/notificationsSlice"
+import { invert } from "../../../redux/slices/newNotificationsSlice"
 
 /**
  * The Rides page, where a driver can start/end a Ride
@@ -368,6 +371,19 @@ const Ride = () => {
         try {
           const data = await sendRide(newRide);
           const ride_id = data.ride_info.ride_id;
+
+           if (distance >= 100.0) {
+                   const notification: NotificationsArgs = {
+                    icon: "flame",
+                    title: "First ride over 100 meters 🔥",
+                    desc: "You successfully finished a ride with over 100 meters!",
+                    date: getDateNow(),
+                    read: false,
+                    color: "yellow"
+                  }
+                  dispatch(add(notification))
+                  dispatch(invert(true));
+          }
           reInitialize();
           navigator(`/all-rides/${ride_id}`);
         } catch (error) {

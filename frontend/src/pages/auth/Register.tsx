@@ -35,6 +35,11 @@ import type {
 } from "../../../constants/Compontents";
 import Inputs from "../../components/Inputs";
 import PasswordInputs from "../../components/PasswordInputs";
+import type { NotificationsArgs } from "redux/slices/notificationsSlice";
+import { getDateNow } from "@/utils/rides/getDate";
+import { add } from "../../../redux/slices/notificationsSlice"
+import { invert } from "../../../redux/slices/newNotificationsSlice"
+
 
 /**
  * The Sign Up page, where users Sign Up
@@ -125,6 +130,16 @@ function Register() {
         loading: "Registrierung...",
         success: async () => {
           await navigator("/");
+          const notification: NotificationsArgs = {
+                    icon: "handmetal",
+                    title: "Welcome! 🧏‍♂️",
+                    desc: "You successfully created an account!",
+                    date: getDateNow(),
+                    read: false,
+                    color: "emerald"
+                  }
+                  dispatch(add(notification))
+                  dispatch(invert(true));
           return t.success.title;
         },
         error: (err) => handleRegisterError(err),

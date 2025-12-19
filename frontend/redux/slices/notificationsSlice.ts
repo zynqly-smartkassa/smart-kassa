@@ -39,9 +39,15 @@ const notificationsSlice = createSlice({
       if (found) {
         found.read = true;
       }
-    }
+    },
+    clearAll: (state) => {
+      state.items = [];
+    },
+    deleteOne: (state, action: PayloadAction<string>) => {
+      state.items = state.items.filter(ride => ride.id !== action.payload);
+    } 
   }
 })
 
-export const { add, markAsRead } = notificationsSlice.actions;
+export const { add, markAsRead, clearAll, deleteOne } = notificationsSlice.actions;
 export default notificationsSlice.reducer;

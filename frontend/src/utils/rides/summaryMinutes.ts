@@ -36,6 +36,15 @@ export function formatMinutes(mins: number): string {
   return `${minutes} Min`;
 }
 
+/**
+ * Formats a date string into a human-readable relative time string.
+ * 
+ * Converts a date string in "YYYY-MM-DD HH:MM:SS" format to a relative time
+ * description (e.g., "2 hours ago", "about 1 week ago").
+ * 
+ * @param {string} dateString - Date string in format "YYYY-MM-DD HH:MM:SS".
+ * @returns {string} Formatted relative time string in English.
+ */
 export function formatTimeAgo(dateString: string): string {
   //(yy-mm-dd hh:mm:ss)
   const [datePart, timePart] = dateString.split(" ");
