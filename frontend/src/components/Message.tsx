@@ -44,8 +44,7 @@ const iconMap = {
 const Message = ({ id, icon, title, desc, date, read, color }: NotificationsArgs) => {
 
   const dispatch = useDispatch<AppDispatch>();
-  console.log(date)
-
+  
   const Icon: LucideIcon = iconMap[icon as keyof typeof iconMap];
   return (
     <Card

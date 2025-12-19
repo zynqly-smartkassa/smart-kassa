@@ -69,8 +69,6 @@ export function formatTimeAgo(dateString: string): string {
   if (diffDays >= 1) return diffDays === 1 ? "about 1 day ago" : `about ${diffDays} days ago`;
   if (diffHours >= 1) return diffHours === 1 ? "about 1 hour ago" : `about ${diffHours} hours ago`;
   if (diffMinutes >= 1) return diffMinutes === 1 ? "1 minute ago" : `${diffMinutes} minutes ago`;
-
-  console.log(diffYears, diffMonths, diffWeeks, diffDays, diffHours, diffMinutes)
-
+  
   return "just now";
 }

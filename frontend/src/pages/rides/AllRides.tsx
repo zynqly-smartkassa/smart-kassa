@@ -50,7 +50,7 @@ const AllRides = () => {
   const user_id = useSelector((state: RootState) => state.user.id)
   const navigator = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
- const sentNotifications = useRef<Set<string>>(new Set());
+
 
   useEffect(() => {
     (async () => {
@@ -59,19 +59,20 @@ const AllRides = () => {
 
       if (!data || !data.rides) throw new Error("No rides found");
       setRides(data.rides);
-      console.log(data.rides.length)
 
       setIsLoading(false);
     })();
   }, []);
 
+  // This will track if the ride was already called, due to the safety of react.
+   const sentNotifications = useRef<Set<string>>(new Set());
   const hasNotSendFirstRide= useNotificationCheck("first-ride");
   const hasNotSendTwoStreak = useNotificationCheck("two-streak");
 
   useEffect(() => {
+
   if (!rides) return;
 
-  
 
   if (rides.length >= 60 && hasNotSendFirstRide && 
   !sentNotifications.current.has("first-ride")) {
@@ -100,7 +101,7 @@ const AllRides = () => {
     }));
      sentNotifications.current.add("two-streak");
   }
-}, [rides, dispatch,]);
+}, [rides, dispatch, hasNotSendFirstRide, hasNotSendTwoStreak]);
 
   const ride_id = Number(id);
 
@@ -121,7 +122,6 @@ const AllRides = () => {
     if (ride) {
       return <SummaryRide ride={ride}></SummaryRide>
     } else {
-      console.log("Navigating back")
       // since id was not found, navigate to main all-rides
       navigator("/all-rides");
     }
