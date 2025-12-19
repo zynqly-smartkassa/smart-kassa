@@ -392,10 +392,8 @@ const Account = () => {
                 </div>
               </div>
 
-             
               <Button
-                onClick={revertChanges}
-                type="button"
+                type="submit"
                 className={
                   toRevert
                     ? "btn-main ml-2"
