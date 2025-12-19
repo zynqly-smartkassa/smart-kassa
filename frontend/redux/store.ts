@@ -5,6 +5,7 @@ import authSlice from "./slices/authSlice";
 import footerLinkSlice from "./slices/footerLinksSlice";
 import invoicesSlice from "./slices/invoices";
 import accessTokenSlice from "./slices/accessTokenSlice";
+import notificationsSlice from "./slices/notificationsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,7 +15,9 @@ export const store = configureStore({
     setFooterLink: footerLinkSlice,
     setBills: invoicesSlice,
     accessTokenState: accessTokenSlice,
+    notificationsState: notificationsSlice
   },
+   devTools: process.env.NODE_ENV !== "production",
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

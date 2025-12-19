@@ -5,9 +5,15 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Bell, X, Trash2 } from "lucide-react";
+import { useSelector } from "react-redux";
+import type { RootState } from "redux/store";
 import Message from "./Message";
 
 export function NotificationsMessages() {
+
+  const notifications = useSelector((state: RootState) => state.notificationsState.items);
+  console.log("Notifications:", notifications)
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -19,7 +25,7 @@ export function NotificationsMessages() {
       <SheetContent side="right" className="w-full max-w-full flex
        flex-col gap-0 p-0">
         {/* Header */}
-        <div className="flex items-center gap-4 px-4 py-4 divide-y
+        <div className="mt-3 flex items-center gap-4 px-4 py-4 divide-y
         border-b border-slate-200">
           <SheetClose asChild>
             <button className="flex flex-row items-center gap-6">
@@ -29,27 +35,33 @@ export function NotificationsMessages() {
           </SheetClose>
         </div>
         <div className="w-full h-full flex flex-col justify-between">
-          <div className="flex-1 flex flex-col divide-y 
+          {notifications.length > 0 ? (
+            <div className="flex-1 flex flex-col divide-y 
         divide-slate-200 overflow-y-auto pb-10">
-          <Message />
-          <Message />
-          <Message />
-          <Message />
-          <Message />
-          <Message />
-        </div>
 
-        {/* Clear notifications */}
-        <div className="sticky bottom-0 px-6 flex justify-center border-t border-slate-200 py-6">
-          <button className="w-full flex flex-row items-center py-3 px-4 justify-center
+              {notifications.map((notification, index) => (
+                <Message key={index} id={notification.id} icon={notification.icon}
+                  title={notification.title} desc={notification.desc}
+                  date={notification.date} read={notification.read}
+                  color={notification.color}></Message>
+              ))}
+
+            </div>
+          ) : <p className="h-full text-center">Unfortunately there are no notifications yet! Soon!</p>
+          }
+
+
+          {/* Clear notifications */}
+          <div className="sticky bottom-0 px-6 flex justify-center border-t border-slate-200 py-6">
+            <button className="w-full flex flex-row items-center py-3 px-4 justify-center
         gap-4 rounded-xl border">
-            <Trash2 className="w-5 h-5 -mt-1/2"></Trash2>
-            <span className="text-sm font-bold">Clear all notifications</span>
-          </button>
-        </div>
+              <Trash2 className="w-5 h-5 -mt-1/2"></Trash2>
+              <span className="text-sm font-bold">Clear all notifications</span>
+            </button>
+          </div>
         </div>
         {/* Messages */}
-        
+
 
       </SheetContent>
     </Sheet>

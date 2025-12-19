@@ -1,8 +1,7 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 
 import { getAllRides } from "../../utils/rides/all-rides";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AllRide } from 'constants/AllRide';
 import RideAtDate from "./RideAtDate";
 import { ListFilter, ArrowUp, ArrowDown } from 'lucide-react';
@@ -17,8 +16,11 @@ import {
 import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
-import { useSelector } from "react-redux";
-import type { RootState } from "redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { type AppDispatch, type RootState } from "../../../redux/store";
+import type { NotificationsArgs } from "../../../redux/slices/notificationsSlice"
+import { add } from "../../../redux/slices/notificationsSlice"
+import { getDateNow } from "@/utils/rides/getDate";
 
 /**
  * Component that displays all rides for the logged-in user with filtering and sorting capabilities.
@@ -47,16 +49,58 @@ const AllRides = () => {
   const { id } = useParams();
   const user_id = useSelector((state: RootState) => state.user.id)
   const navigator = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  //Necessary for testing, since without it every notification will be 
+  // written twice
+  const alreadyLoaded = useRef(false);
 
 
   useEffect(() => {
     (async () => {
       const data = await
-        getAllRides(Number(user_id)) //Number(user_id)
+        getAllRides(Number(user_id))
 
       if (!data || !data.rides) throw new Error("No rides found");
       setRides(data.rides);
+      console.log(data.rides.length)
+      
+      if (alreadyLoaded.current) {return}
+      alreadyLoaded.current = true;
       setIsLoading(false);
+      if (data.rides.length >= 13) {
+        const notification: NotificationsArgs = {
+          icon: "trophy",
+          title: "Your first ride",
+          desc: "You successfully finished your first ride!",
+          date: getDateNow(),
+          read: false,
+          color: "amber"
+        }
+        dispatch(add(notification))
+        console.log(notification)
+      }
+
+      if (data.rides.length >= 5) {
+        const notification: NotificationsArgs = {
+          icon: "flame",
+          title: "5-Rides Streak",
+          desc: "You successfully finished 5 rides!",
+          date: getDateNow(),
+          read: false,
+          color: "red"
+        };
+         const notification2: NotificationsArgs = {
+          icon: "leaf",
+          title: "5-Rides Streak",
+          desc: "You successfully finished 5 rides!",
+          date: getDateNow(),
+          read: false,
+          color: "green"
+        }
+        dispatch(add(notification))
+        dispatch(add(notification2))
+      }
+       
     })();
   }, []);
 
@@ -69,8 +113,6 @@ const AllRides = () => {
   if (!rides) {
     return <>Unfortunately there are no rides yet...</>
   }
-
-  
 
   // Test if all-rides was called with a id, if so find the exact route
 
