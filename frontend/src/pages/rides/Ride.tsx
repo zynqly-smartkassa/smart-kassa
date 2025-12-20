@@ -33,7 +33,7 @@ import StatusOverlay from "../../components/StatusOverlay";
 import { ROUTING_CONFIG } from "../../utils/config";
 import { driverIcon, locationIcon } from "../../utils/icons";
 import type { NotificationsArgs } from "../../../redux/slices/notificationsSlice";
-import { add } from "../../../redux/slices/notificationsSlice"
+import { addNotification } from "../../../redux/slices/notificationsSlice"
 import { useNotificationCheck } from "@/hooks/useNotificationCheck";
 
 /**
@@ -346,6 +346,8 @@ const Ride = () => {
   }, [setDestinationCoords, setDestination, setTimer, setIsRouteCalculated]);
 
   const hasNotSendDistanceRide = useNotificationCheck("distance-ride");
+  const notifications = useSelector((state: RootState) =>
+   state.notificationsState.activeSettings.notifications);
 
   useEffect(() => {
     if (!isRideActive && isSuccessful && driverLocation && destinationCoords) {
@@ -374,7 +376,7 @@ const Ride = () => {
           const data = await sendRide(newRide);
           const ride_id = data.ride_info.ride_id;
 
-          if (distance >= 100.0 && hasNotSendDistanceRide) {
+          if (distance >= 50.0 && hasNotSendDistanceRide && notifications.news) {
             const notification: NotificationsArgs = {
               id: "distance-ride",
               icon: "flame",
@@ -384,7 +386,7 @@ const Ride = () => {
               read: false,
               color: "yellow"
             }
-            dispatch(add(notification))
+            dispatch(addNotification(notification))
           }
           reInitialize();
           navigator(`/all-rides/${ride_id}`);

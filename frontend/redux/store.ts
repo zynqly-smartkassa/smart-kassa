@@ -23,8 +23,10 @@ export const store = configureStore({
 store.subscribe(() => {
   const notifications = store.getState().notificationsState.items;
   const notifications_archived = store.getState().notificationsState.items_archived;
+  const notifications_settings = store.getState().notificationsState.activeSettings;
   localStorage.setItem("notifications", JSON.stringify(notifications));
   localStorage.setItem("notifications_archived", JSON.stringify(notifications_archived));
+  localStorage.setItem("notifications_settings", JSON.stringify(notifications_settings));
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

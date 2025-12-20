@@ -37,7 +37,7 @@ import Inputs from "../../components/Inputs";
 import PasswordInputs from "../../components/PasswordInputs";
 import type { NotificationsArgs } from "../.../../../../redux/slices/notificationsSlice";
 import { getDateNow } from "@/utils/rides/getDate";
-import { add } from "../../../redux/slices/notificationsSlice"
+import { addNotification } from "../../../redux/slices/notificationsSlice"
 
 
 /**
@@ -138,7 +138,7 @@ function Register() {
                     read: false,
                     color: "emerald"
                   }
-                  dispatch(add(notification))
+                  dispatch(addNotification(notification))
           return t.success.title;
         },
         error: (err) => handleRegisterError(err),

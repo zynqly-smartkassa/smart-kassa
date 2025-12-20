@@ -6,8 +6,8 @@ import {
 } from "@/components/ui/sheet";
 import { Bell, X, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch,  RootState } from "../../redux/store";
-import { clearAll } from "../../redux/slices/notificationsSlice"
+import type { AppDispatch, RootState } from "../../../redux/store";
+import { clearAll } from "../../../redux/slices/notificationsSlice"
 import Message from "./Message";
 
 /**
@@ -25,18 +25,37 @@ export function NotificationsMessages() {
   const dispatch = useDispatch<AppDispatch>();
 
   const hasUnread = useSelector(
-  (state: RootState) => state.notificationsState.items.some(n => !n.read)
-);
+    (state: RootState) => state.notificationsState.items.some(n => !n.read)
+  );
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="relative">
-           <Bell className="w-6 h-6" />
-        {hasUnread && (
-           <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border border-white" />
-        )}
-         
+        <button
+          className="
+    relative group
+    p-2 rounded-full
+    transition-all duration-200
+    hover:bg-violet-100 dark:hover:bg-violet-900/30
+  "
+        >
+          <Bell
+            className="
+      w-6 h-6
+      transition-colors duration-200
+      group-hover:text-violet-500
+    "
+          />
+
+          {hasUnread && (
+            <span className="
+      absolute top-0 right-0
+      w-3 h-3
+      bg-red-500
+      rounded-full
+      border-2 border-white dark:border-black
+    " />
+          )}
         </button>
       </SheetTrigger>
 
@@ -73,13 +92,13 @@ export function NotificationsMessages() {
           <div className="sticky bg-white dark:bg-sidebar bottom-0 px-6 flex justify-center border-t border-slate-200 py-6">
             <button className="w-full flex flex-row items-center py-3 px-4 justify-center
                                 gap-4 rounded-xl border"
-                    onClick={() => dispatch(clearAll())}>
+              onClick={() => dispatch(clearAll())}>
               <Trash2 className="w-5 h-5 -mt-1/2"></Trash2>
               <span className="text-sm font-bold">Clear all notifications</span>
             </button>
           </div>
         </div>
-        
+
 
 
       </SheetContent>

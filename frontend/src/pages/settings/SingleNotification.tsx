@@ -1,18 +1,42 @@
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../../redux/store";
+import { enableSetting, disableSetting, type NotificationSettingKey } from "../../../redux/slices/notificationsSlice";
 
+interface SingleNotificationArgs {
+  id: NotificationSettingKey;
+  title: string;
+  desc: string;
+  startValue: boolean;
+}
 
+const SingleNotification = ({id, title, desc, startValue}: SingleNotificationArgs) => {
 
-const SingleNotification = () => {
+  const [enabled, setEnabled] = useState(startValue);
 
-  const [enabled, setEnabled] = useState(false);
+  console.log("Start value: ", startValue)
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  function handleSetting() {
+     if (!enabled) {
+      dispatch(enableSetting(id));
+      console.log("enabling")
+    } else {
+      dispatch(disableSetting(id));
+       console.log("disabling")
+    }
+  }
+   
+
 
   return (
     <Button
       type="button"
       variant="ghost"
-      onClick={() => setEnabled(!enabled)}
+      onClick={() => {setEnabled(!enabled); handleSetting()}}
       className="
               w-full flex items-center justify-between
               py-4 px-4 text-left rounded-xl
@@ -22,9 +46,9 @@ const SingleNotification = () => {
             "
     >
       <div className="flex flex-col">
-        <h3 className="font-semibold text-sm">News & Shout-OUTS</h3>
+        <h3 className="font-semibold text-sm">{title}</h3>
         <p className="text-xs text-gray-600 dark:text-gray-500">
-          Receive news and Shout-OUTS xxxxxxxxxx
+          {desc}
         </p>
       </div>
 

@@ -18,7 +18,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useDispatch, useSelector } from "react-redux";
 import { type AppDispatch, type RootState } from "../../../redux/store";
-import { add } from "../../../redux/slices/notificationsSlice"
+import { addNotification } from "../../../redux/slices/notificationsSlice"
 import { getDateNow } from "@/utils/rides/getDate";
 import { useNotificationCheck } from "@/hooks/useNotificationCheck";
 
@@ -51,6 +51,9 @@ const AllRides = () => {
   const navigator = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
+  const notifications = useSelector((state: RootState) =>
+    state.notificationsState.activeSettings.notifications);
+
 
   useEffect(() => {
     (async () => {
@@ -65,43 +68,48 @@ const AllRides = () => {
   }, []);
 
   // This will track if the ride was already called, due to the safety of react.
-   const sentNotifications = useRef<Set<string>>(new Set());
-  const hasNotSendFirstRide= useNotificationCheck("first-ride");
+  const sentNotifications = useRef<Set<string>>(new Set());
+  const hasNotSendFirstRide = useNotificationCheck("first-ride");
   const hasNotSendTwoStreak = useNotificationCheck("two-streak");
 
   useEffect(() => {
 
-  if (!rides) return;
+    if (!rides) return;
 
+    console.log(rides.length)
+    console.log("HasSend: ", hasNotSendFirstRide)
+    console.log("FirstRide: ", !sentNotifications.current.has("first-ride"))
 
-  if (rides.length == 1 && hasNotSendFirstRide && 
-  !sentNotifications.current.has("first-ride")) {
-    dispatch(add({
-      id: "first-ride",
-      icon: "trophy",
-      title: "Your first ride ✅",
-      desc: "You successfully finished your first ride!",
-      date: getDateNow(),
-      read: false,
-      color: "amber"
-    }));
-     sentNotifications.current.add("first-ride");
-  }
+    console.log("achievements: ", notifications.achievements)
 
-  if (rides.length == 2 && hasNotSendTwoStreak && 
-  !sentNotifications.current.has("two-streak")) {
-    dispatch(add({
-       id: "two-streak",
-      icon: "leaf",
-      title: "2-Rides Streak ⭐",
-      desc: "You successfully finished 2 rides!",
-      date: getDateNow(),
-      read: false,
-      color: "green"
-    }));
-     sentNotifications.current.add("two-streak");
-  }
-}, [rides, dispatch, hasNotSendFirstRide, hasNotSendTwoStreak]);
+    if (rides.length >= 79 && hasNotSendFirstRide &&
+      !sentNotifications.current.has("first-ride") && notifications.achievements) {
+      dispatch(addNotification({
+        id: "first-ride",
+        icon: "trophy",
+        title: "Your first ride ✅",
+        desc: "You successfully finished your first ride!",
+        date: getDateNow(),
+        read: false,
+        color: "amber"
+      }));
+      sentNotifications.current.add("first-ride");
+    }
+
+    if (rides.length >= 80 && hasNotSendTwoStreak &&
+      !sentNotifications.current.has("two-streak") && notifications.achievements) {
+      dispatch(addNotification({
+        id: "two-streak",
+        icon: "leaf",
+        title: "2-Rides Streak ⭐",
+        desc: "You successfully finished 2 rides!",
+        date: getDateNow(),
+        read: false,
+        color: "green"
+      }));
+      sentNotifications.current.add("two-streak");
+    }
+  }, [rides, dispatch, hasNotSendFirstRide, hasNotSendTwoStreak, notifications.achievements]);
 
   const ride_id = Number(id);
 
@@ -140,7 +148,8 @@ const AllRides = () => {
         md:items-center">
 
           <div className="flex flex-col gap-1 text-center md:text-left">
-            <h2 data-testid="h2text" className="page-title">Rides</h2>
+            <h2 data-testid="h2text" className="page-title"
+              onClick={() => rides}>Rides</h2>
             <p className="subheader">
               Visit and sort every ride you took!
             </p>

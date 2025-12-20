@@ -9,7 +9,7 @@ import { isMobile } from "@/hooks/use-mobile";
 import type { AppDispatch, RootState } from "../../redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { setLink } from "../../redux/slices/footerLinksSlice";
-import { NotificationsMessages } from "@/components/NotificationsMessages";
+import { NotificationsMessages } from "../pages/settings/NotificationsMessages";
 
 interface IfooterLinks {
   name: string;

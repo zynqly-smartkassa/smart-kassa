@@ -1,6 +1,15 @@
 import SingleNotification from "./SingleNotification";
+import {SETTINGS} from "../../../constants/Settings"
+import type { NotificationSettingKey } from "../../../redux/slices/notificationsSlice";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../redux/store";
 
 const Notifications = () => {
+
+  const notifications = useSelector((state: RootState) => 
+    state.notificationsState.activeSettings.notifications)
+  console.log(notifications);
+
   return (
     <div className="settings-page-container">
 
@@ -25,11 +34,15 @@ const Notifications = () => {
 
         {/* Right Content */}
         <div className="flex flex-col gap-6 w-full max-w-xl">
-          <SingleNotification />
-          <SingleNotification />
-          <SingleNotification />
-          <SingleNotification />
-          <SingleNotification />
+          <SingleNotification id={SETTINGS.NOTIFICATIONS_ACHIEVEMENTS as NotificationSettingKey} 
+          title="Achievements" 
+          desc="Turn off achievements settings"
+          startValue={notifications.achievements} />
+           <SingleNotification id={SETTINGS.NOTIFICATIONS_NEWS as NotificationSettingKey} 
+           title="News & Shout-OUTS" 
+           desc="Receive news and Shout-OUTS"
+          startValue={notifications.news} />
+          
         </div>
       </div>
 
@@ -46,8 +59,7 @@ const Notifications = () => {
 
         {/* Right Content */}
         <div className="flex flex-col gap-6 w-full max-w-xl">
-          <SingleNotification />
-          <SingleNotification />
+       
         </div>
       </div>
 

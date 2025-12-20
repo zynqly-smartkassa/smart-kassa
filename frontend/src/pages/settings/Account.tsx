@@ -260,7 +260,6 @@ const Account = () => {
 
               <Button
                 type="submit"
-
                 className={
                   toRevert
                     ? "btn-main ml-2"
@@ -281,7 +280,7 @@ const Account = () => {
                 type="button"
                 className={
                   toRevert
-                    ? "btn-primary ml-2"
+                    ? "btn ml-2"
                     : `
                   ml-2 bg-white dark:bg-black border-violet-400 border-2 dark:border-0 black:text-white font-extrabold px-8 py-3
                   transition-all duration-200

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./pages/auth/Register";
 import Home from "./pages/Home";
 import Login from "./pages/auth/Login";
@@ -9,8 +9,8 @@ import { StatusBar } from "@capacitor/status-bar";
 import Ride from "./pages/rides/Ride";
 import AllRides from "./pages/rides/AllRides";
 import { isMobile } from "./hooks/use-mobile";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import Invoices from "./pages/invoices/Invoices";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 /**
  * The Routes are all declared here
@@ -35,8 +35,10 @@ function App() {
         <Route
           element={
             <ProtectedRoute>
-              <RootLayout />
+               <RootLayout />
             </ProtectedRoute>
+             
+         
           }
         >
           <Route path="/" element={<Home />} />

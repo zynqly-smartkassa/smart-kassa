@@ -1,6 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-
 export interface NotificationsArgs {
   id: string,
   icon: string,
@@ -11,10 +10,20 @@ export interface NotificationsArgs {
   color: string
 }
 
+export interface SettingsArgs {
+  notifications: {
+    achievements: boolean;
+    news: boolean
+  }
+}
+
 interface NotificationsState {
   items: NotificationsArgs[];
-  items_archived: NotificationsArgs[]
+  items_archived: NotificationsArgs[];
+  activeSettings: SettingsArgs;
 }
+
+export type NotificationSettingKey = keyof SettingsArgs["notifications"];
 
 // Load from localstorage
 const loadNotifications = (): NotificationsArgs[] => {
@@ -39,17 +48,40 @@ const loadNotificationsArchiv = (): NotificationsArgs[] => {
   }
 };
 
+const loadNotificationsSettings = (): SettingsArgs => {
+  try {
+    const raw = localStorage.getItem("notifications_settings");
+    if (!raw) return {
+      notifications: {
+        achievements: true,
+        news: true
+      }
+    };
+    return JSON.parse(raw) as SettingsArgs;
+  } catch (err) {
+    console.error("Failed to load notifications from localStorage", err);
+    return {
+      notifications: {
+        achievements: true,
+        news: true
+      }
+    }
+  };
+}
+
 const initialState: NotificationsState = {
   items: loadNotifications(),
-  items_archived: loadNotificationsArchiv()
+  items_archived: loadNotificationsArchiv(),
+  activeSettings: loadNotificationsSettings()
 };
+
 
 const notificationsSlice = createSlice({
   name: "notifications",
   initialState,
   reducers: {
-    add: (state, action: PayloadAction<NotificationsArgs>) => {
-        state.items.push(action.payload);
+    addNotification: (state, action: PayloadAction<NotificationsArgs>) => {
+      state.items.push(action.payload);
     },
     markAsRead: (state, action: PayloadAction<string>) => {
       const found = state.items.find(n => n.id === action.payload)
@@ -61,11 +93,35 @@ const notificationsSlice = createSlice({
     clearAll: (state) => {
       state.items = [];
     },
-    deleteOne: (state, action: PayloadAction<string>) => {
+    clearAllArchived: (state) => {
+      state.items_archived = [];
+    },
+    clearAllSettings: (state) => {
+      state.activeSettings = {
+        notifications: {
+          achievements: true,
+          news: true
+        }
+      };
+    },
+    deleteNotifications: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter(ride => ride.id !== action.payload);
-    } 
+    },
+    enableSetting: (state, action: PayloadAction<NotificationSettingKey>) => {
+      const key = action.payload;
+      state.activeSettings.notifications[key] = true;
+      console.log(`Set key ${key} (from: false) tooooo: true `)
+      console.log("Value now:", state.activeSettings.notifications[key])
+    },
+    disableSetting: (state, action: PayloadAction<NotificationSettingKey>) => {
+      const key = action.payload;
+      state.activeSettings.notifications[key] = false;
+      console.log(`Set key ${key} (from: true) tooooo: false `)
+      console.log("Value now:", state.activeSettings.notifications[key])
+    }
   }
 })
 
-export const { add, markAsRead, clearAll, deleteOne } = notificationsSlice.actions;
+export const { addNotification, markAsRead, clearAll, deleteNotifications,
+  enableSetting, disableSetting, clearAllArchived, clearAllSettings } = notificationsSlice.actions;
 export default notificationsSlice.reducer;
