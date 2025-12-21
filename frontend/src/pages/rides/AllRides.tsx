@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 
 import { getAllRides } from "../../utils/rides/all-rides";
@@ -18,7 +17,8 @@ import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useSelector } from "react-redux";
-import type { RootState } from "../../../redux/store";
+import { type RootState } from "../../../redux/store";
+import { useCheckForAchievements } from "../notifications/useAchievements";
 
 /**
  * Component that displays all rides for the logged-in user with filtering and sorting capabilities.
@@ -48,17 +48,19 @@ const AllRides = () => {
   const user_id = useSelector((state: RootState) => state.user.id)
   const navigator = useNavigate();
 
-
   useEffect(() => {
     (async () => {
       const data = await
-        getAllRides(Number(user_id)) //Number(user_id)
+        getAllRides(Number(user_id))
 
       if (!data || !data.rides) throw new Error("No rides found");
       setRides(data.rides);
+
       setIsLoading(false);
     })();
   }, []);
+
+  useCheckForAchievements(rides);
 
   const ride_id = Number(id);
 
@@ -70,7 +72,6 @@ const AllRides = () => {
     return <>Unfortunately there are no rides yet...</>
   }
 
-  
 
   // Test if all-rides was called with a id, if so find the exact route
 
@@ -98,7 +99,8 @@ const AllRides = () => {
         md:items-center">
 
           <div className="flex flex-col gap-1 text-center md:text-left">
-            <h2 data-testid="h2text" className="page-title">Rides</h2>
+            <h2 data-testid="h2text" className="page-title"
+              onClick={() => rides}>Rides</h2>
             <p className="subheader">
               Visit and sort every ride you took!
             </p>

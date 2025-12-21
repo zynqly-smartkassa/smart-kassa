@@ -368,6 +368,7 @@ const Ride = () => {
         try {
           const data = await sendRide(newRide);
           const ride_id = data.ride_info.ride_id;
+
           reInitialize();
           navigator(`/all-rides/${ride_id}`);
         } catch (error) {
@@ -377,22 +378,8 @@ const Ride = () => {
         }
       })();
     }
-  }, [
-    isRideActive,
-    isSuccessful,
-    driverLocation,
-    destinationCoords,
-    startTime,
-    endTime,
-    timer,
-    distance,
-    rideType,
-    dispatch,
-    reInitialize,
-    user_id,
-    navigator,
-    wholeRide,
-  ]);
+  }, [isRideActive, isSuccessful, driverLocation, destinationCoords,
+     startTime, endTime, timer, distance, rideType, dispatch, reInitialize, user_id, navigator, wholeRide]);
 
   // Simle loading state
   if (!driverLocation) {

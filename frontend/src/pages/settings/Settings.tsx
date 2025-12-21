@@ -1,9 +1,21 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Account from "./Account"
-import Notifications from "./Notifications"
+import Notifications from "../notifications/inlineSlider/Notifications"
 import UiStyling from "./UiStyling"
 
+/**
+ * Main settings page component with tabbed navigation.
+ * 
+ * Serves as the container for all user settings, organizing them into three main categories:
+ * - Account: Profile information, avatar, and account management
+ * - Notifications: Notification preferences and settings
+ * - UI-Styling: Theme and visual customization options
+ * 
+ * The component uses a tab interface for easy navigation between different settings sections.
+ * 
+ * @returns {JSX.Element} A tabbed settings interface with three main sections.
+ */
 const Settings = () => {
 
   return (

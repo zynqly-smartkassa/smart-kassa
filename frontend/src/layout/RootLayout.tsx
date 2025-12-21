@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 
-import { Bell } from "lucide-react";
 import SearchInput from "@/components/SearchInput";
 import { isMobile } from "@/hooks/use-mobile";
 import type { AppDispatch, RootState } from "../../redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { setLink } from "../../redux/slices/footerLinksSlice";
+import { NotificationsMessages } from "../pages/notifications/inlineSlider/NotificationsMessages";
 
 interface IfooterLinks {
   name: string;
@@ -99,8 +99,8 @@ export default function RootLayout() {
             {/* Account icon and Bell on the right side */}
 
             <div className="flex flex-row gap-4 items-center text-lg flex-shrink">
-              <Bell className="hidden md:block md:w-6 md:h-6"></Bell>
-              <CircleUser className="w-6 h-6 md:w-10 md:h-10"></CircleUser>
+              <NotificationsMessages></NotificationsMessages>
+              <CircleUser className="w-7 h-7 md:w-10 md:h-10"></CircleUser>
             </div>
           </header>
 

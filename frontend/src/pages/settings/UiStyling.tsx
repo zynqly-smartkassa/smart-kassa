@@ -1,5 +1,15 @@
 import ModeSwitcherUi from "@/components/ui/mode-switcher.ui";
 
+/**
+ * UI styling settings page component.
+ * 
+ * Provides interface for customizing the visual appearance of the application.
+ * Currently includes theme switching functionality (light/dark mode) through the
+ * ModeSwitcherUi component. This page can be extended with additional UI customization
+ * options such as color schemes, font sizes, and layout preferences.
+ * 
+ * @returns {JSX.Element} A settings page for UI theme customization.
+ */
 const UiStyling = () => {
   return (
     <div className="settings-page-container">

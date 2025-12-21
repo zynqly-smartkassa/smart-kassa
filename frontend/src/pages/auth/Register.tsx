@@ -35,12 +35,14 @@ import type {
 } from "../../../constants/Compontents";
 import Inputs from "../../components/Inputs";
 import PasswordInputs from "../../components/PasswordInputs";
+import { useCheckForNews } from "../notifications/useNews";
+
 
 /**
  * The Sign Up page, where users Sign Up
  * @returns Register Page where Users can Sign Up
  * @author Casper Zielinski
- * @author Umejr Dzinovic
+ * @author 
  */
 function Register() {
   // useState Hooks for the Form
@@ -54,7 +56,8 @@ function Register() {
   const [atu, setAtu] = useState("");
   const [firmenbuchnummer, setFirmenbuchnummer] = useState("");
   const [telefonnummer, setTelefonnummer] = useState("");
-
+  const [isRegistered, setIsRegistered] = useState(false);
+  useCheckForNews(isRegistered);
   const navigator = useNavigate();
 
   // Constant Values for Messages for the User
@@ -125,6 +128,7 @@ function Register() {
         loading: "Registrierung...",
         success: async () => {
           await navigator("/");
+          setIsRegistered(true);
           return t.success.title;
         },
         error: (err) => handleRegisterError(err),
