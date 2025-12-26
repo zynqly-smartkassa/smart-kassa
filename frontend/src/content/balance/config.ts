@@ -3,7 +3,7 @@ import type { ChartConfig } from "@/components/ui/chart";
 // Bar chart config (rides axis labels)
 export const barChartConfig = {
   rides: {
-    label: "Rides",
+    label: "Fahrten",
   },
 } as const;
 

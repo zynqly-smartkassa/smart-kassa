@@ -99,7 +99,7 @@ const RideAtDate = ({ rides, sortAfter, isDescending, rideType }: RideAtDateArgs
   const navigator = useNavigate();
 
   if (rides.length === 0) {
-    return <>There are no rides for this date...</>
+    return <>Es gibt keine Fahrten für dieses Datum...</>
   }
 
   const filteredRides = handleRideType(rides, rideType);

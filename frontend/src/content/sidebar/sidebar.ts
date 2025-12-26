@@ -25,35 +25,35 @@ export const sidebarSections: SidebarSection[] = [
         icon: Home,
       },
       {
-        label: "Analytics",
+        label: "Analysen",
         path: "/analytics",
         icon: BarChart,
       },
       {
-        label: "Finances",
+        label: "Finanzen",
         path: "/finances",
         icon: Wallet,
       },
       {
-        label: "Docs",
+        label: "Dokumentation",
         path: "/documentation",
         icon: BookOpen,
       },
-      
+
     ],
   },
 
   {
-    title: "Taxi Management",
+    title: "Taxi Verwaltung",
     items: [
       {
-        label: "Start a ride",
+        label: "Fahrt starten",
         path: "/ride",
         icon: Car,
         onlyMobile: true
       },
        {
-        label: "All Rides",
+        label: "Alle Fahrten",
         path: "/all-rides",
         icon: List,
       },
@@ -98,15 +98,15 @@ export const sidebarSections: SidebarSection[] = [
   },
 
    {
-    title: "Utils",
+    title: "Weitere",
     items: [
       {
-        label: "Help",
+        label: "Hilfe",
         path: "/help",
         icon: Info,
       },
       {
-        label: "Settings",
+        label: "Einstellungen",
         path: "/settings",
         icon: Settings,
       },

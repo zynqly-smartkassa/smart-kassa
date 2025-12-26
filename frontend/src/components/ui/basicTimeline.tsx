@@ -18,7 +18,7 @@ export function getRideTimeline(ride: AllRide): dataArgs[] {
 
     // Extract date components
     const day = date.getDate();
-    const month = date.toLocaleString("en-US", { month: "short" }); // e.g. "Dec"
+    const month = date.toLocaleString("de-DE", { month: "short" }); // e.g. "Dez"
     const year = date.getFullYear().toString().slice(2); // last two digits
 
     // Format time to 24h (HH:MM)
@@ -40,11 +40,11 @@ export function getRideTimeline(ride: AllRide): dataArgs[] {
   // Creates two timeline entries: Start and End
   const rideInfo: dataArgs[] = [
     {
-      label: "Start Info",
+      label: "Start-Info",
       value: `${formatDateTime(ride.start_time)} | ${formatAddress(ride.start_address)}`
     },
     {
-      label: "End Info",
+      label: "End-Info",
       value: `${formatDateTime(ride.end_time)} | ${formatAddress(ride.end_address)}`
     }
   ];

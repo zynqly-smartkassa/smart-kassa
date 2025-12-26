@@ -62,7 +62,7 @@ const Balance = ({ entry, duration }: BalanceData) => {
                 </span>
 
                 <span className="text-xs text-muted-foreground font-light">
-                  +25.1% last month
+                  +25.1% letzten Monat
                 </span>
               </CardContent>
             </Card>
@@ -74,7 +74,7 @@ const Balance = ({ entry, duration }: BalanceData) => {
         <Card className="w-full lg:col-span-1 rounded-xl border border-border/40 bg-sidebar
                shadow-sm hover:shadow-md transition-shadow">
           <CardHeader>
-            <CardTitle className="text-xl md:text-3xl">Balance</CardTitle>
+            <CardTitle className="text-xl md:text-3xl">Bilanz</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -137,7 +137,7 @@ const Balance = ({ entry, duration }: BalanceData) => {
         <Card className="w-full lg:col-span-2 rounded-xl border border-border/40 bg-sidebar
                shadow-sm hover:shadow-md transition-shadow">
           <CardHeader>
-            <CardTitle className="text-xl md:text-3xl">Overview</CardTitle>
+            <CardTitle className="text-xl md:text-3xl">Übersicht</CardTitle>
           </CardHeader>
           <CardContent className="w-full flex flex-col items-center justify-center">
             {/* Bar Chart */}

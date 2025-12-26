@@ -71,7 +71,7 @@ const StatusOverlay: React.FC<StatusOverlayProps> = ({
         {/* Dynamic Error Message */}
         {stillLoading && (
           <div className="flex flex-col gap-1">
-            <span className="font-bold text-2xl">Error</span>
+            <span className="font-bold text-2xl">Fehler</span>
             <span className="text-left font-semibold mt-2 mb-1">
               {errorFallback && errorFallback.length == 1 ?
                 "Mögliche Ursache:" : "Mögliche Ursachen:"}</span>

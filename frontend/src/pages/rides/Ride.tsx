@@ -399,7 +399,7 @@ const Ride = () => {
 
   return (
     <div className="w-full flex flex-col z-20 gap-2">
-      <h2 className="hidden md:block font-bold text-3xl text-left">Rides</h2>
+      <h2 className="hidden md:block font-bold text-3xl text-left">Fahrten</h2>
       <div className="md:hidden flex flex-col gap-2">
         <p className="w-full text-5xl font-bold text-center"
           data-testid="timer">

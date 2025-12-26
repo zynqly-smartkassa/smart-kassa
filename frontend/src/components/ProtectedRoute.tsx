@@ -90,13 +90,15 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   // had to also use the authenticate value so it doesn't show home page for split second to non-loged in Users
   if (!isAuthenticated || isLoading) {
     return (
-    
-    <StatusOverlay text="Loading Service" isLoading={true} errorFallback={
-      ["Unser Service ist leider fehlgeschlagen, bitte versuchen sie es nacher erneut!"]
-    } />
-  
+      <StatusOverlay
+        text="Loading Service"
+        isLoading={true}
+        errorFallback={[
+          "Unser Service ist leider fehlgeschlagen, bitte versuchen sie es nacher erneut!",
+        ]}
+      />
     );
-  } 
+  }
 
   return <>{children}</>;
 };

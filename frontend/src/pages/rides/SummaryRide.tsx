@@ -125,7 +125,7 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
   const valueClass = 'font-bold text-lg md:text-2xl';
 
   if (!ride) {
-    return <StatusOverlay text='Ride data could not be loaded. Please try again or check if the ride still exists.' 
+    return <StatusOverlay text='Fahrtdaten konnten nicht geladen werden. Bitte versuchen Sie es erneut oder überprüfen Sie, ob die Fahrt noch existiert.'
     isError={true}></StatusOverlay>
   }
 
@@ -138,11 +138,11 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
       <Button variant={"ghost"} onClick={() => navigator("/all-rides")}
         className='self-start p-0'>
         <ArrowLeft></ArrowLeft>
-        <span className='font-bold text-2xl'>Ride Summary</span>
+        <span className='font-bold text-2xl'>Fahrtzusammenfassung</span>
       </Button>
 
       {!ride.whole_ride && (
-        <StatusOverlay text='Map data for this ride is missing. The route cannot be displayed.' 
+        <StatusOverlay text='Kartendaten für diese Fahrt fehlen. Die Route kann nicht angezeigt werden.'
         isError={true}></StatusOverlay>
 
       )}
@@ -167,7 +167,7 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
       {/* Ride ID */}
       <div className='w-full flex flex-col gap-4'>
         <div className='flex items-center gap-1'>
-          <span className={labelClass}>Ride ID: </span>
+          <span className={labelClass}>Fahrt-ID: </span>
           <span className={valueClass}>{ride.ride_id}</span>
         </div>
 
@@ -175,13 +175,13 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
         <div className='flex flex-col gap-2  w-full md:flex-row md:gap-8'>
           <div className='flex flex-row gap-1 items-center'>
             <BadgeCheck size={28} fill="#10B981" color='green'></BadgeCheck>
-            <span className={valueClass}>Ride finished successfully</span>
+            <span className={valueClass}>Fahrt erfolgreich abgeschlossen</span>
           </div>
 
           <div className='flex flex-row gap-8'>
             <div className='flex flex-col text-left w-1/3
             md:w-full md:flex-row md:gap-1 md:items-center'>
-              <span className={labelClass}>Car:</span>
+              <span className={labelClass}>Fahrzeug:</span>
               <span className={valueClass}>{ride.vehicle_id}</span>
             </div>
 
@@ -189,7 +189,7 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
             <div className='bg-gray-500/30 w-0.5 h-full'></div>
 
             <div className='flex flex-col text-left w-1/3 md:w-full'>
-              <span className={labelClass}>Ride info:</span>
+              <span className={labelClass}>Fahrtinfo:</span>
               <span className={valueClass}>{ride.ride_type
                 .charAt(0).toUpperCase() + ride.ride_type.slice(1)}</span>
             </div>
@@ -205,7 +205,7 @@ export const SummaryRide = ({ ride }: SummaryRideArgs) => {
 
         <div className='w-full flex flex-row gap-1 items-center'>
           <Clock3 size={28}></Clock3>
-          <span className={valueClass}>Ride Duration: </span>
+          <span className={valueClass}>Fahrtdauer: </span>
           <span className={valueClass}> {formatMinutes(durationToMinutes(ride.duration))}</span>
         </div>
 

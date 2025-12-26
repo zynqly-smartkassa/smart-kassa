@@ -80,12 +80,12 @@ const Invoices = () => {
             return await fetchBills();
           } else if (isAuthError && !retryRef.current) {
             // Second attempt failed - session expired
-            toast.error("Session expired. Please log in again.");
+            toast.error("Sitzung abgelaufen. Bitte melden Sie sich erneut an.");
           } else {
-            toast.error("Failed to load invoices. Please try again.");
+            toast.error("Rechnungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.");
           }
         } else {
-          toast.error("An unexpected error occurred.");
+          toast.error("Ein unerwarteter Fehler ist aufgetreten.");
         }
       }
     } else {
@@ -100,8 +100,8 @@ const Invoices = () => {
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleString("en-GB", {
-      // en-GB für 17/12/2025 Format
+    return date.toLocaleString("de-DE", {
+      // de-DE für 17.12.2025 Format
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -113,9 +113,9 @@ const Invoices = () => {
   return (
     <section className="flex flex-col w-full">
       <div className="flex flex-col gap-1 pb-4">
-        <h2 className="page-title">Invoices</h2>
+        <h2 className="page-title">Rechnungen</h2>
         <p className="subheader">
-          View and download all your generated invoices
+          Sehen und laden Sie alle Ihre generierten Rechnungen herunter
         </p>
       </div>
 
@@ -135,7 +135,7 @@ const Invoices = () => {
                     </div>
                     <div>
                       <CardTitle className="card-title-standard">
-                        Invoice
+                        Rechnung
                       </CardTitle>
                     </div>
                   </div>
@@ -167,13 +167,13 @@ const Invoices = () => {
                       rel="noopener noreferrer"
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
-                      View Online
+                      Online ansehen
                     </a>
                   </Button>
                   <Button asChild className="w-full" variant="outline">
                     <a href={blob.downloadUrl} download>
                       <Download className="w-4 h-4 mr-2" />
-                      Download
+                      Herunterladen
                     </a>
                   </Button>
                 </CardFooter>
@@ -187,9 +187,9 @@ const Invoices = () => {
               <EmptyMedia variant="icon">
                 <FolderOpen />
               </EmptyMedia>
-              <EmptyTitle>No Invoices Yet</EmptyTitle>
+              <EmptyTitle>Noch keine Rechnungen</EmptyTitle>
               <EmptyDescription>
-                You don&apos;t have any invoices yet.
+                Sie haben noch keine Rechnungen.
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
@@ -203,10 +203,10 @@ const Invoices = () => {
                     }
                   }}
                 >
-                  {isMobile ? "Start a Ride" : "Check Statistics"}
+                  {isMobile ? "Fahrt starten" : "Statistiken prüfen"}
                 </Button>
                 <Button variant="outline" onClick={() => navigator("/")}>
-                  Back to Home
+                  Zurück zur Startseite
                 </Button>
               </div>
             </EmptyContent>
@@ -217,7 +217,7 @@ const Invoices = () => {
               size="sm"
             >
               <a href="#">
-                Learn More <ArrowUpRightIcon />
+                Mehr erfahren <ArrowUpRightIcon />
               </a>
             </Button>
           </Empty>
@@ -238,7 +238,7 @@ const Invoices = () => {
                     </div>
                     <div>
                       <CardTitle className="card-title-standard">
-                        Invoice
+                        Rechnung
                       </CardTitle>
                     </div>
                   </div>

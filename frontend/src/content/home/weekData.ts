@@ -10,7 +10,7 @@ export type WeekDataEntry = {
 
 export const weekData: WeekDataEntry[] = [
   {
-    day: "Monday",
+    day: "Montag",
     date: "2025-11-17",
     totalRevenue: 280.40,
     totalRides: 13,
@@ -19,7 +19,7 @@ export const weekData: WeekDataEntry[] = [
     avgRating: 4.78,
   },
   {
-    day: "Tuesday",
+    day: "Dienstag",
     date: "2025-11-18",
     totalRevenue: 340.00,
     totalRides: 15,
@@ -28,7 +28,7 @@ export const weekData: WeekDataEntry[] = [
     avgRating: 4.82,
   },
   {
-    day: "Wednesday",
+    day: "Mittwoch",
     date: "2025-11-19",
     totalRevenue: 298.75,
     totalRides: 12,
@@ -37,7 +37,7 @@ export const weekData: WeekDataEntry[] = [
     avgRating: 4.75,
   },
   {
-    day: "Thursday",
+    day: "Donnerstag",
     date: "2025-11-20",
     totalRevenue: 355.30,
     totalRides: 16,
@@ -46,7 +46,7 @@ export const weekData: WeekDataEntry[] = [
     avgRating: 4.80,
   },
   {
-    day: "Friday",
+    day: "Freitag",
     date: "2025-11-21",
     totalRevenue: 420.10,
     totalRides: 19,
@@ -55,7 +55,7 @@ export const weekData: WeekDataEntry[] = [
     avgRating: 4.91,
   },
   {
-    day: "Saturday",
+    day: "Samstag",
     date: "2025-11-22",
     totalRevenue: 510.40,
     totalRides: 24,
@@ -64,7 +64,7 @@ export const weekData: WeekDataEntry[] = [
     avgRating: 4.96,
   },
   {
-    day: "Sunday",
+    day: "Sonntag",
     date: "2025-11-23",
     totalRevenue: 265.00,
     totalRides: 11,
