@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { AuthStorage } from "./localStorageTokens";
+import { getOrCreateDeviceId } from "./deviceId";
 
 /**
  * Method to check if access token is valid or not
@@ -47,7 +48,7 @@ async function refreshAccessToken() {
   try {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/refresh`,
-      {},
+      { device_id: getOrCreateDeviceId() },
       { withCredentials: true }
     );
 

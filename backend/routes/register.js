@@ -42,6 +42,9 @@ router.post("/", async (req, res) => {
     password,
     fn,
     atu,
+    device_id,
+    user_agent,
+    device_name,
   } = req.body;
 
   try {
@@ -57,6 +60,15 @@ router.post("/", async (req, res) => {
     ) {
       return res.status(400).send({ error: "Missing required fields" });
     }
+
+    if (!device_id || !user_agent || !device_name) {
+      return res.status(400).send({
+        error:
+          "Missing fields required for multi-device user authentication and user info",
+      });
+    }
+
+    const client_ip = req.socket.address();
 
     // Check for duplicate email
     const checkuser = await pool.query("SELECT * FROM users WHERE email = $1", [
@@ -77,7 +89,7 @@ router.post("/", async (req, res) => {
     let userId;
 
     try {
-        // Begin of database transaction, if an operation fails, all queries roll back
+      // Begin of database transaction, if an operation fails, all queries roll back
       await pool.query("BEGIN");
 
       // Insert company into company table and return the generated company_id
@@ -115,12 +127,16 @@ router.post("/", async (req, res) => {
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
 
       await pool.query(
-        `INSERT INTO session (user_id, refresh_token, created_at, expires_at)
-       VALUES ($1, $2, NOW(), $3)`,
+        `INSERT INTO session (user_id, refresh_token, created_at, expires_at, user_agent, client_ip, device_name, device_id)
+       VALUES ($1, $2, NOW(), $3, $4, $5, $6)`,
         [
           userId,
           refreshToken,
-          expiresAt
+          expiresAt,
+          user_agent,
+          client_ip,
+          device_name,
+          device_id,
         ]
       );
 
@@ -128,9 +144,12 @@ router.post("/", async (req, res) => {
     } catch (error) {
       await pool.query("ROLLBACK");
       const errorResponse = error;
-      console.error(errorResponse)
+      console.error(errorResponse);
       if (
-        /^Key \(phone_number\)=\(\+?\d+\s?\d+\) already exists\.$/.test(error.detail)) {
+        /^Key \(phone_number\)=\(\+?\d+\s?\d+\) already exists\.$/.test(
+          error.detail
+        )
+      ) {
         return res.status(409).send({
           error: `Ein Account mit der Telefonnumer '${phone_number}' existiert bereits.`,
         });
@@ -138,7 +157,7 @@ router.post("/", async (req, res) => {
 
       if (/Key \(fn\)=\(([^)]+)\)/.test(error.detail)) {
         return res.status(409).send({
-          error: `Ein Account mit der FN '${fn}' existiert bereits.`
+          error: `Ein Account mit der FN '${fn}' existiert bereits.`,
         });
       }
 
@@ -148,8 +167,9 @@ router.post("/", async (req, res) => {
         });
       }
 
-
-      return res.status(500).send({ error: errorResponse, message: "Internal Server Error" });
+      return res
+        .status(500)
+        .send({ error: errorResponse, message: "Internal Server Error" });
     }
 
     // Store refresh token in httpOnly cookie (not accessible via JavaScript)

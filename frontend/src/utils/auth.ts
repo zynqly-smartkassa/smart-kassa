@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { AuthStorage } from "./localStorageTokens";
 import type { AppDispatch } from "../../redux/store";
 import { signInUser } from "../../redux/slices/userSlice";
+import { getOrCreateDeviceId } from "./deviceId";
 
 export async function register(
   firstName: string,
@@ -26,6 +27,9 @@ export async function register(
         business: business,
         fn: fn,
         atu: atu,
+        device_id: getOrCreateDeviceId(),
+        user_agent: navigator.userAgent,
+        device_name: navigator.platform + " " + navigator.appName,
       },
       { withCredentials: true } // to set the refresh token in the Cookie
     );
@@ -100,6 +104,9 @@ export async function login(
       {
         email: email,
         password: password,
+        device_id: getOrCreateDeviceId(),
+        user_agent: navigator.userAgent,
+        device_name: navigator.platform + " " + navigator.appName,
       },
       { withCredentials: true } // to set the refresh token in the Cookie
     );
@@ -109,8 +116,6 @@ export async function login(
     }
 
     AuthStorage.setTokens(data.accessToken);
-    console.log("Access Token: \n", AuthStorage.getAccessToken());
-    console.log("Access Token: \n", data.accessToken);
     const user = data.user;
     dispatch(
       signInUser({

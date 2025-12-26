@@ -30,13 +30,23 @@ const router = express.Router();
  */
 
 router.post("/", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, user_agent, device_name, device_id } = req.body;
 
   if (!email || !password) {
     return res.status(400).send({ error: "Missing required fields" });
   }
 
+  if (!device_id || !user_agent || !device_name) {
+    return res.status(400).send({
+      error:
+        "Missing fields required for multi-device user authentication and user info",
+    });
+  }
+
+  const client_ip = req.socket.address();
+
   try {
+    await pool.query("BEGIN");
     // Query database for user by email
     const result = await pool.query(
       `SELECT 
@@ -79,8 +89,16 @@ router.post("/", async (req, res) => {
 
     // Update session record with new refresh token and expiration
     await pool.query(
-      `UPDATE session SET expires_at = $1, refresh_token = $2 WHERE user_id = $3`,
-      [expiresAt, refreshToken, user.user_id]
+      `INSERT INTO SESSION (user_id, refresh_token, expires_at, user_agent, client_ip, device_name, device_id) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (device_id) DO UPDATE SET user_id = $1, refresh_token = $2, expires_at = $3, user_agent = $4, client_ip = $5, device_name = $6 WHERE device_id = $7`,
+      [
+        user.user_id,
+        refreshToken,
+        expiresAt,
+        user_agent,
+        client_ip,
+        device_name,
+        device_id,
+      ]
     );
 
     // Store refresh token in httpOnly cookie (not accessible via JavaScript)
@@ -102,7 +120,10 @@ router.post("/", async (req, res) => {
         name: `${user.first_name} ${user.last_name}`,
       },
     });
+
+    await pool.query("COMMIT");
   } catch (err) {
+    await pool.query("ROLLBACK");
     console.error("Error in /login:", err);
     res.status(500).json({ error: "Internal server error" });
   }

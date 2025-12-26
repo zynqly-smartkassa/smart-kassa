@@ -27,6 +27,7 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   // Extract refresh token from httpOnly cookie
   const refreshToken = req.cookies.refreshToken;
+  const device_id = req.body.device_id;
 
   if (!refreshToken) {
     return res.status(401).json({ error: "Refresh token required" });
@@ -42,8 +43,8 @@ router.post("/", async (req, res) => {
     // Verify token exists in database and hasn't expired or been revoked
     const tokenRes = await pool.query(
       `SELECT * FROM session
-       WHERE refresh_token = $1 AND user_id = $2 AND expires_at > NOW()`,
-      [refreshToken, decoded.userId]
+       WHERE refresh_token = $1 AND user_id = $2 AND expires_at > NOW() AND device_id = $3`,
+      [refreshToken, decoded.userId, device_id]
     );
 
     if (tokenRes.rows.length === 0) {
