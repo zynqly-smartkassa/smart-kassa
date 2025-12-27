@@ -899,7 +899,7 @@ res.status(statusCode).json({
 
 ## Support & Questions
 
-**Frontend Team:** Umerj Džinović, Casper Zielinski  
+**Frontend Team:** Umejr Džinović, Casper Zielinski  
 **Backend Team:** Markus Rossmann, Mario Shenouda
 
 For API questions, changes, or issues, please create a GitHub issue or discuss in sprint meetings.
