@@ -13,6 +13,9 @@ In the future, the system will be expanded and adapted for other business sector
 | TBA     | 🕓 In progress |
 | TBA     | 📝 Planned     |
 
+## Documentation
+
+📚 **[API Documentation](./API_DOCUMENTATION.md)** - Complete API reference for frontend-backend integration
 
 ## Team & Tech Stack
 
