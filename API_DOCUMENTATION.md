@@ -9,7 +9,9 @@ This document serves as the complete API reference for the SmartKassa backend. I
 - [Endpoints](#endpoints)
   - [Authentication Endpoints](#authentication-endpoints)
   - [Ride Management Endpoints](#ride-management-endpoints)
+  - [Fahrten Endpoints](#fahrten-endpoints)
   - [Account Management Endpoints](#account-management-endpoints)
+  - [File Storage Endpoints](#file-storage-endpoints)
 
 ---
 
@@ -431,6 +433,108 @@ Retrieve all rides for a specific user.
 
 ---
 
+### Fahrten Endpoints
+
+The Fahrten endpoints manage "Fahrten" (trips/drives) with start and end functionality.
+
+#### POST /fahrten/start
+Start a new Fahrt (trip/drive).
+
+**Access:** Public  
+**Body Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| userId | integer | Yes | ID of the user starting the Fahrt |
+| vehicleId | integer | No | ID of the vehicle (optional) |
+| lat | float | No | Starting latitude coordinate (optional) |
+| lng | float | No | Starting longitude coordinate (optional) |
+
+**Success Response (201):**
+```json
+{
+  "fahrt_id": 789,
+  "user_id": 123,
+  "vehicle_id": 45,
+  "start_time": "2024-01-15T10:00:00Z",
+  "lat": 48.2082,
+  "lng": 16.3738
+}
+```
+
+**Error Responses:**
+
+**400 Bad Request:**
+```json
+{
+  "error": "userId is required"
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Failed to start Fahrt"
+}
+```
+
+**Notes:**
+- `vehicleId`, `lat`, and `lng` are optional parameters
+- Returns the created Fahrt object with ID and timestamp
+
+---
+
+#### POST /fahrten/:fahrten_id/end
+End an existing Fahrt.
+
+**Access:** Public  
+**URL Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| fahrten_id | integer | Yes | ID of the Fahrt to end |
+
+**Body Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| endKm | float | No | Ending kilometer reading (optional) |
+| lat | float | No | Ending latitude coordinate (optional) |
+| lng | float | No | Ending longitude coordinate (optional) |
+
+**Success Response (200):**
+```json
+{
+  "fahrt_id": 789,
+  "user_id": 123,
+  "vehicle_id": 45,
+  "start_time": "2024-01-15T10:00:00Z",
+  "end_time": "2024-01-15T10:30:00Z",
+  "end_km": 150.5,
+  "lat": 48.2082,
+  "lng": 16.3738
+}
+```
+
+**Error Responses:**
+
+**400 Bad Request - Invalid ID:**
+```json
+{
+  "error": "Invalid Fahrt ID"
+}
+```
+
+**400 Bad Request - General Error:**
+```json
+{
+  "error": "Failed to end Fahrt"
+}
+```
+
+**Notes:**
+- All body parameters are optional
+- Returns the updated Fahrt object with end time
+
+---
+
 ### Account Management Endpoints
 
 #### PUT /account/me
@@ -546,6 +650,166 @@ Authorization: Bearer <access_token>
 
 ---
 
+### File Storage Endpoints
+
+The File Storage endpoints manage files stored in Vercel Blob storage, including invoices and user avatars.
+
+#### GET /list-blobs/invoices
+Retrieve all invoice PDF files from storage.
+
+**Access:** Protected (requires valid access token)  
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "response": {
+    "blobs": [
+      {
+        "pathname": "Bills/invoice_001.pdf",
+        "size": 52480,
+        "uploadedAt": "2024-01-15T10:00:00Z",
+        "url": "https://..."
+      }
+    ],
+    "cursor": null,
+    "hasMore": false
+  },
+  "actualFiles": [
+    {
+      "pathname": "Bills/invoice_001.pdf",
+      "size": 52480,
+      "uploadedAt": "2024-01-15T10:00:00Z",
+      "url": "https://..."
+    }
+  ]
+}
+```
+
+**Error Responses:**
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Internal Server Error",
+  "path": "invoices"
+}
+```
+
+**Notes:**
+- Returns all PDF files from the `Bills/` prefix
+- `actualFiles` filters out empty marker files (size > 0)
+- Files are stored in Vercel Blob storage
+
+---
+
+#### GET /list-blobs/avatar
+Retrieve user avatar/profile picture.
+
+**Access:** Protected (requires valid access token)  
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "response": {
+    "blobs": [
+      {
+        "pathname": "Profile_Picture/john_doe.jpg",
+        "size": 15360,
+        "uploadedAt": "2024-01-15T10:00:00Z",
+        "url": "https://..."
+      }
+    ],
+    "cursor": null,
+    "hasMore": false
+  },
+  "actualFiles": [
+    {
+      "pathname": "Profile_Picture/john_doe.jpg",
+      "size": 15360,
+      "uploadedAt": "2024-01-15T10:00:00Z",
+      "url": "https://..."
+    }
+  ]
+}
+```
+
+**Error Responses:**
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Internal Server Error"
+}
+```
+
+**Notes:**
+- Currently returns all avatars from `Profile_Picture/` prefix
+- **TODO:** Implement user-specific avatar filtering by userId
+- `actualFiles` filters out empty marker files (size > 0)
+
+---
+
+#### PUT /list-blobs/avatar
+Upload or update user avatar/profile picture.
+
+**Access:** Protected (requires valid access token)  
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+```
+**Body Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| newAvatar | file | Yes | Image file for avatar (multipart upload) |
+
+**Success Response (200):**
+```json
+{
+  "response": {
+    "pathname": "Profile_Picture/john_doe.jpg",
+    "url": "https://...",
+    "downloadUrl": "https://...",
+    "size": 15360
+  },
+  "url": "https://..."
+}
+```
+
+**Error Responses:**
+
+**400 Bad Request:**
+```json
+{
+  "error": "Keine Datei im Request gefunden."
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Internal Server Error",
+  "details": "Error message details"
+}
+```
+
+**Notes:**
+- Currently uploads to hardcoded filename `john_doe.[ext]`
+- **TODO:** Implement user-specific filenames based on userId
+- File extension is preserved from original upload
+- Uses multer for file upload handling
+- Stored with public access in Vercel Blob
+
+---
+
 ## Frontend Integration Guide
 
 ### Initial Setup
@@ -627,7 +891,9 @@ res.status(statusCode).json({
 - Initial API documentation
 - All core authentication endpoints
 - Ride management endpoints
+- Fahrten (trip/drive) management endpoints
 - Account management endpoints
+- File storage endpoints (invoices and avatars)
 
 ---
 
