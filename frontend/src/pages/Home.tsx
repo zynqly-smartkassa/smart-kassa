@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 
 import type {  RootState } from "../../redux/store";
 import {
@@ -9,45 +10,22 @@ import {
 } from "../components/ui/tabs";
 import Balance from "../components/Balance";
 import type { JSX } from "react";
+import { getDailyStats, getMonthlyStats, getWeeklyStats } from "../utils/dashboard";
 
 export type RidesStats = {
   day: string;
   rides: number;
 };
 
-const ridesData: RidesStats[] = [
-  { day: "Mo", rides: 42 },
-  { day: "Di", rides: 57 },
-  { day: "Mi", rides: 31 },
-  { day: "Do", rides: 68 },
-  { day: "Fr", rides: 75 },
-  { day: "Sa", rides: 54 },
-  { day: "So", rides: 39 },
-];
-
 export type DailyStats = {
   hour: string;
   rides: number;
 };
 
-const dailyRidesData: DailyStats[] = [
-  { hour: "00:00", rides: 1 },
-  { hour: "03:00", rides: 4 },
-  { hour: "06:00", rides: 5 },
-  { hour: "09:00", rides: 7 },
-];
-
 export type MonthlyWeekStats = {
   week: string;
   rides: number;
 };
-
-const monthlyWeekRidesData: MonthlyWeekStats[] = [
-  { week: "Woche 1", rides: 120 },
-  { week: "Woche 2", rides: 145 },
-  { week: "Woche 3", rides: 110 },
-  { week: "Woche 4", rides: 150 },
-];
 
 /**
  * Home component that displays the main dashboard with statistics and ride data.
@@ -60,6 +38,30 @@ const monthlyWeekRidesData: MonthlyWeekStats[] = [
  */
 function Home(): JSX.Element {
   const user = useSelector((state: RootState) => state.user);
+  
+  const [dailyData, setDailyData] = useState<DailyStats[]>([]);
+  const [weeklyData, setWeeklyData] = useState<RidesStats[]>([]);
+  const [monthlyData, setMonthlyData] = useState<MonthlyWeekStats[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [daily, weekly, monthly] = await Promise.all([
+          getDailyStats(),
+          getWeeklyStats(),
+          getMonthlyStats()
+        ]);
+        
+        setDailyData(daily);
+        setWeeklyData(weekly);
+        setMonthlyData(monthly);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="w-full flex flex-col justify-center items-center gap-4">
@@ -89,15 +91,15 @@ function Home(): JSX.Element {
         {/* CONTENT SECTION – FULL WIDTH BELOW */}
         <div className="w-full mt-4">
           <TabsContent value="today">
-            <Balance entry={dailyRidesData} duration="day" />
+            <Balance entry={dailyData} duration="day" />
           </TabsContent>
 
           <TabsContent value="week">
-            <Balance entry={ridesData} duration="week" />
+            <Balance entry={weeklyData} duration="week" />
           </TabsContent>
 
           <TabsContent value="month">
-            <Balance entry={monthlyWeekRidesData} duration="month" />
+            <Balance entry={monthlyData} duration="month" />
           </TabsContent>
         </div>
       </Tabs>

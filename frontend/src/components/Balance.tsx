@@ -30,7 +30,6 @@ interface BalanceData {
 
 const Balance = ({ entry, duration }: BalanceData) => {
 
-
   const xKey = chartKeys[duration];
 
   return (
@@ -154,11 +153,11 @@ const Balance = ({ entry, duration }: BalanceData) => {
                   axisLine={false}
                 />
                 <YAxis
+                  dataKey="rides"
                   width={28}
                   tickLine={false}
                   axisLine={false}
                   tickMargin={4}
-                  dataKey="rides"
                 />
                 <ChartTooltip
                   cursor={false}
