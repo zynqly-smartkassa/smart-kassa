@@ -1,13 +1,14 @@
+import React from "react";
 import { screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { renderWithRouter } from "../../utils/test/renderWithRouter";
-import AllRides from "./AllRides";
-import * as ridesUtils from "../../utils/rides/all-rides";
+import { renderWithRouter } from "./helpers/renderWithRouter";
+import AllRides from "../../src/pages/rides/AllRides";
+import * as ridesUtils from "../../src/utils/rides/all-rides";
 import userEvent from "@testing-library/user-event";
-import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
-import { getDateFormat, getDateNow, getDateYesterday } from "../../utils/rides/getDate";
-import { date, distance, duration, timeToSeconds } from "../../utils/rides/sort";
+import { getRidesToday, getRidesYesterday } from "../../src/utils/rides/getRides";
+import { getDateFormat, getDateNow, getDateYesterday } from "../../src/utils/rides/getDate";
+import { date, distance, duration, timeToSeconds } from "../../src/utils/rides/sort";
 
 // Test Data. 2 objects for yesterday, 3 for today, and 2 random
 const rides = [

@@ -3,19 +3,20 @@
  * Tests the functionality of the Register form, including validation and navigation.
  * @author 
  */
+import React from "react";
 import { screen, waitFor } from "@testing-library/react";
-import Register from "./Register";
+import Register from "../../src/pages/auth/Register";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { renderWithRouter } from "../../utils/test/renderWithRouter";
+import { renderWithRouter } from "./helpers/renderWithRouter";
 import userEvent from "@testing-library/user-event";
-import Login from "./Login";
-import { expectValidationMessage, fillField, type InfoField } from "../../utils/test/input";
-import { validationMessages } from "../../content/auth/validationMessages";
-import { useInvalidEmail, useInvalidPassword } from "../../hooks/useValidator";
-import * as authModule from "../../utils/auth";
-import type { USER_DTO } from "constants/User";
-import Home from "../Home";
+import Login from "../../src/pages/auth/Login";
+import { expectValidationMessage, fillField, type InfoField } from "./helpers/input";
+import { validationMessages } from "../../src/content/auth/validationMessages";
+import { useInvalidEmail, useInvalidPassword } from "../../src/hooks/useValidator";
+import * as authModule from "../../src/utils/auth";
+import type { USER_DTO } from "../../constants/User";
+import Home from "../../src/pages/Home";
 
 
 // ResizeObserver Mock (Recharts) "Unused"
@@ -31,10 +32,13 @@ vi.mock("axios");
 
 // When signInUser is called by login() inside auth.ts, which we are also tracking, then this custom
 // function is called wether the main action itself.
-vi.mock("../../redux/slices/userSlice", () => ({
-  // redux action calls are returning this very object
-  signInUser: (payload: USER_DTO) => ({ type: "user/signInUser", payload })
-}));
+vi.mock("../../redux/slices/userSlice", async () => {
+  const actual = await vi.importActual<typeof import("../../redux/slices/userSlice")>("../../redux/slices/userSlice");
+  return {
+    ...actual,
+    signInUser: (payload: USER_DTO) => ({ type: "user/signInUser", payload }),
+  };
+});
 
 // We are just tracking the function here, which is not a fake function
 const mockedRegister = vi.spyOn(authModule, "register");

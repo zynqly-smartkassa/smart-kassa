@@ -5,10 +5,12 @@ export default defineConfig({
   test: {
     globals: true,            
     environment: 'jsdom',
-    setupFiles: './src/setupTests.ts',
+    setupFiles: './__tests__/unit/setupTests.ts',
+    exclude: ['node_modules/', '__tests__/e2e'],
     coverage: {
       provider: 'v8',    
       reporter: ['text', 'html', 'lcov'],
+      exclude: ['node_modules/', '__tests__/e2e'],
     },
   },
 })
