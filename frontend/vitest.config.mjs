@@ -24,11 +24,30 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
-      // only measure real source files – skip config / generated artifacts
-      include: ['src/**/*.{ts,tsx}', 'redux/**/*.{ts,tsx}'],
+      excludeAfterRemap: true,
+      // only measure testable source modules
+      include: [
+        'src/components/**/*.{ts,tsx}',
+        'src/hooks/**/*.{ts,tsx}',
+        'src/layout/**/*.{ts,tsx}',
+        'src/lib/**/*.{ts,tsx}',
+        'src/pages/**/*.{ts,tsx}',
+        'src/utils/**/*.{ts,tsx}',
+        'redux/**/*.{ts,tsx}',
+      ],
       exclude: [
         'node_modules/',
         '__tests__/e2e',
+        'src/content/**',
+        'src/components/ui/**',
+        '**/constants/**',
+        '**/src/types/**',
+        '**/src/content/**',
+        '**/src/components/ui/**',
+        'redux/store.ts',
+        'redux/StoreProvider.tsx',
+        '**/redux/store.ts',
+        '**/redux/StoreProvider.tsx',
         'src/main.tsx',
         'src/App.tsx',
         'src/routing.css',
