@@ -1,16 +1,38 @@
 // vitest.config.js
 import { defineConfig } from 'vitest/config'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      // mirrors tsconfig paths
+      '@': path.resolve(__dirname, './src'),
+      // allows bare "constants/..." imports used throughout the codebase
+      'constants': path.resolve(__dirname, './constants'),
+    },
+  },
   test: {
-    globals: true,            
+    globals: true,
     environment: 'jsdom',
     setupFiles: './__tests__/unit/setupTests.ts',
     exclude: ['node_modules/', '__tests__/e2e'],
     coverage: {
-      provider: 'v8',    
+      provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
-      exclude: ['node_modules/', '__tests__/e2e'],
+      // only measure real source files – skip config / generated artifacts
+      include: ['src/**/*.{ts,tsx}', 'redux/**/*.{ts,tsx}'],
+      exclude: [
+        'node_modules/',
+        '__tests__/e2e',
+        'src/main.tsx',
+        'src/App.tsx',
+        'src/routing.css',
+        'src/index.css',
+        '**/*.d.ts',
+      ],
     },
   },
 })
