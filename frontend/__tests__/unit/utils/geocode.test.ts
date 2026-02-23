@@ -23,6 +23,7 @@ function stubFetch(body: unknown, ok = true) {
 }
 
 describe('reverseGeocode()', () => {
+  // normal response with a display_name field
   it('returns the display_name on success', async () => {
     stubFetch({ display_name: 'Vienna, Austria' });
 
@@ -44,6 +45,7 @@ describe('reverseGeocode()', () => {
     expect(calledUrl).toContain('nominatim');
   });
 
+  // API returned a valid object but without a display_name key
   it('returns null when display_name is missing', async () => {
     stubFetch({ address: {} }); // no display_name field
 
@@ -51,6 +53,7 @@ describe('reverseGeocode()', () => {
     expect(result).toBeNull();
   });
 
+  // API returned null  – no result at all
   it('returns null when the API response is empty/null', async () => {
     stubFetch(null);
 
@@ -67,6 +70,7 @@ describe('reverseGeocode()', () => {
 });
 
 describe('geocodeAddress()', () => {
+  // lat/lon strings from the API must be parsed to floats
   it('returns [lat, lon] as numbers on success', async () => {
     stubFetch([{ lat: '48.2082', lon: '16.3738', display_name: 'Vienna' }]);
 
@@ -87,6 +91,7 @@ describe('geocodeAddress()', () => {
     expect(calledUrl).toContain(encodeURIComponent('Main Street 10'));
   });
 
+  // Nominatim returned no results
   it('returns null when the API returns an empty array', async () => {
     stubFetch([]);
 

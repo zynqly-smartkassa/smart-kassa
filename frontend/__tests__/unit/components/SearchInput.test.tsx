@@ -10,6 +10,7 @@ afterEach(() => {
 });
 
 describe('SearchInput', () => {
+  // smoke test – input element is present in the DOM
   it('renders a text input', () => {
     render(<SearchInput />);
     expect(screen.getByRole('searchbox')).toBeInTheDocument();
@@ -30,6 +31,7 @@ describe('SearchInput', () => {
     expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
+  // hides when the 500 ms debounce timer fires (advance 600 ms to be safe)
   it('hides the loading indicator after the 500 ms debounce', () => {
     vi.useFakeTimers();
     render(<SearchInput />);
@@ -42,6 +44,7 @@ describe('SearchInput', () => {
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
 
+  // userEvent simulates real keyboard input; checks the input value updates
   it('accepts typed characters and reflects them in the input value', async () => {
     render(<SearchInput />);
     const input = screen.getByRole('searchbox') as HTMLInputElement;

@@ -24,6 +24,7 @@ const TODAY = new Date(2025, 5, 15); // 2025-06-15
 afterEach(() => vi.useRealTimers());
 
 describe('getRidesToday()', () => {
+  // basic filter: only rides from today pass through
   it('returns only rides that took place today (space-separated format)', () => {
     vi.useFakeTimers();
     vi.setSystemTime(TODAY);
@@ -37,6 +38,7 @@ describe('getRidesToday()', () => {
     expect(result[0]).toBe(todayRide);
   });
 
+  // start_time with a 'T' separator must also be recognized
   it('also matches rides with ISO "T" separator', () => {
     vi.useFakeTimers();
     vi.setSystemTime(TODAY);
@@ -73,6 +75,7 @@ describe('getRidesToday()', () => {
 });
 
 describe('getRidesYesterday()', () => {
+  // basic filter: only yesterday's rides pass through
   it('returns only rides from yesterday', () => {
     vi.useFakeTimers();
     vi.setSystemTime(TODAY);
@@ -86,6 +89,7 @@ describe('getRidesYesterday()', () => {
     expect(result[0]).toBe(yRide);
   });
 
+  // June 1 → yesterday is May 31 (month rollback)
   it('crosses month boundary correctly (June 1 → May 31)', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2025, 5, 1)); // June 1

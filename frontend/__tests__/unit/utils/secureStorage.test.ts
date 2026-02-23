@@ -1,9 +1,11 @@
 /**
  * Tests for secureStorage.ts – SecureStorage and AuthStorage.
  * Capacitor is stubbed in setupTests.ts, so the localStorage branch runs.
+ * A separate describe block re-imports the module with isMobile = true to
+ * cover the Capacitor Preferences branches.
  */
 
-import { describe, it, expect, beforeEach} from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SecureStorage, AuthStorage } from '../../../src/utils/secureStorage';
 
 // clear storage before each test
@@ -13,6 +15,7 @@ beforeEach(() => {
 
 describe('SecureStorage', () => {
   describe('set() / get()', () => {
+    // basic round-trip
     it('stores and retrieves a value by key', async () => {
       await SecureStorage.set('testKey', 'hello');
       const value = await SecureStorage.get('testKey');
@@ -24,6 +27,7 @@ describe('SecureStorage', () => {
       expect(value).toBeNull();
     });
 
+    // second set() on the same key replaces the first value
     it('overwrites an existing value', async () => {
       await SecureStorage.set('key', 'first');
       await SecureStorage.set('key', 'second');
@@ -94,6 +98,7 @@ describe('AuthStorage', () => {
   });
 
   describe('token lifecycle', () => {
+    // clearTokens() must wipe the access token from storage
     it('returns null for access token after clear', async () => {
       await AuthStorage.setTokens('token-abc');
       await AuthStorage.clearTokens();
@@ -107,5 +112,70 @@ describe('AuthStorage', () => {
 
       expect(await AuthStorage.getAccessToken()).toBe('new');
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Mobile (isMobile = true) branches
+// isMobile is a module-level constant, so we must reset modules and re-import
+// with a stubbed Capacitor that returns isNativePlatform() = true.
+// ---------------------------------------------------------------------------
+describe('SecureStorage – mobile (Capacitor Preferences) branch', () => {
+  // fresh Preferences spy shared across all tests in this block
+  const prefs = {
+    set:    vi.fn().mockResolvedValue(undefined),
+    get:    vi.fn().mockResolvedValue({ value: 'pref-value' }),
+    remove: vi.fn().mockResolvedValue(undefined),
+    clear:  vi.fn().mockResolvedValue(undefined),
+  };
+
+  let MobileStorage: typeof import('../../../src/utils/secureStorage').SecureStorage;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    // stub Capacitor to report a native (mobile) platform
+    vi.doMock('@capacitor/core', () => ({
+      Capacitor: { isNativePlatform: () => true },
+    }));
+    // stub Preferences with the spy object above
+    vi.doMock('@capacitor/preferences', () => ({ Preferences: prefs }));
+
+    const mod = await import('../../../src/utils/secureStorage');
+    MobileStorage = mod.SecureStorage;
+
+    // reset call counts between tests
+    prefs.set.mockClear();
+    prefs.get.mockClear();
+    prefs.remove.mockClear();
+    prefs.clear.mockClear();
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+  });
+
+  // set() must delegate to Preferences.set on mobile
+  it('set() calls Preferences.set with the correct key and value', async () => {
+    await MobileStorage.set('myKey', 'myValue');
+    expect(prefs.set).toHaveBeenCalledWith({ key: 'myKey', value: 'myValue' });
+  });
+
+  // get() must delegate to Preferences.get and return the value string
+  it('get() calls Preferences.get and returns the stored value', async () => {
+    const result = await MobileStorage.get('myKey');
+    expect(prefs.get).toHaveBeenCalledWith({ key: 'myKey' });
+    expect(result).toBe('pref-value');
+  });
+
+  // remove() must delegate to Preferences.remove
+  it('remove() calls Preferences.remove with the correct key', async () => {
+    await MobileStorage.remove('myKey');
+    expect(prefs.remove).toHaveBeenCalledWith({ key: 'myKey' });
+  });
+
+  // clear() must delegate to Preferences.clear
+  it('clear() calls Preferences.clear', async () => {
+    await MobileStorage.clear();
+    expect(prefs.clear).toHaveBeenCalled();
   });
 });

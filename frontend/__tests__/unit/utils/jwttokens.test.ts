@@ -33,6 +33,7 @@ beforeEach(() => {
 });
 
 describe('verifyAccessToken()', () => {
+  // happy path: valid token already in localStorage
   it('returns user data when the stored token is valid', async () => {
     localStorage.setItem('accessToken', 'valid-token');
     vi.mocked(axios.get).mockResolvedValue({ data: { userId: 1 } });
@@ -47,6 +48,7 @@ describe('verifyAccessToken()', () => {
     await expect(verifyAccessToken()).rejects.toThrow('Unknown Error');
   });
 
+  // expired token: first GET returns 401, refresh succeeds, retry returns data
   it('refreshes the token and retries when the first request fails with 401', async () => {
     localStorage.setItem('accessToken', 'expired-token');
 
@@ -62,6 +64,7 @@ describe('verifyAccessToken()', () => {
     expect(result).toEqual({ userId: 99 });
   });
 
+  // the new accessToken from the refresh response must be persisted
   it('stores the new token in localStorage after a successful refresh', async () => {
     localStorage.setItem('accessToken', 'old-token');
 
@@ -75,6 +78,7 @@ describe('verifyAccessToken()', () => {
     expect(localStorage.getItem('accessToken')).toBe('new-token');
   });
 
+  // both GET and refresh fail → user must re-login
   it('throws "Session expired" when the refresh request also fails', async () => {
     localStorage.setItem('accessToken', 'expired-token');
 
@@ -84,6 +88,7 @@ describe('verifyAccessToken()', () => {
     await expect(verifyAccessToken()).rejects.toThrow('Session expired, please login again');
   });
 
+  // tokens must be wiped so the user is forced to log in fresh
   it('clears stored tokens when the refresh fails', async () => {
     localStorage.setItem('accessToken', 'expired-token');
     localStorage.setItem('refreshToken', 'old-refresh');
@@ -95,6 +100,26 @@ describe('verifyAccessToken()', () => {
     expect(localStorage.getItem('accessToken')).toBeNull();
   });
 
+  // refresh POST returns 401 → hits the "Refresh token invalid or expired" branch
+  it('throws "Session expired" when the refresh endpoint returns 401', async () => {
+    localStorage.setItem('accessToken', 'expired-token');
+    vi.mocked(axios.get).mockRejectedValue(makeAxiosError(401));
+    // the refresh call itself rejects with a 401 AxiosError
+    vi.mocked(axios.post).mockRejectedValue(makeAxiosError(401));
+
+    await expect(verifyAccessToken()).rejects.toThrow('Session expired, please login again');
+  });
+
+  // same branch hit via 403 (forbidden refresh token)
+  it('throws "Session expired" when the refresh endpoint returns 403', async () => {
+    localStorage.setItem('accessToken', 'expired-token');
+    vi.mocked(axios.get).mockRejectedValue(makeAxiosError(401));
+    vi.mocked(axios.post).mockRejectedValue(makeAxiosError(403));
+
+    await expect(verifyAccessToken()).rejects.toThrow('Session expired, please login again');
+  });
+
+  // non-AxiosError (e.g. TypeError) falls through to the else branch
   it('throws "Unknown Error" for non-Axios errors from the GET request', async () => {
     localStorage.setItem('accessToken', 'token');
     vi.mocked(axios.get).mockRejectedValue(new TypeError('unexpected'));

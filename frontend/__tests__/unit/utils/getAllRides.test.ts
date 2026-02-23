@@ -57,6 +57,13 @@ describe('getAllRides()', () => {
     await expect(getAllRides(1)).rejects.toThrow('Internal Server Error');
   });
 
+  // HTTP 200 but body is null – the empty-check throws, then the catch re-throws as unknown error
+  it('throws when the response body is null', async () => {
+    vi.mocked(axios.post).mockResolvedValue({ data: null });
+    await expect(getAllRides(1)).rejects.toThrow('Unknown Error while sending ride');
+  });
+
+  // bad request payload
   it('throws "Missing or invalid ride fields" on a 400 response', async () => {
     vi.mocked(axios.post).mockRejectedValue(makeAxiosError(400));
 

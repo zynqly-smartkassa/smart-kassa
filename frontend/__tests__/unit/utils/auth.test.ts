@@ -41,6 +41,7 @@ beforeEach(() => {
 describe('register()', () => {
   const ARGS = ['Max', 'Muster', 'max@test.com', '+43111', 'pw', 'FN123', 'ATU456'] as const;
 
+  // happy path: accessToken stored in localStorage and result returned
   it('returns server data and stores the access token on success', async () => {
     vi.mocked(axios.post).mockResolvedValue({
       data: { accessToken: 'tok', id: '1' },
@@ -51,6 +52,7 @@ describe('register()', () => {
     expect(localStorage.getItem('accessToken')).toBe('tok');
   });
 
+  // the function must call dispatch once with the signed-in user data
   it('calls dispatch with the user data on success', async () => {
     vi.mocked(axios.post).mockResolvedValue({
       data: { accessToken: 'tok', id: '1' },
@@ -58,6 +60,12 @@ describe('register()', () => {
 
     await register(...ARGS, mockDispatch);
     expect(mockDispatch).toHaveBeenCalledOnce();
+  });
+
+  // HTTP 200 but body is null → if (!data) fires, re-thrown as "Internal Server Error"
+  it('throws "Internal Server Error" when the response body is null', async () => {
+    vi.mocked(axios.post).mockResolvedValue({ data: null });
+    await expect(register(...ARGS, mockDispatch)).rejects.toThrow('Internal Server Error');
   });
 
   it('throws "Internal Server Error" on a 500 response', async () => {
@@ -100,6 +108,17 @@ describe('register()', () => {
     await expect(register(...ARGS, mockDispatch)).rejects.toThrow('ATU already exists');
   });
 
+  // 409 whose message doesn't match any known pattern → code falls through the 409 block,
+  // the catch finishes without re-throwing, and register() returns undefined silently
+  it('returns undefined on 409 with an unrecognized conflict message', async () => {
+    vi.mocked(axios.post).mockRejectedValue(
+      makeAxiosError(409, { error: 'some unknown conflict that is not handled' })
+    );
+
+    const result = await register(...ARGS, mockDispatch);
+    expect(result).toBeUndefined();
+  });
+
   it('throws "Missing Fields" on a 400 response', async () => {
     vi.mocked(axios.post).mockRejectedValue(makeAxiosError(400));
 
@@ -118,6 +137,7 @@ describe('register()', () => {
 // ============================================================
 
 describe('login()', () => {
+  // guard clauses fire synchronously before any axios call
   it('throws synchronously when email is missing', () => {
     expect(() => login('', 'pw', mockDispatch)).toThrow('Missing Fields');
   });
@@ -126,6 +146,7 @@ describe('login()', () => {
     expect(() => login('a@b.com', '', mockDispatch)).toThrow('Missing Fields');
   });
 
+  // happy path: accessToken stored in localStorage and result returned
   it('returns server data and stores the token on success', async () => {
     vi.mocked(axios.post).mockResolvedValue({
       data: {
@@ -177,5 +198,17 @@ describe('login()', () => {
     vi.mocked(axios.post).mockRejectedValue(new Error('network down'));
 
     await expect(login('a@b.com', 'pw', mockDispatch)).rejects.toThrow('Internal Server Error');
+  });
+
+  // HTTP 200 but body is null → if (!data) fires, re-thrown as "Internal Server Error"
+  it('throws "Internal Server Error" when the response body is null', async () => {
+    vi.mocked(axios.post).mockResolvedValue({ data: null });
+    await expect(login('a@b.com', 'pw', mockDispatch)).rejects.toThrow('Internal Server Error');
+  });
+
+  // AxiosError with an unhandled status (not 400/401/500) → "Login failed:" fallback
+  it('throws "Login failed:" for an unhandled AxiosError status', async () => {
+    vi.mocked(axios.post).mockRejectedValue(makeAxiosError(422));
+    await expect(login('a@b.com', 'pw', mockDispatch)).rejects.toThrow('Login failed:');
   });
 });

@@ -23,8 +23,8 @@ import toastReducer, {
 describe('authSlice', () => {
   const initialState = { isAuthenticated: false, isLoading: true };
 
+  // Redux convention: reducer with undefined state returns defaultState
   it('returns the initial state when called with undefined', () => {
-    // Calling reducer with undefined state must return the initialState
     expect(authReducer(undefined, { type: '@@INIT' })).toEqual(initialState);
   });
 
@@ -66,6 +66,7 @@ describe('authSlice', () => {
   });
 
   describe('state transitions', () => {
+    // simulate the full login flow through two dispatched actions
     it('goes from loading → authenticated correctly', () => {
       let state = authReducer(undefined, { type: '@@INIT' });
       expect(state.isLoading).toBe(true);

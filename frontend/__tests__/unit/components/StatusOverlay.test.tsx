@@ -9,11 +9,13 @@ afterEach(() => {
 });
 
 describe('StatusOverlay', () => {
+  // smoke test – the text prop must appear in the DOM
   it('renders the provided text', () => {
     render(<StatusOverlay text="Processing" />);
     expect(screen.getByText(/Processing/)).toBeInTheDocument();
   });
 
+  // background class switches based on the isError prop
   it('uses purple background by default (no error)', () => {
     const { container } = render(<StatusOverlay text="Loading" />);
     expect(container.querySelector('.bg-purple-700')).not.toBeNull();
@@ -37,6 +39,7 @@ describe('StatusOverlay', () => {
     expect(document.querySelector('.animate-pulse')).toBeNull();
   });
 
+  // dot counter: starts empty, appends one dot every 2 s via setInterval
   it('updates the dot indicator every 2 seconds while loading', () => {
     vi.useFakeTimers();
     render(<StatusOverlay text="Wait" isLoading={true} />);

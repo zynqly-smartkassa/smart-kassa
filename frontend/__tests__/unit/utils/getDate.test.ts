@@ -17,6 +17,7 @@ describe('getDateNow()', () => {
     expect(result).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
   });
 
+  // verify the exact formatted value for the pinned moment
   it('returns the correct date and time for the fixed moment', () => {
     vi.useFakeTimers();
     vi.setSystemTime(FIXED_DATE);
@@ -69,6 +70,7 @@ describe('getDateYesterday()', () => {
     expect(todayMs - yesterdayMs).toBe(24 * 60 * 60 * 1000);
   });
 
+  // Jan 1 → yesterday is Dec 31 of the previous year
   it('correctly crosses month boundaries (Jan 1 → Dec 31)', () => {
     vi.useFakeTimers();
     // Set clock to Jan 1, 2025 at noon
@@ -80,25 +82,19 @@ describe('getDateYesterday()', () => {
 });
 
 describe('getDateFormat()', () => {
-  it('formats a date as "YYYY-MM-DD"', () => {
-    expect(getDateFormat(new Date(2025, 5, 20))).toBe('2025-06-20');
-  });
-
-  it('zero-pads the month (Jan → "01")', () => {
-    expect(getDateFormat(new Date(2024, 0, 7))).toBe('2024-01-07');
-  });
-
-  it('zero-pads the day', () => {
-    expect(getDateFormat(new Date(2024, 11, 5))).toBe('2024-12-05');
+  // covers normal date, zero-padded month, zero-padded day, and year boundary
+  it.each([
+    [new Date(2025, 5, 20),  '2025-06-20'],
+    [new Date(2024, 0, 7),   '2024-01-07'],  // zero-pads month
+    [new Date(2024, 11, 5),  '2024-12-05'],  // zero-pads day
+    [new Date(2023, 11, 31), '2023-12-31'],  // year boundary
+  ] as const)('formats %s → "%s"', (input, expected) => {
+    expect(getDateFormat(input)).toBe(expected);
   });
 
   it('does NOT include a time component', () => {
     const result = getDateFormat(new Date(2025, 5, 20));
     expect(result).not.toContain(':');
     expect(result.split('-')).toHaveLength(3);
-  });
-
-  it('handles year boundaries correctly (Dec 31)', () => {
-    expect(getDateFormat(new Date(2023, 11, 31))).toBe('2023-12-31');
   });
 });

@@ -24,33 +24,21 @@ const RIDE_JAN2 = makeRide({ start_time: '2025-01-02 08:00:00' });
 const RIDE_JAN9 = makeRide({ start_time: '2025-01-09 14:30:00' });
 
 describe('timeToSeconds()', () => {
-  it('returns 0 for "00:00:00"', () => {
-    expect(timeToSeconds('00:00:00')).toBe(0);
-  });
-
-  it('converts "01:00:00" to 3600', () => {
-    expect(timeToSeconds('01:00:00')).toBe(3600);
-  });
-
-  it('converts "00:01:00" to 60', () => {
-    expect(timeToSeconds('00:01:00')).toBe(60);
-  });
-
-  it('converts "00:00:01" to 1', () => {
-    expect(timeToSeconds('00:00:01')).toBe(1);
-  });
-
-  it('converts "02:30:45" correctly', () => {
-    // 2*3600 + 30*60 + 45 = 7200 + 1800 + 45 = 9045
-    expect(timeToSeconds('02:30:45')).toBe(9045);
-  });
-
-  it('converts "10:00:00" correctly', () => {
-    expect(timeToSeconds('10:00:00')).toBe(36000);
+  // covers zero, each unit in isolation (s, min, h), and a combined value
+  it.each([
+    ['00:00:00', 0],
+    ['00:00:01', 1],
+    ['00:01:00', 60],
+    ['01:00:00', 3600],
+    ['02:30:45', 9045],  // 2*3600 + 30*60 + 45
+    ['10:00:00', 36000],
+  ] as const)('converts "%s" → %i s', (input, expected) => {
+    expect(timeToSeconds(input)).toBe(expected);
   });
 });
 
 describe('date()', () => {
+  // false = ascending (oldest → newest), true = descending (newest → oldest)
   it('sorts ascending (oldest first)', () => {
     const rides = [RIDE_JAN9, RIDE_JAN2, RIDE_JAN5];
     const sorted = date([...rides], false);
@@ -86,6 +74,7 @@ describe('date()', () => {
 });
 
 describe('distance()', () => {
+  // false = asc (shortest first), true = desc (longest first)
   const r5  = makeRide({ distance: 5 });
   const r20 = makeRide({ distance: 20 });
   const r10 = makeRide({ distance: 10 });
@@ -112,6 +101,7 @@ describe('distance()', () => {
 });
 
 describe('duration()', () => {
+  // false = asc (shortest first), true = desc (longest first)
   const d30  = makeRide({ duration: '00:30:00' });
   const d90  = makeRide({ duration: '01:30:00' });
   const d150 = makeRide({ duration: '02:30:00' });

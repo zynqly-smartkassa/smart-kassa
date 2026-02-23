@@ -50,42 +50,48 @@ beforeEach(() => {
 });
 
 describe('sendRide()', () => {
+  // server returns a result object
   it('returns data on a successful response', async () => {
     vi.mocked(axios.post).mockResolvedValue({ data: { id: 42 } });
-
     const result = await sendRide(RIDE);
     expect(result).toEqual({ id: 42 });
   });
 
+  // HTTP 200 but body is null – the empty-check throws, then the catch re-throws as unknown error
+  it('throws when the response body is null', async () => {
+    vi.mocked(axios.post).mockResolvedValue({ data: null });
+    await expect(sendRide(RIDE)).rejects.toThrow('Unknown Error while sending ride');
+  });
+
+  // server-side crash
   it('throws "Internal Server Error" on a 500 response', async () => {
     vi.mocked(axios.post).mockRejectedValue(makeAxiosError(500));
-
     await expect(sendRide(RIDE)).rejects.toThrow('Internal Server Error');
   });
 
+  // bad request payload
   it('throws "Missing or invalid ride fields" on a 400 response', async () => {
     vi.mocked(axios.post).mockRejectedValue(makeAxiosError(400));
-
     await expect(sendRide(RIDE)).rejects.toThrow('Missing or invalid ride fields');
   });
 
+  // server includes an error message in the 409 body
   it('throws the server error message on a 409 response with a body', async () => {
     vi.mocked(axios.post).mockRejectedValue(
       makeAxiosError(409, { error: 'Ride already registered' })
     );
-
     await expect(sendRide(RIDE)).rejects.toThrow('Ride already registered');
   });
 
+  // 409 with no message → use the generic fallback
   it('throws a generic "Ride already exists" on a 409 without a body', async () => {
     vi.mocked(axios.post).mockRejectedValue(makeAxiosError(409));
-
     await expect(sendRide(RIDE)).rejects.toThrow('Ride already exists');
   });
 
+  // non-HTTP failure (e.g. network timeout)
   it('throws "Unknown Error while sending ride" for non-Axios errors', async () => {
     vi.mocked(axios.post).mockRejectedValue(new Error('network failure'));
-
     await expect(sendRide(RIDE)).rejects.toThrow('Unknown Error while sending ride');
   });
 });
