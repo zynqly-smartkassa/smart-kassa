@@ -54,6 +54,7 @@ const Invoice = () => {
     defaultValues: {
       tip: 0,
       zahlungmethode: "cash",
+      ride_price: 0,
     },
   });
 
@@ -89,40 +90,47 @@ const Invoice = () => {
   }, []); // Re-run when address changes
 
   // Get ride data from navigation state
-  //location.state;
   const rideData: RideInfo = location.state;
 
   if (!rideData) {
     return <NoRideDataWarning />;
   }
 
-  const BASE_FEE = 3.5;
-  const RATE_PER_KM = 1.5;
   const distanceInKm =
     typeof rideData.distance === "number" && rideData.distance > 100
       ? (rideData.distance / 1000).toFixed(2)
       : rideData.distance;
 
-  // Get tip from form
+  // Reactive values for live display — driven by user input
+  const ride_price_gross =
+    parseFloat(form.watch("ride_price")?.toString() || "0") || 0;
   const tipAmount = parseFloat(form.watch("tip")?.toString() || "0") || 0;
 
   const tax_rate = rideData.ride_type === "Taxifahrt" ? 0.1 : 0.2; // 10% for Taxi, 20% for Boten
-  const ride_price_gross = Number(distanceInKm) * RATE_PER_KM + BASE_FEE;
   const amount_gross = ride_price_gross + tipAmount;
   const amount_net = amount_gross / (1 + tax_rate);
   const amount_tax = amount_gross - amount_net;
 
-  const billingData = {
-    ride_id: id,
-    amount_net: parseFloat(amount_net.toFixed(2)),
-    tax_rate: tax_rate,
-    amount_tax: parseFloat(amount_tax.toFixed(2)),
-    amount_gross: parseFloat(amount_gross.toFixed(2)),
-    payment_method: form.getValues().zahlungmethode,
-    tip_amount: form.getValues().tip || 0,
-  };
-
+  // billingData is built inside sendBill to capture form values at submit time
   const sendBill = async (retry: boolean = true) => {
+    const values = form.getValues();
+    const ridePrice = parseFloat(values.ride_price?.toString() || "0") || 0;
+    const tip = parseFloat(values.tip?.toString() || "0") || 0;
+    const taxRate = rideData.ride_type === "Taxifahrt" ? 0.1 : 0.2;
+    const gross = ridePrice + tip;
+    const net = gross / (1 + taxRate);
+    const tax = gross - net;
+
+    const billingData = {
+      ride_id: id,
+      amount_net: parseFloat(net.toFixed(2)),
+      tax_rate: taxRate,
+      amount_tax: parseFloat(tax.toFixed(2)),
+      amount_gross: parseFloat(gross.toFixed(2)),
+      payment_method: values.zahlungmethode,
+      tip_amount: tip,
+    };
+
     try {
       let accessToken: string | null;
 
@@ -403,8 +411,38 @@ const Invoice = () => {
                   )}
                 />
 
-                {/* Tip Input Form */}
+                {/* Ride Price Input */}
+                <FormField
+                  control={form.control}
+                  name="ride_price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold">
+                        Fahrpreis
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            €
+                          </span>
+                          <Input
+                            type="number"
+                            placeholder="0.00"
+                            className="pl-7"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseFloat(e.target.value))
+                            }
+                            value={field.value}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
+                {/* Tip Input */}
                 <FormField
                   control={form.control}
                   name="tip"
@@ -450,10 +488,10 @@ const Invoice = () => {
                   <div className="flex justify-between text-lg font-bold pt-3 border-t">
                     <span>Gesamtbetrag</span>
                     <span className="text-violet-600">
-                      €{amount_net.toFixed(2)}
+                      €{amount_gross.toFixed(2)}
                     </span>
                   </div>
-                  <div className=" text-xs">
+                  <div className="text-xs">
                     <p>{`Enth. MwSt (${tax_rate * 100}%): ${amount_tax.toFixed(
                       2
                     )}€`}</p>
