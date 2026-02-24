@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Card,
@@ -41,6 +47,8 @@ import { appendBillState } from "../../../redux/slices/invoices";
 import type { Files } from "@/types/InvoiceFile";
 import { refreshAccessToken } from "@/utils/jwttokens";
 import type { RideInfo } from "@/types/RideInfoForBill";
+import { setRideInfo } from "@/utils/invoices/setRideInfo";
+import LoadingPayment from "@/components/LoadingPayment";
 
 /**
  * Invoice page where drivers can review ride details and select payment method
@@ -49,6 +57,8 @@ import type { RideInfo } from "@/types/RideInfoForBill";
 const Invoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [ride, setRide] = useState<RideInfo | null>(null);
   const { id } = useParams();
   const form = useForm({
     defaultValues: {
@@ -62,8 +72,17 @@ const Invoice = () => {
   const [lineheight, setLineheight] = useState(2.75);
   const dispatch: AppDispatch = useDispatch();
 
+  const getRideData = useCallback(async () => {
+    const rideData =
+      (location.state as RideInfo) || (await setRideInfo.getRideInfo());
+
+    setRide(rideData);
+    setLoading(false);
+  }, [location.state]);
+
   // ResizeObserver to automatically update line height when paragraph size changes
   useEffect(() => {
+    getRideData();
     const element = startAddressParagraph.current;
     if (!element) return;
 
@@ -73,40 +92,38 @@ const Invoice = () => {
       setLineheight(2.75 + startaddr);
     };
 
-    // Initial calculation
     updateLineHeight();
 
-    // Create ResizeObserver to watch for size changes
     const resizeObserver = new ResizeObserver(() => {
       updateLineHeight();
     });
 
     resizeObserver.observe(element);
 
-    // Cleanup observer on unmount
     return () => {
       resizeObserver.disconnect();
     };
-  }, []); // Re-run when address changes
+  }, [getRideData]);
 
-  // Get ride data from navigation state
-  const rideData: RideInfo = location.state;
+  if (loading) {
+    return <LoadingPayment />;
+  }
 
-  if (!rideData) {
+  if (!ride) {
     return <NoRideDataWarning />;
   }
 
   const distanceInKm =
-    typeof rideData.distance === "number" && rideData.distance > 100
-      ? (rideData.distance / 1000).toFixed(2)
-      : rideData.distance;
+    typeof ride.distance === "number" && ride.distance > 100
+      ? (ride.distance / 1000).toFixed(2)
+      : ride.distance;
 
   // Reactive values for live display — driven by user input
   const ride_price_gross =
     parseFloat(form.watch("ride_price")?.toString() || "0") || 0;
   const tipAmount = parseFloat(form.watch("tip")?.toString() || "0") || 0;
 
-  const tax_rate = rideData.ride_type === "Taxifahrt" ? 0.1 : 0.2; // 10% for Taxi, 20% for Boten
+  const tax_rate = ride.ride_type === "Taxifahrt" ? 0.1 : 0.2; // 10% for Taxi, 20% for Boten
   const amount_gross = ride_price_gross + tipAmount;
   const amount_net = amount_gross / (1 + tax_rate);
   const amount_tax = amount_gross - amount_net;
@@ -116,7 +133,7 @@ const Invoice = () => {
     const values = form.getValues();
     const ridePrice = parseFloat(values.ride_price?.toString() || "0") || 0;
     const tip = parseFloat(values.tip?.toString() || "0") || 0;
-    const taxRate = rideData.ride_type === "Taxifahrt" ? 0.1 : 0.2;
+    const taxRate = ride.ride_type === "Taxifahrt" ? 0.1 : 0.2;
     const gross = ridePrice + tip;
     const net = gross / (1 + taxRate);
     const tax = gross - net;
@@ -146,7 +163,7 @@ const Invoice = () => {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
       dispatch(appendBillState(data.files as Files));
     } catch (error) {
@@ -164,14 +181,14 @@ const Invoice = () => {
           // Second attempt failed - session expired
           console.error(error);
           throw new Error(
-            "Sitzung abgelaufen. Bitte melden Sie sich erneut an."
+            "Sitzung abgelaufen. Bitte melden Sie sich erneut an.",
           );
         } else if (error.status === 409) {
           throw new Error("Diese Rechnung existiert bereits.");
         } else {
           console.error(error);
           throw new Error(
-            "Ressourcen konnten nicht geladen werden, überprüfen Sie Ihre Internetverbindung."
+            "Ressourcen konnten nicht geladen werden, überprüfen Sie Ihre Internetverbindung.",
           );
         }
       } else {
@@ -191,6 +208,7 @@ const Invoice = () => {
         className: "mt-5 md:mt-0",
         success: async () => {
           await navigate(`/invoices`);
+          await setRideInfo.removeRideInfo();
           return "Rechnung erflogreich erstellt";
         },
         error: (err) => {
@@ -199,7 +217,7 @@ const Invoice = () => {
           } else return "Fehler beim erstellen der rechnung";
         },
         loading: "Rechnung wird erstellt",
-      }
+      },
     );
   };
 
@@ -221,8 +239,7 @@ const Invoice = () => {
               Fahrtdetails
             </CardTitle>
             <CardDescription>
-              Fahrt #{id || "ID Konnte nicht geladen werden"} -{" "}
-              {rideData.ride_type}
+              Fahrt #{id || "ID Konnte nicht geladen werden"} - {ride.ride_type}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -238,10 +255,10 @@ const Invoice = () => {
                     ref={startAddressParagraph}
                     className="text-sm font-medium w-[70%] break-words"
                   >
-                    {rideData.start_address}
+                    {ride.start_address}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {formatDate(rideData.start_time)}
+                    {formatDate(ride.start_time)}
                   </p>
                 </div>
               </div>
@@ -258,10 +275,10 @@ const Invoice = () => {
                 <div className="flex-1">
                   <Label className="text-xs text-muted-foreground">Ziel</Label>
                   <p className="text-sm font-medium w-[70%] break-words">
-                    {rideData.end_address}
+                    {ride.end_address}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {formatDate(rideData.end_time)}
+                    {formatDate(ride.end_time)}
                   </p>
                 </div>
               </div>
@@ -287,7 +304,7 @@ const Invoice = () => {
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Dauer</Label>
-                  <p className="text-lg font-bold">{rideData.duration}</p>
+                  <p className="text-lg font-bold">{ride.duration}</p>
                 </div>
               </div>
 
@@ -297,7 +314,7 @@ const Invoice = () => {
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Typ</Label>
-                  <p className="text-lg font-bold">{rideData.ride_type}</p>
+                  <p className="text-lg font-bold">{ride.ride_type}</p>
                 </div>
               </div>
             </div>
@@ -493,7 +510,7 @@ const Invoice = () => {
                   </div>
                   <div className="text-xs">
                     <p>{`Enth. MwSt (${tax_rate * 100}%): ${amount_tax.toFixed(
-                      2
+                      2,
                     )}€`}</p>
                     <p>{`Nettoumsatz: ${amount_net.toFixed(2)} €`}</p>
                   </div>
