@@ -37,7 +37,10 @@ import { Label } from "@/components/ui/label";
 import { User } from "lucide-react";
 import { updateProfile } from "@/utils/updateProfile";
 import { handleUpdateProfileError } from "@/utils/errorHandling/updateProfileErrorHandler";
-import { useInvalidEmail, useInvalidUsername } from "@/hooks/useValidator";
+import {
+  useInvalidEmail,
+  useInvalidUsername,
+} from "@/hooks/userfeedback/useValidator";
 import { fetchAvatar } from "@/utils/getAvatar";
 import { setAvatarState } from "../../../redux/slices/avatarSlice";
 import { setLink } from "../../../redux/slices/footerLinksSlice";
@@ -91,7 +94,7 @@ const Account = (): JSX.Element => {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       retryFetch = true;
@@ -113,11 +116,11 @@ const Account = (): JSX.Element => {
         } else if (isAuthError && !retryFetch) {
           // Second attempt failed - session expired
           throw new Error(
-            "Sitzung abgelaufen. Bitte melden Sie sich erneut an."
+            "Sitzung abgelaufen. Bitte melden Sie sich erneut an.",
           );
         } else {
           throw new Error(
-            "Ressourcen konnten nicht geladen werden, überprüfen Sie Ihre Internetverbindung"
+            "Ressourcen konnten nicht geladen werden, überprüfen Sie Ihre Internetverbindung",
           );
         }
       } else {
@@ -143,7 +146,7 @@ const Account = (): JSX.Element => {
         error: "Ein unerwarteter Fehler ist aufgetreten.",
         loading: "Profilbild wird aktualisiert",
         className: "mt-5 md:mt-0",
-      }
+      },
     );
   };
 
@@ -288,7 +291,7 @@ const Account = (): JSX.Element => {
                       success: "Änderung erfolgreich gespeichert!",
                       error: (err) => handleUpdateProfileError(err),
                       className: "mt-5 md:mt-0",
-                    }
+                    },
                   );
                 }
               })}
@@ -482,7 +485,7 @@ const Account = (): JSX.Element => {
                         },
                         error: (err) => handleLogoutError(err),
                         className: "mt-5 md:mt-0",
-                      }
+                      },
                     );
                   }}
                   className="btn-main-action"
@@ -518,7 +521,7 @@ const Account = (): JSX.Element => {
                       "Bitte geben Sie Ihr Passwort ein, um zu bestätigen",
                       {
                         className: "mt-5 md:mt-0",
-                      }
+                      },
                     );
                     return;
                   }
@@ -535,7 +538,7 @@ const Account = (): JSX.Element => {
                       },
                       error: (err) => handleDeleteAccountError(err),
                       className: "mt-5 md:mt-0",
-                    }
+                    },
                   );
                 }}
               >

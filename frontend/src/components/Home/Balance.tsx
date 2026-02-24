@@ -4,7 +4,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../components/ui/card"
+} from "../ui/card";
 
 import {
   BarChart,
@@ -16,27 +16,40 @@ import {
   RadialBar,
   LabelList,
 } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
-import type { DailyStats, MonthlyWeekStats, RidesStats } from "../pages/Home";
-import { barChartConfig, radialSeriesConfig, chartKeys, type Duration } from "../content/balance/config";
-import { metrics, type Metric, chartData, driverShare, brutto, netto } from "../content/balance/data";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
+import type {
+  DailyStats,
+  MonthlyWeekStats,
+  RidesStats,
+} from "../../pages/Home";
+import {
+  barChartConfig,
+  radialSeriesConfig,
+  chartKeys,
+  type Duration,
+} from "../../content/balance/config";
+import {
+  metrics,
+  type Metric,
+  chartData,
+  driverShare,
+  brutto,
+  netto,
+} from "../../content/balance/data";
 
 // configs & data moved to content/balance/*
 
 interface BalanceData {
   duration: Duration;
-  entry?: RidesStats[] | DailyStats[] | MonthlyWeekStats[]
+  entry?: RidesStats[] | DailyStats[] | MonthlyWeekStats[];
 }
 
 const Balance = ({ entry, duration }: BalanceData) => {
-
   const xKey = chartKeys[duration];
 
   return (
     <div className="w-full flex flex-col gap-4">
-
       <div className="w-full">
-
         <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-1 w-full">
           {metrics.map((data: Metric, index: number) => (
             <Card
@@ -44,8 +57,10 @@ const Balance = ({ entry, duration }: BalanceData) => {
               className="w-full rounded-xl border border-border/40 bg-sidebar
                shadow-sm hover:shadow-md transition-shadow"
             >
-              <CardHeader className="flex flex-row justify-between
-              items-center">
+              <CardHeader
+                className="flex flex-row justify-between
+              items-center"
+              >
                 <div>
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     {data.label}
@@ -70,8 +85,10 @@ const Balance = ({ entry, duration }: BalanceData) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="w-full lg:col-span-1 rounded-xl border border-border/40 bg-sidebar
-               shadow-sm hover:shadow-md transition-shadow">
+        <Card
+          className="w-full lg:col-span-1 rounded-xl border border-border/40 bg-sidebar
+               shadow-sm hover:shadow-md transition-shadow"
+        >
           <CardHeader>
             <CardTitle className="text-xl md:text-3xl">Bilanz</CardTitle>
           </CardHeader>
@@ -79,7 +96,6 @@ const Balance = ({ entry, duration }: BalanceData) => {
             <ChartContainer
               config={radialSeriesConfig}
               className="mx-auto aspect-square max-h-[250px]"
-
             >
               <RadialBarChart
                 data={chartData}
@@ -87,13 +103,8 @@ const Balance = ({ entry, duration }: BalanceData) => {
                 endAngle={-180}
                 innerRadius="30%"
                 outerRadius="80%"
-
               >
-                <RadialBar
-                  dataKey="value"
-                  background
-                  isAnimationActive={true}
-                >
+                <RadialBar dataKey="value" background isAnimationActive={true}>
                   <LabelList
                     dataKey="name"
                     position="insideStart"
@@ -106,35 +117,41 @@ const Balance = ({ entry, duration }: BalanceData) => {
                   cursor={false}
                   content={<ChartTooltipContent nameKey="name" />}
                 />
-
               </RadialBarChart>
             </ChartContainer>
           </CardContent>
-          <CardFooter className="space-y-4 text-center
-          flex flex-col items-center">
-
+          <CardFooter
+            className="space-y-4 text-center
+          flex flex-col items-center"
+          >
             <div>
               <p className="text-sm text-muted-foreground mb-1">Dein Anteil</p>
-              <p className="text-4xl font-bold text-green-500">€ {driverShare}</p>
+              <p className="text-4xl font-bold text-green-500">
+                € {driverShare}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-4">
               <div className="rounded-lg bg-violet-50 dark:bg-violet-950 p-3">
                 <p className="text-xs text-muted-foreground mb-1">Brutto</p>
-                <p className="text-lg font-semibold text-violet-600 dark:text-violet-400">€ {brutto}</p>
+                <p className="text-lg font-semibold text-violet-600 dark:text-violet-400">
+                  € {brutto}
+                </p>
               </div>
               <div className="rounded-lg bg-pink-50 dark:bg-pink-950 p-3">
                 <p className="text-xs text-muted-foreground mb-1">Netto</p>
-                <p className="text-lg font-semibold text-pink-600 dark:text-pink-400">€ {netto}</p>
+                <p className="text-lg font-semibold text-pink-600 dark:text-pink-400">
+                  € {netto}
+                </p>
               </div>
             </div>
-
-
           </CardFooter>
         </Card>
 
-        <Card className="w-full lg:col-span-2 rounded-xl border border-border/40 bg-sidebar
-               shadow-sm hover:shadow-md transition-shadow">
+        <Card
+          className="w-full lg:col-span-2 rounded-xl border border-border/40 bg-sidebar
+               shadow-sm hover:shadow-md transition-shadow"
+        >
           <CardHeader>
             <CardTitle className="text-xl md:text-3xl">Übersicht</CardTitle>
           </CardHeader>
@@ -169,10 +186,8 @@ const Balance = ({ entry, duration }: BalanceData) => {
           </CardContent>
         </Card>
       </div>
-
     </div>
+  );
+};
 
-  )
-}
-
-export default Balance
+export default Balance;

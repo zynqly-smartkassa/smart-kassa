@@ -1,21 +1,25 @@
 /**
  * Test Suite for the Login Page.
  * Tests the functionality of the Login form, including validation and navigation.
- * @author 
+ * @author
  */
 import { screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { renderWithRouter } from "../../utils/test/renderWithRouter";
+import { renderWithRouter } from "../../../utils/test/renderWithRouter";
 import userEvent from "@testing-library/user-event";
-import Register from "./Register";
-import Login from "./Login";
-import { fillField, type InfoField, expectValidationMessage } from "../../utils/test/input";
-import { validationMessages } from "../../content/auth/validationMessages";
-import { useInvalidPassword } from "../../hooks/useValidator";
-import * as authModule from "../../utils/auth";
-import type { USER_DTO } from "../../../constants/User";
-import Home from "../Home";
+import Register from "../Register";
+import Login from "../Login";
+import {
+  fillField,
+  type InfoField,
+  expectValidationMessage,
+} from "../../../utils/test/input";
+import { validationMessages } from "../../../content/auth/validationMessages";
+import { useInvalidPassword } from "../../../hooks/userfeedback/useValidator";
+import * as authModule from "../../../utils/auth";
+import type { USER_DTO } from "../../../../constants/User";
+import Home from "../../Home";
 
 // ResizeObserver Mock (Recharts) "Unused"
 globalThis.ResizeObserver = class {
@@ -32,7 +36,7 @@ vi.mock("axios");
 // function is called wether the main action itself.
 vi.mock("../../redux/slices/userSlice", () => ({
   // redux action calls are returning this very object
-  signInUser: (payload: USER_DTO) => ({ type: "user/signInUser", payload })
+  signInUser: (payload: USER_DTO) => ({ type: "user/signInUser", payload }),
 }));
 
 // We are just tracking the function here, which is not a fake function
@@ -46,7 +50,7 @@ vi.mock("react-redux", async () => {
   return {
     // Only change disatch, nothing else from redux
     ...actual,
-    useDispatch: () => dispatch, 
+    useDispatch: () => dispatch,
   };
 });
 
@@ -57,14 +61,17 @@ describe("Login Page", () => {
   let inputs: InfoField[] = [];
 
   beforeEach(() => {
-
     vi.clearAllMocks();
-    
-   renderWithRouter(<Login />, ["/login"], [
-  { path: "/login", element: <Login /> },
-  { path: "/register", element: <Register /> },
-  { path: "/", element: <Home /> }
-]);
+
+    renderWithRouter(
+      <Login />,
+      ["/login"],
+      [
+        { path: "/login", element: <Login /> },
+        { path: "/register", element: <Register /> },
+        { path: "/", element: <Home /> },
+      ],
+    );
 
     email = screen.getByTestId(/email/i);
     password = screen.getByTestId("password");
@@ -84,7 +91,6 @@ describe("Login Page", () => {
         validationMessage: validationMessages.login.password.tooShort,
       },
     ];
-
   });
 
   // -----------------------------
@@ -141,9 +147,7 @@ describe("Login Page", () => {
 
     await fillField(password, shortPass);
     await userEvent.tab();
-    await expectValidationMessage(
-      validationMessages.login.password.tooShort
-    );
+    await expectValidationMessage(validationMessages.login.password.tooShort);
 
     // Long enough (≥8 characters) - Login accepts this
     const longPass = "Laimer+123";
@@ -156,7 +160,7 @@ describe("Login Page", () => {
     await waitFor(() => {
       const msg = screen.queryByText(
         validationMessages.login.password.tooShort,
-        { exact: false }
+        { exact: false },
       );
       expect(msg).toBeNull();
     });
@@ -174,12 +178,10 @@ describe("Login Page", () => {
     });
   });
 
-
   // -----------------------------
   // Test 5: Login mock (Successful)
   // -----------------------------
   it("simulates the login function with success", async () => {
-
     // returns fake data (not a function call, just what to do when it is called)
     mockedLogin.mockImplementation(async (_email, _password, dispatch) => {
       dispatch({
@@ -193,10 +195,10 @@ describe("Login Page", () => {
         },
       });
 
-      // return successful object 
+      // return successful object
       return {
         accessToken: "FAKE_TOKEN",
-        user: { userId: 42, name: "Max", email: "max@x.com" }
+        user: { userId: 42, name: "Max", email: "max@x.com" },
       };
     });
 
@@ -211,7 +213,7 @@ describe("Login Page", () => {
     expect(mockedLogin).toHaveBeenCalledWith(
       "max@x.com",
       "Max+1234",
-      expect.any(Function)
+      expect.any(Function),
     );
 
     // was it called with this data
@@ -227,16 +229,14 @@ describe("Login Page", () => {
     });
 
     await waitFor(() => {
-  expect(screen.queryByTestId("login")).not.toBeInTheDocument();
-});
-
+      expect(screen.queryByTestId("login")).not.toBeInTheDocument();
+    });
   });
 
   // -----------------------------
   // Test 6: Login mock (Unsuccessful)
   // -----------------------------
   it("shows still the Login if given wrong credentials", async () => {
-
     // Ignore the stderr messages in the console
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -246,7 +246,7 @@ describe("Login Page", () => {
     // like a usual failed fetch call
     mockedLogin.mockRejectedValueOnce(new Error("Wrong Email or Password"));
 
-     // Fill data
+    // Fill data
     await fillField(email, "wrong@user.com");
     await fillField(password, "WrongPass123");
 
@@ -258,24 +258,21 @@ describe("Login Page", () => {
       expect(mockedLogin).toHaveBeenCalledWith(
         "wrong@user.com",
         "WrongPass123",
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
     // We check if he called dispatch
-   expect(dispatch).not.toHaveBeenCalledWith(
-    expect.objectContaining({
-      type: "user/signInUser"
-    })
-  );
+    expect(dispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "user/signInUser",
+      }),
+    );
 
-  // It should still show the login button
-  expect(screen.getByTestId("login")).toBeInTheDocument();
-  
-  // restore the usual behavior of console.err
-  consoleSpy.mockRestore();
+    // It should still show the login button
+    expect(screen.getByTestId("login")).toBeInTheDocument();
 
+    // restore the usual behavior of console.err
+    consoleSpy.mockRestore();
   });
-
 });
-

@@ -1,4 +1,4 @@
-import { isMobile } from "../hooks/use-mobile";
+import { isMobile } from "../hooks/layout/use-mobile";
 import { Preferences } from "@capacitor/preferences";
 
 /**

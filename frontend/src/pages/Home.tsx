@@ -1,16 +1,20 @@
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 
-import type {  RootState } from "../../redux/store";
+import type { RootState } from "../../redux/store";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import Balance from "../components/Balance";
+import Balance from "../components/Home/Balance";
 import type { JSX } from "react";
-import { getDailyStats, getMonthlyStats, getWeeklyStats } from "../utils/dashboard";
+import {
+  getDailyStats,
+  getMonthlyStats,
+  getWeeklyStats,
+} from "../utils/dashboard";
 
 export type RidesStats = {
   day: string;
@@ -29,16 +33,16 @@ export type MonthlyWeekStats = {
 
 /**
  * Home component that displays the main dashboard with statistics and ride data.
- * 
+ *
  * This component provides a personalized welcome message and displays ride statistics
  * in different time periods (today, week, month) using tabs. Each tab shows a balance
  * chart with ride data for the selected period.
- * 
+ *
  * @returns {JSX.Element} The home dashboard with statistics and user greeting.
  */
 function Home(): JSX.Element {
   const user = useSelector((state: RootState) => state.user);
-  
+
   const [dailyData, setDailyData] = useState<DailyStats[]>([]);
   const [weeklyData, setWeeklyData] = useState<RidesStats[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyWeekStats[]>([]);
@@ -49,9 +53,9 @@ function Home(): JSX.Element {
         const [daily, weekly, monthly] = await Promise.all([
           getDailyStats(),
           getWeeklyStats(),
-          getMonthlyStats()
+          getMonthlyStats(),
         ]);
-        
+
         setDailyData(daily);
         setWeeklyData(weekly);
         setMonthlyData(monthly);

@@ -4,22 +4,25 @@
  * @author
  */
 import { screen, waitFor } from "@testing-library/react";
-import Register from "./Register";
+import Register from "../Register";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { renderWithRouter } from "../../utils/test/renderWithRouter";
+import { renderWithRouter } from "../../../utils/test/renderWithRouter";
 import userEvent from "@testing-library/user-event";
-import Login from "./Login";
+import Login from "../Login";
 import {
   expectValidationMessage,
   fillField,
   type InfoField,
-} from "../../utils/test/input";
-import { validationMessages } from "../../content/auth/validationMessages";
-import { useInvalidEmail, useInvalidPassword } from "../../hooks/useValidator";
-import * as authModule from "../../utils/auth";
-import type { USER_DTO } from "../../../constants/User";
-import Home from "../Home";
+} from "../../../utils/test/input";
+import { validationMessages } from "../../../content/auth/validationMessages";
+import {
+  useInvalidEmail,
+  useInvalidPassword,
+} from "../../../hooks/userfeedback/useValidator";
+import * as authModule from "../../../utils/auth";
+import type { USER_DTO } from "../../../../constants/User";
+import Home from "../../Home";
 
 // ResizeObserver Mock (Recharts) "Unused"
 globalThis.ResizeObserver = class {
@@ -77,11 +80,15 @@ describe("Register Page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    renderWithRouter(<Login />, ["/register"], [
-  { path: "/register", element: <Register /> },
-  { path: "/login", element: <Login /> },
-  { path: "/", element: <Home /> }
-]);
+    renderWithRouter(
+      <Login />,
+      ["/register"],
+      [
+        { path: "/register", element: <Register /> },
+        { path: "/login", element: <Login /> },
+        { path: "/", element: <Home /> },
+      ],
+    );
 
     // Get all input elements
     name = screen.getByTestId(/vorname/i);
@@ -177,7 +184,7 @@ describe("Register Page", () => {
       () => {
         expect(registerButton).toBeEnabled();
       },
-      { timeout: 10000 }
+      { timeout: 10000 },
     );
   }, 15000);
 
@@ -217,7 +224,7 @@ describe("Register Page", () => {
     await userEvent.tab();
 
     await expectValidationMessage(
-      validationMessages.register.password.missingNumber
+      validationMessages.register.password.missingNumber,
     );
   });
 
@@ -229,7 +236,7 @@ describe("Register Page", () => {
     await userEvent.tab();
 
     await expectValidationMessage(
-      validationMessages.register.password.missingSymbol
+      validationMessages.register.password.missingSymbol,
     );
   });
 
@@ -247,7 +254,7 @@ describe("Register Page", () => {
     await userEvent.tab();
 
     await expectValidationMessage(
-      validationMessages.register.confirmPassword.invalid
+      validationMessages.register.confirmPassword.invalid,
     );
   });
 
@@ -284,7 +291,7 @@ describe("Register Page", () => {
       await waitFor(() => {
         const msg = screen.queryByText(
           validationMessages.register.email.invalid,
-          { exact: false }
+          { exact: false },
         );
         expect(msg).toBeNull();
       });
@@ -305,7 +312,7 @@ describe("Register Page", () => {
     await fillField(password, tooShort);
     await userEvent.tab();
     await expectValidationMessage(
-      validationMessages.register.password.tooShort
+      validationMessages.register.password.tooShort,
     );
 
     // Test 2: No number
@@ -317,7 +324,7 @@ describe("Register Page", () => {
     await fillField(password, noNumber);
     await userEvent.tab();
     await expectValidationMessage(
-      validationMessages.register.password.missingNumber
+      validationMessages.register.password.missingNumber,
     );
 
     // Test 3: No special character
@@ -329,7 +336,7 @@ describe("Register Page", () => {
     await fillField(password, noSpecial);
     await userEvent.tab();
     await expectValidationMessage(
-      validationMessages.register.password.missingSymbol
+      validationMessages.register.password.missingSymbol,
     );
 
     // Test 4: Valid password (≥8 characters, number, special character) – use value from auth
@@ -367,7 +374,7 @@ describe("Register Page", () => {
         _password,
         _firmenbuchnummer,
         _atu,
-        dispatch
+        dispatch,
       ) => {
         dispatch({
           type: "user/signInUser",
@@ -386,7 +393,7 @@ describe("Register Page", () => {
           accessToken: "FAKE_TOKEN",
           user: { userId: 42, name: "Max", email: "max@x.com" },
         };
-      }
+      },
     );
 
     // Fill data
@@ -411,7 +418,7 @@ describe("Register Page", () => {
       "Max+1234",
       "FN123456a",
       "ATU123456789",
-      expect.any(Function)
+      expect.any(Function),
     );
 
     // was it called with this data
@@ -467,7 +474,7 @@ describe("Register Page", () => {
         "Max+1234",
         "FN123456a",
         "ATU123456789",
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -475,7 +482,7 @@ describe("Register Page", () => {
     expect(dispatch).not.toHaveBeenCalledWith(
       expect.objectContaining({
         type: "user/signInUser",
-      })
+      }),
     );
 
     // It should still show the login button

@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
-import { isMobile, useIsMobile } from "../../hooks/use-mobile";
+import { isMobile, useIsMobile } from "../../hooks/layout/use-mobile";
 import {
   Card,
   CardContent,
@@ -80,7 +80,7 @@ const Invoices = () => {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
 
         dispatch(setBills(data.files));
@@ -104,7 +104,7 @@ const Invoices = () => {
             toast.error("Sitzung abgelaufen. Bitte melden Sie sich erneut an.");
           } else {
             toast.error(
-              "Rechnungen konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+              "Rechnungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
             );
           }
         } else {
@@ -195,8 +195,8 @@ const Invoices = () => {
                               </DialogTitle>
                               <DialogDescription className="text-sm text-muted-foreground mt-2">
                                 Die Vorschau-URL für diese Rechnung konnte nicht
-                                generiert werden. Die Datei ist jedoch in unserem
-                                System gespeichert.
+                                generiert werden. Die Datei ist jedoch in
+                                unserem System gespeichert.
                               </DialogDescription>
                             </DialogHeader>
                           </div>
@@ -232,8 +232,8 @@ const Invoices = () => {
                                 QR-Code nicht verfügbar
                               </DialogTitle>
                               <DialogDescription className="text-sm text-muted-foreground">
-                                Für diese Rechnung konnte kein QR-Code erstellt werden,
-                                da keine Vorschau-URL verfügbar ist.
+                                Für diese Rechnung konnte kein QR-Code erstellt
+                                werden, da keine Vorschau-URL verfügbar ist.
                               </DialogDescription>
                             </DialogHeader>
                           </div>
@@ -255,34 +255,47 @@ const Invoices = () => {
                   <div className="grid grid-cols-2 gap-2 text-sm pt-2 border-t">
                     <div>
                       <p className="text-muted-foreground text-xs">Netto</p>
-                      <p className="font-medium">€{file.billingData?.amount_net}</p>
+                      <p className="font-medium">
+                        €{file.billingData?.amount_net}
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground text-xs">
                         MwSt ({file.billingData?.tax_rate.split(".00")[0]}%)
                       </p>
-                      <p className="font-medium">€{file.billingData?.amount_tax}</p>
+                      <p className="font-medium">
+                        €{file.billingData?.amount_tax}
+                      </p>
                     </div>
                   </div>
 
-                  {file.billingData?.tip_amount && Number(file.billingData.tip_amount) > 0 && (
-                    <div className="flex items-center gap-2 text-sm pt-2 border-t">
-                      <div className="p-1.5 rounded-lg bg-green-50 dark:bg-green-950">
-                        <span className="text-green-600 dark:text-green-400 text-xs">💶</span>
+                  {file.billingData?.tip_amount &&
+                    Number(file.billingData.tip_amount) > 0 && (
+                      <div className="flex items-center gap-2 text-sm pt-2 border-t">
+                        <div className="p-1.5 rounded-lg bg-green-50 dark:bg-green-950">
+                          <span className="text-green-600 dark:text-green-400 text-xs">
+                            💶
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground">
+                            Trinkgeld
+                          </p>
+                          <p className="font-medium">
+                            €{file.billingData.tip_amount}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-xs text-muted-foreground">Trinkgeld</p>
-                        <p className="font-medium">€{file.billingData.tip_amount}</p>
-                      </div>
-                    </div>
-                  )}
+                    )}
 
                   <div className="flex items-center gap-2 text-sm pt-2 border-t">
-                    <div className={`p-1.5 rounded-lg ${
-                      file.billingData?.payment_method === "card"
-                        ? "bg-violet-50 dark:bg-violet-950"
-                        : "bg-green-50 dark:bg-green-950"
-                    }`}>
+                    <div
+                      className={`p-1.5 rounded-lg ${
+                        file.billingData?.payment_method === "card"
+                          ? "bg-violet-50 dark:bg-violet-950"
+                          : "bg-green-50 dark:bg-green-950"
+                      }`}
+                    >
                       {file.billingData?.payment_method === "card" ? (
                         <CreditCard className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                       ) : (
@@ -290,8 +303,14 @@ const Invoices = () => {
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-muted-foreground">Zahlungsmethode</p>
-                      <p className="font-medium capitalize">{file.billingData?.payment_method === "card" ? "Karte" : "Bargeld"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Zahlungsmethode
+                      </p>
+                      <p className="font-medium capitalize">
+                        {file.billingData?.payment_method === "card"
+                          ? "Karte"
+                          : "Bargeld"}
+                      </p>
                     </div>
                   </div>
 
@@ -314,7 +333,8 @@ const Invoices = () => {
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground">Datum</p>
                       <p className="font-medium text-sm">
-                        {formatDate(file.lastModified?.toString()) || "Nicht verfügbar"}
+                        {formatDate(file.lastModified?.toString()) ||
+                          "Nicht verfügbar"}
                       </p>
                     </div>
                   </div>
@@ -353,7 +373,7 @@ const Invoices = () => {
                         onClick={() =>
                           fetchDownload(
                             file.url,
-                            file.key?.split("/").pop() || "Invoice"
+                            file.key?.split("/").pop() || "Invoice",
                           )
                         }
                         download

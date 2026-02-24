@@ -1,19 +1,20 @@
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
-import { isValidAddressInput } from "../useValidator";
+import { isValidAddressInput } from "../userfeedback/useValidator";
 
 /**
  * Custom hook that manages all state logic for an active ride.
- * 
+ *
  * This hook handles destination input validation, route calculation state, GPS coordinates,
  * timer functionality, and ride validation. It provides methods for updating routes every
  * 10 seconds during an active ride and checking if a ride meets minimum duration requirements.
- * 
+ *
  * @param {boolean} isRideActive - Flag indicating if a ride is currently in progress.
  * @param {[number, number] | null} driverLocation - Current GPS coordinates of the driver as [latitude, longitude].
  * @returns {Object} An object containing all ride-related states and their setter functions.
  */
-export const useRideStates = (isRideActive: boolean, 
+export const useRideStates = (
+  isRideActive: boolean,
   driverLocation: [number, number] | null,
 ) => {
   // Input
@@ -61,7 +62,7 @@ export const useRideStates = (isRideActive: boolean,
           position: "top-center",
           closeButton: true,
           className: "mt-5 md:mt-0",
-        }
+        },
       );
       return false;
     }

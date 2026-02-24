@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import type { AppDispatch } from "../../redux/store";
-import { ToastWarningShowed } from "../../redux/slices/toastSlice";
+import type { AppDispatch } from "../../../redux/store";
+import { ToastWarningShowed } from "../../../redux/slices/toastSlice";
 
 /**
  * Toast to show the User that he has to log in to use the App
@@ -13,7 +13,7 @@ import { ToastWarningShowed } from "../../redux/slices/toastSlice";
 export function useWarningToast(
   showToast: boolean,
   message: string,
-  resetAction: AppDispatch
+  resetAction: AppDispatch,
 ) {
   const toastShownRef = useRef(true);
 

@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Geolocation } from "@capacitor/geolocation";
-import { isMobile } from "../use-mobile";
+import { isMobile } from "../layout/use-mobile";
 
 /**
  * Custom hook that manages the driver's location using the Capacitor Geolocation API.
- * 
+ *
  * This hook requests location permissions, retrieves the initial GPS position, and simulates
  * driver movement during an active ride for development purposes. It returns the current
  * driver location as a coordinate tuple or null if not available.
- * 
+ *
  * @param {boolean} isRideActive - Flag indicating whether a ride is currently active. When true, simulates location updates.
  * @returns {[number, number] | null} The driver's location as [latitude, longitude] or null if not yet determined.
  */
 export const useDriverLocation = (isRideActive: boolean) => {
   const [driverLocation, setDriverLocation] = useState<[number, number] | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export const useDriverLocation = (isRideActive: boolean) => {
                 position: "top-center",
                 closeButton: true,
                 className: "mt-5 md:mt-0",
-              }
+              },
             );
             return;
           }
@@ -105,7 +105,7 @@ export const useDriverLocation = (isRideActive: boolean) => {
     let lat = driverLocation?.[0];
     let lng = driverLocation?.[1];
 
-    let interval : number;
+    let interval: number;
     // TEST/DEBUG: Simulates driver movement for development
     if (isRideActive) {
       interval = setInterval(() => {
@@ -123,10 +123,10 @@ export const useDriverLocation = (isRideActive: boolean) => {
 
 /**
  * Handles geolocation errors and displays appropriate error messages to the user.
- * 
+ *
  * This function logs the error to the console and shows a toast notification with
  * the error details. It specifically handles GeolocationPositionError instances.
- * 
+ *
  * @param {unknown} err - The error object from the geolocation API.
  */
 function handleGeolocationError(err: unknown) {

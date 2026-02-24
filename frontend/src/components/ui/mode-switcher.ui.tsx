@@ -1,17 +1,21 @@
-import Logo from '/Logo.png' 
-import { useTheme } from '../../hooks/useTheme'
+import Logo from "/Logo.png";
+import { useTheme } from "../../hooks/layout/useTheme";
 
 const ModeSwitcherUi = () => {
-  const { theme, setTheme } = useTheme() // Shadcn Theme Hook
+  const { theme, setTheme } = useTheme(); // Shadcn Theme Hook
 
   return (
     <div className="flex justify-center gap-6 p-6">
       {/* Light Mode Card */}
       <div
         className={`w-72 flex flex-col border rounded-lg shadow-md cursor-pointer transform transition-all duration-300 
-                    ${theme === 'light' ? 'scale-105 ring-4 ring-violet-400' : ''} 
+                    ${
+                      theme === "light"
+                        ? "scale-105 ring-4 ring-violet-400"
+                        : ""
+                    } 
                     bg-white text-gray-900 border-gray-300 hover:scale-105 hover:shadow-lg`}
-        onClick={() => setTheme('light')}
+        onClick={() => setTheme("light")}
       >
         {/* Header */}
         <header className="flex items-center justify-between px-4 h-12 border-b rounded-t-lg bg-gray-100 border-gray-200">
@@ -48,9 +52,11 @@ const ModeSwitcherUi = () => {
       {/* Dark Mode Card */}
       <div
         className={`w-72 flex flex-col border rounded-lg shadow-md cursor-pointer transform transition-all duration-300 
-                    ${theme === 'dark' ? 'scale-105 ring-4 ring-violet-400' : ''} 
+                    ${
+                      theme === "dark" ? "scale-105 ring-4 ring-violet-400" : ""
+                    } 
                     bg-slate-950 text-white border-slate-700 hover:scale-105 hover:shadow-lg`}
-        onClick={() => setTheme('dark')}
+        onClick={() => setTheme("dark")}
       >
         {/* Header */}
         <header className="flex items-center justify-between px-4 h-12 border-b rounded-t-lg bg-slate-900 border-slate-800">
@@ -84,7 +90,7 @@ const ModeSwitcherUi = () => {
         </main>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ModeSwitcherUi
+export default ModeSwitcherUi;

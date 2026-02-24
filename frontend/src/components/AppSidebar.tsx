@@ -15,7 +15,7 @@ import { sidebarSections } from "@/content/sidebar/sidebar";
 import { useState, useEffect } from "react";
 
 import { Link } from "react-router-dom";
-import { isMobile } from "@/hooks/use-mobile";
+import { isMobile } from "@/hooks/layout/use-mobile";
 import type { AppDispatch } from "../../redux/store";
 import { useDispatch } from "react-redux";
 import { setLink } from "../../redux/slices/footerLinksSlice";
@@ -118,7 +118,7 @@ export function AppSidebar() {
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
-                    )
+                    ),
                 )}
               </SidebarMenu>
             </SidebarGroupContent>

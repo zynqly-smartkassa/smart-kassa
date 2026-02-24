@@ -18,13 +18,13 @@ import {
   useInvalidTelefonnummer,
   useInvalidUsername,
   type PASSWORD_VALIDATOR,
-} from "../../hooks/useValidator";
+} from "../../hooks/userfeedback/useValidator";
 import { authContent } from "../../content/auth/auth";
 import { validationMessages } from "../../content/auth/validationMessages";
 import { toastMessages } from "../../content/auth/toastMessages";
 import type { AppDispatch, RootState } from "../../../redux/store";
 import { useDispatch, useSelector } from "react-redux";
-import { useWarningToast } from "../../hooks/useToast";
+import { useWarningToast } from "../../hooks/userfeedback/useToast";
 import { register } from "../../utils/auth";
 import { toast } from "sonner";
 import { handleRegisterError } from "../../utils/errorHandling";
@@ -33,16 +33,15 @@ import type {
   PasswordContainer,
   showError,
 } from "../../../constants/Compontents";
-import Inputs from "../../components/Inputs";
-import PasswordInputs from "../../components/PasswordInputs";
-import { useCheckForNews } from "../notifications/useNews";
-
+import Inputs from "../../components/inputs/Inputs";
+import PasswordInputs from "../../components/inputs/PasswordInputs";
+import { useCheckForNews } from "../../hooks/userfeedback/useNews";
 
 /**
  * The Sign Up page, where users Sign Up
  * @returns Register Page where Users can Sign Up
  * @author Casper Zielinski
- * @author 
+ * @author
  */
 function Register() {
   // useState Hooks for the Form
@@ -87,7 +86,7 @@ function Register() {
   const invalidPassword: PASSWORD_VALIDATOR = useInvalidPassword(password);
   const invalidConfirmPassword = useInvalidConfirmPassword(
     password,
-    confirmPassword
+    confirmPassword,
   );
 
   // Redux States and Dispatches
@@ -121,7 +120,7 @@ function Register() {
           password,
           firmenbuchnummer,
           atu,
-          dispatch // to set Global User Variable (Injected)
+          dispatch, // to set Global User Variable (Injected)
         );
       },
       {
@@ -133,7 +132,7 @@ function Register() {
         },
         error: (err) => handleRegisterError(err),
         className: "mt-5 md:mt-0",
-      }
+      },
     );
   };
 
@@ -384,11 +383,7 @@ function Register() {
             <div className="w-full flex justify-center mt-2 text-center">
               <div className="text-sm text-muted-foreground">
                 <p>{r.footer.text}</p>
-                <Link
-                  to="/login"
-                  className="auth-link"
-                  data-testid="loginLink"
-                >
+                <Link to="/login" className="auth-link" data-testid="loginLink">
                   {r.footer.link}
                 </Link>
               </div>

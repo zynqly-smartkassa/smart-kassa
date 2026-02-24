@@ -1,9 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { EyeClosed, Eye } from "lucide-react";
-import { Label } from "./ui/label";
-import { InputGroup, InputGroupInput, InputGroupAddon } from "./ui/input-group";
-import type { PasswordContainer } from "../../constants/Compontents";
-import { resizeKeyboard } from "../hooks/keyboardResizer";
+import { Label } from "../ui/label";
+import {
+  InputGroup,
+  InputGroupInput,
+  InputGroupAddon,
+} from "../ui/input-group";
+import type { PasswordContainer } from "../../../constants/Compontents";
+import { resizeKeyboard } from "../../hooks/layout/keyboardResizer";
 
 interface PasswordInputsProps {
   PasswordContainer: PasswordContainer[];

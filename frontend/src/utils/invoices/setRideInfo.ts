@@ -1,4 +1,4 @@
-import { isMobile } from "@/hooks/use-mobile";
+import { isMobile } from "@/hooks/layout/use-mobile";
 import type { RideInfo } from "@/types/RideInfoForBill";
 import { Preferences } from "@capacitor/preferences";
 

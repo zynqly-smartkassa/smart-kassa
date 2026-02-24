@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
-import type { Container } from "../../constants/Compontents";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { resizeKeyboard } from "../hooks/keyboardResizer";
+import type { Container } from "../../../constants/Compontents";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { resizeKeyboard } from "../../hooks/layout/keyboardResizer";
 
 interface NameInputsProps {
   Containers: Container[];

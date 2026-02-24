@@ -2,17 +2,17 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
 import { useEffect, useState, type JSX } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+import { AppSidebar } from "@/layout/AppSidebar";
 
-import SearchInput from "@/components/SearchInput";
-import { isMobile } from "@/hooks/use-mobile";
-import type { AppDispatch, RootState } from "../../redux/store";
+import SearchInput from "@/components/inputs/SearchInput";
+import { isMobile } from "@/hooks/layout/use-mobile";
+import type { AppDispatch, RootState } from "../../../redux/store";
 import { useDispatch, useSelector } from "react-redux";
-import { setLink } from "../../redux/slices/footerLinksSlice";
-import { NotificationsMessages } from "../pages/notifications/inlineSlider/NotificationsMessages";
+import { setLink } from "../../../redux/slices/footerLinksSlice";
+import { NotificationsMessages } from "../../pages/notifications/inlineSlider/NotificationsMessages";
 import { fetchAvatar } from "@/utils/getAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { setAvatarState } from "../../redux/slices/avatarSlice";
+import { setAvatarState } from "../../../redux/slices/avatarSlice";
 
 interface IfooterLinks {
   name: string;
@@ -47,7 +47,7 @@ export default function RootLayout(): JSX.Element {
   const navigator = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const footerLinksIndex = useSelector(
-    (state: RootState) => state.setFooterLink.linkIndex
+    (state: RootState) => state.setFooterLink.linkIndex,
   );
   const avatarState = useSelector((state: RootState) => state.avatarState.url);
   const getAvatar = (): string | null => {

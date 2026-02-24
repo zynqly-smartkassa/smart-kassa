@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/utils/formatDate";
 import { toast } from "sonner";
-import NoRideDataWarning from "@/components/NoRideDataWarning";
+import NoRideDataWarning from "@/components/Payment/NoRideDataWarning";
 import { useForm } from "react-hook-form";
 import { AuthStorage } from "@/utils/secureStorage";
 import axios, { AxiosError } from "axios";
@@ -48,7 +48,7 @@ import type { Files } from "@/types/InvoiceFile";
 import { refreshAccessToken } from "@/utils/jwttokens";
 import type { RideInfo } from "@/types/RideInfoForBill";
 import { setRideInfo } from "@/utils/invoices/setRideInfo";
-import LoadingPayment from "@/components/LoadingPayment";
+import LoadingPayment from "@/components/Payment/LoadingPayment";
 
 /**
  * Invoice page where drivers can review ride details and select payment method

@@ -1,5 +1,5 @@
 import { Preferences } from "@capacitor/preferences";
-import { isMobile } from "../hooks/use-mobile";
+import { isMobile } from "../hooks/layout/use-mobile";
 
 /**
  * a constant for the key to get the device id from the local storage or the prefrences (from capacitor) on mobile

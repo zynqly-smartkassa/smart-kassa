@@ -1,17 +1,17 @@
-import { verifyAccessToken } from "../utils/jwttokens";
+import { verifyAccessToken } from "../../utils/jwttokens";
 import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../redux/store";
-import { signInUser } from "../../redux/slices/userSlice";
-import type { USER_DTO } from "../../constants/User";
+import type { AppDispatch, RootState } from "../../../redux/store";
+import { signInUser } from "../../../redux/slices/userSlice";
+import type { USER_DTO } from "../../../constants/User";
 import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   setAuthenticated,
   setUnauthenticated,
-} from "../../redux/slices/authSlice";
-import { handleTokenError } from "../utils/errorHandling";
-import StatusOverlay from "./StatusOverlay";
-import { setLink } from "../../redux/slices/footerLinksSlice";
+} from "../../../redux/slices/authSlice";
+import { handleTokenError } from "../../utils/errorHandling";
+import StatusOverlay from "../StatusOverlay";
+import { setLink } from "../../../redux/slices/footerLinksSlice";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -30,7 +30,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   // Check if the user is getting loaded currently
   const { isLoading, isAuthenticated } = useSelector(
-    (state: RootState) => state.authState
+    (state: RootState) => state.authState,
   );
 
   /**
@@ -52,7 +52,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
             lastName: userData.lastName,
             email: userData.email,
             phoneNumber: userData.phoneNumber,
-          })
+          }),
         );
         dispatch(setAuthenticated());
         dispatch(setLink(1));

@@ -14,11 +14,11 @@ import {
   useInvalidEmail,
   useInvalidPassword,
   type PASSWORD_VALIDATOR,
-} from "../../hooks/useValidator";
+} from "../../hooks/userfeedback/useValidator";
 import { authContent } from "../../content/auth/auth";
 import { validationMessages } from "../../content/auth/validationMessages";
 import { toastMessages } from "../../content/auth/toastMessages";
-import { useWarningToast } from "../../hooks/useToast";
+import { useWarningToast } from "../../hooks/userfeedback/useToast";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../../redux/store";
 import { login } from "../../utils/auth";
@@ -28,8 +28,8 @@ import type {
   LoginShowError,
   PasswordContainer,
 } from "../../../constants/Compontents";
-import Inputs from "../../components/Inputs";
-import PasswordInputs from "../../components/PasswordInputs";
+import Inputs from "../../components/inputs/Inputs";
+import PasswordInputs from "../../components/inputs/PasswordInputs";
 
 /**
  * The Login page, where users sign in
@@ -73,7 +73,7 @@ function Login() {
         },
         error: (err) => handleLoginError(err),
         className: "mt-5 md:mt-0",
-      }
+      },
     );
   }
 
@@ -163,16 +163,10 @@ function Login() {
               {/* Password Container - with forgot password link */}
               <div>
                 <div className="flex items-center mb-2">
-                  <label
-                    htmlFor="password"
-                    className="form-label"
-                  >
+                  <label htmlFor="password" className="form-label">
                     {l.labels.password}
                   </label>
-                  <a
-                    href="#"
-                    className="auth-link-small"
-                  >
+                  <a href="#" className="auth-link-small">
                     {l.links.forgotPassword}
                   </a>
                 </div>
