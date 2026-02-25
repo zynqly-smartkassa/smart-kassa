@@ -148,6 +148,8 @@ const Invoice = () => {
       tip_amount: tip,
     };
 
+   
+
     try {
       let accessToken: string | null;
 
@@ -200,6 +202,14 @@ const Invoice = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (amount_gross <= 0) {
+      toast.info("Bitte geben Sie einen Fahrpreis ein, bevor Sie die Rechnung erstellen.", {
+        className: "mt-5 md:mt-0",
+      });
+      return;
+    }
+
     toast.promise(
       async () => {
         await sendBill(true);

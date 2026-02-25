@@ -58,28 +58,27 @@ router.post(
         tip_amount = 0;
       }
 
+      // Check for missing/null/undefined fields
       if (
-        !companyId ||
-        !userId ||
-        !ride_id ||
-        !amount_net ||
-        !tax_rate ||
-        !amount_tax ||
-        !amount_gross ||
+        companyId == null ||
+        userId == null ||
+        ride_id == null ||
+        amount_net == null ||
+        tax_rate == null ||
+        amount_tax == null ||
+        amount_gross == null ||
         !payment_method
       ) {
-        return res.status(400).send({
-          message: "Missing required fields",
-          companyId,
-          userId,
-          ride_id,
-          amount_net,
-          tax_rate,
-          amount_tax,
-          amount_gross,
-          payment_method,
-          tip_amount,
-        });
+        return res.status(400).send({ message: "Missing required fields" });
+      }
+
+      // Validate amounts for a real cash register
+      if (amount_gross <= 0) {
+        return res.status(400).send({ message: "amount_gross must be greater than 0" });
+      }
+
+      if (amount_net < 0 || amount_tax < 0 || tip_amount < 0) {
+        return res.status(400).send({ message: "Amounts cannot be negative" });
       }
 
       // Start database transaction - must commit or rollback before returning
