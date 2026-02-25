@@ -1,9 +1,9 @@
-import type { Files } from "@/types/InvoiceFile";
+import type { InvoiceFiles } from "@/types/InvoiceFile";
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   bills: [],
-} as { bills: Files[] };
+} as { bills: InvoiceFiles[] };
 
 const invoices = createSlice({
   name: "invoices",
@@ -17,7 +17,7 @@ const invoices = createSlice({
     },
     clearBillState: (state) => {
       state.bills = [];
-    }
+    },
   },
 });
 

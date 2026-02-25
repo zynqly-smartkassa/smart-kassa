@@ -3,7 +3,7 @@
  * File (Bill) and when it was modified etc.
  * @author Casper Zielinski
  */
-export interface Files {
+export interface InvoiceFiles {
   billingData?: {
     billing_id: string;
     amount_gross: string;
@@ -22,4 +22,5 @@ export interface Files {
   size: number | undefined;
   lastModified: Date | undefined;
   url: string | null;
+  downloadUrl: string | null;
 }

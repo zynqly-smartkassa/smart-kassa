@@ -74,7 +74,9 @@ router.post(
 
       // Validate amounts for a real cash register
       if (amount_gross <= 0) {
-        return res.status(400).send({ message: "amount_gross must be greater than 0" });
+        return res
+          .status(400)
+          .send({ message: "amount_gross must be greater than 0" });
       }
 
       if (amount_net < 0 || amount_tax < 0 || tip_amount < 0) {
@@ -86,7 +88,7 @@ router.post(
 
       const checkDupe = await pool.query(
         "SELECT * FROM billing WHERE ride_id = $1",
-        [ride_id]
+        [ride_id],
       );
       if (checkDupe.rowCount > 0) {
         return res.status(409).send({ message: "Bill already exists" });
@@ -117,7 +119,7 @@ router.post(
           amount_gross,
           tip_amount,
           payment_method,
-        ]
+        ],
       );
 
       const billing_id = billingQuery.rows[0].billing_id;
@@ -171,25 +173,25 @@ router.post(
             Bucket: BUCKET_NAME,
             Key: filename,
           }),
-          { expiresIn: 7 * 24 * 60 * 60 }
+          { expiresIn: 7 * 24 * 60 * 60 },
         );
       } catch (error) {
         console.error(
           "Error generating presigned URL (continuing without URL):",
-          error
+          error,
         );
         // File is uploaded successfully, just no temporary URL available
       }
 
       const driverDataResult = await pool.query(
         `SELECT first_name, last_name, email, phone_number from users where user_id = $1`,
-        [userId]
+        [userId],
       );
       const driverData = driverDataResult.rows[0];
 
       const billingDataResult = await pool.query(
         `SELECT amount_net, tax_rate, amount_tax, amount_gross, tip_amount, payment_method FROM billing WHERE billing_id = $1`,
-        [billing_id]
+        [billing_id],
       );
       const billingData = billingDataResult.rows[0];
 
@@ -230,7 +232,7 @@ router.post(
         error: error,
       });
     }
-  }
+  },
 );
 
 export default router;

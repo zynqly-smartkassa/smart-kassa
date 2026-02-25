@@ -44,7 +44,7 @@ import axios, { AxiosError } from "axios";
 import type { AppDispatch } from "../../../redux/store";
 import { useDispatch } from "react-redux";
 import { appendBillState } from "../../../redux/slices/invoices";
-import type { Files } from "@/types/InvoiceFile";
+import type { InvoiceFiles } from "@/types/InvoiceFile";
 import { refreshAccessToken } from "@/utils/auth/jwttokens";
 import type { RideInfo } from "@/types/RideInfoForBill";
 import { setRideInfo } from "@/utils/invoices/setRideInfo";
@@ -148,8 +148,6 @@ const Invoice = () => {
       tip_amount: tip,
     };
 
-   
-
     try {
       let accessToken: string | null;
 
@@ -167,7 +165,7 @@ const Invoice = () => {
           },
         },
       );
-      dispatch(appendBillState(data.files as Files));
+      dispatch(appendBillState(data.files as InvoiceFiles));
     } catch (error) {
       if (error instanceof AxiosError) {
         const tokenError =
@@ -204,9 +202,12 @@ const Invoice = () => {
     e.preventDefault();
 
     if (amount_gross <= 0) {
-      toast.info("Bitte geben Sie einen Fahrpreis ein, bevor Sie die Rechnung erstellen.", {
-        className: "mt-5 md:mt-0",
-      });
+      toast.info(
+        "Bitte geben Sie einen Fahrpreis ein, bevor Sie die Rechnung erstellen.",
+        {
+          className: "mt-5 md:mt-0",
+        },
+      );
       return;
     }
 

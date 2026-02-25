@@ -54,14 +54,28 @@ router.get("/invoices", authenticateToken, async (req, res) => {
     // generate Presigned URLs (7 days for RKSV Compliance)
     const filesWithUrls = await Promise.all(
       actualFiles.map(async (file) => {
-        const url = await getSignedUrl(
-          s3Client,
-          new GetObjectCommand({
-            Bucket: BUCKET_NAME,
-            Key: file.Key,
-          }),
-          { expiresIn: 7 * 24 * 60 * 60 } // 7 Days
-        );
+        const [url, downloadUrl] = await Promise.all([
+          getSignedUrl(
+            s3Client,
+            new GetObjectCommand({
+              Bucket: BUCKET_NAME,
+              Key: file.Key,
+              ResponseContentType: "application/pdf",
+              ResponseContentDisposition: "inline",
+            }),
+            { expiresIn: 7 * 24 * 60 * 60 }
+          ),
+          getSignedUrl(
+            s3Client,
+            new GetObjectCommand({
+              Bucket: BUCKET_NAME,
+              Key: file.Key,
+              ResponseContentType: "application/pdf",
+              ResponseContentDisposition: `attachment; filename="${file.Key.split("/").pop()}"`,
+            }),
+            { expiresIn: 7 * 24 * 60 * 60 }
+          ),
+        ]);
 
         /**
          * @todo in the future, check if the driver/user is company owner or not (check role), so company owner sees
@@ -100,6 +114,7 @@ router.get("/invoices", authenticateToken, async (req, res) => {
           size: file.Size,
           lastModified: file.LastModified,
           url: url,
+          downloadUrl: downloadUrl,
         };
       })
     );

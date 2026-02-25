@@ -1,4 +1,4 @@
-import type { Files } from "@/types/InvoiceFile";
+import type { InvoiceFiles } from "@/types/InvoiceFile";
 import axios, { AxiosError } from "axios";
 import type { Dispatch, SetStateAction } from "react";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ import type { AppDispatch } from "../../../redux/store";
 export const appendNewBill = (
   dispatch: AppDispatch,
   billing_id: string | number,
-  setFiles?: Dispatch<SetStateAction<Files[]>>,
+  setFiles?: Dispatch<SetStateAction<InvoiceFiles[]>>,
 ) => {
   toast.promise(appendNewBillController(true, dispatch, billing_id, setFiles), {
     success: "Rechnung manuell hinzugefügt",
@@ -36,7 +36,7 @@ const appendNewBillController = async (
   retry: boolean = true,
   dispatch: AppDispatch,
   billing_id: string | number,
-  setFiles?: Dispatch<SetStateAction<Files[]>>,
+  setFiles?: Dispatch<SetStateAction<InvoiceFiles[]>>,
 ) => {
   try {
     let accessToken: string | null;
@@ -57,10 +57,10 @@ const appendNewBillController = async (
       },
     );
 
-    dispatch(appendBillState(data as Files));
+    dispatch(appendBillState(data as InvoiceFiles));
 
     if (setFiles) {
-      setFiles((prev) => [...prev, data as Files]);
+      setFiles((prev) => [...prev, data as InvoiceFiles]);
     }
 
     retry = true;
