@@ -16,14 +16,19 @@ import {
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import PdfReader from "@/components/Invoices/PdfReader";
-import StatusOverlay from "@/components/StatusOverlay";
 import type { InvoiceFiles } from "@/types/InvoiceFile";
 import { formatDate } from "@/utils/formatDate";
 import { fetchDownload } from "@/utils/invoices/fetchDownload";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { DialogContent } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { isMobile, useIsMobile } from "@/hooks/layout/use-mobile";
+import { toast } from "sonner";
+import { AuthStorage } from "@/utils/secureStorage";
+import { refreshAccessToken } from "@/utils/auth/jwttokens";
+import axios, { AxiosError } from "axios";
+import LoadingSingleInvoice from "@/components/Invoices/LoadingSingleInvoice";
+import ErrorSingleInvoice from "@/components/Invoices/ErrorSingleInvoice";
 
 const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
   const navigator = useNavigate();
@@ -31,20 +36,77 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
   const mobileView = useIsMobile();
   const { id } = useParams();
   const [qrCodeOrPdf, setQrCodeOrPdf] = useState(isMobile ? "qrcode" : "pdf");
+  const [file, setFile] = useState(invoice);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const retryRef = useRef(true);
 
-  const file: InvoiceFiles | undefined =
-    invoice ?? (location.state as InvoiceFiles);
+  const fetchBill = useCallback(async () => {
+    setLoading(false);
+    if (!file && (location.state satisfies InvoiceFiles)) {
+      setFile(location.state);
+    } else {
+      try {
+        let accessToken: string | null;
+        if (retryRef.current) {
+          accessToken = await AuthStorage.getAccessToken();
+        } else {
+          accessToken = await refreshAccessToken();
+        }
+
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_API_URL}/list-blobs/invoices/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        setFile(data);
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          const isAuthError =
+            error.status === 403 ||
+            error.status === 401 ||
+            error.response?.data?.path === "auth middleware";
+
+          if (isAuthError && retryRef.current) {
+            retryRef.current = false;
+            return await fetchBill();
+          } else if (isAuthError && !retryRef.current) {
+            toast.error("Sitzung abgelaufen. Bitte melden Sie sich erneut an.");
+            setError(true);
+          } else {
+            toast.error(
+              "Rechnung konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+            );
+            setError(true);
+          }
+        } else {
+          toast.error("Ein unerwarteter Fehler ist aufgetreten.");
+          setError(true);
+        }
+      }
+    }
+
+    setLoading(false);
+  }, [file, id, location.state]);
+
+  useEffect(() => {
+    fetchBill();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const labelClass = "text-gray-500 text-sm md:text-base";
   const valueClass = "font-bold text-base md:text-xl";
 
-  if (!file) {
-    return (
-      <StatusOverlay
-        text="Rechnungsdaten konnten nicht geladen werden. Bitte gehen Sie zurück und versuchen Sie es erneut."
-        isError={true}
-      />
-    );
+  if (loading || !file) {
+    return <LoadingSingleInvoice />;
+  }
+
+  if (error) {
+    return <ErrorSingleInvoice onRetry={fetchBill} />;
   }
 
   const isCard = file.billingData?.payment_method === "card";
@@ -60,9 +122,9 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
         <span className="font-bold text-2xl">Rechnungsdetails</span>
       </Button>
 
-      <div className="w-11/12 flex rounded-lg p-[0.1rem] bg-black">
+      <div className="w-11/12 md:w-9/12 lg:w-7/12 flex rounded-lg p-[0.1rem] bg-black">
         <button
-          className={`flex p-[0.2rem] w-1/2 rounded-lg space-x-2 ${
+          className={`flex p-[0.2rem] justify-center w-1/2 rounded-lg space-x-2 ${
             qrCodeOrPdf === "pdf" ? "bg-gray-700" : ""
           }`}
           onClick={() => setQrCodeOrPdf("pdf")}
@@ -71,7 +133,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
           <p className="font-bold">Rechnung</p>
         </button>
         <button
-          className={`flex p-[0.2rem] w-1/2 rounded-lg space-x-2 ${
+          className={`flex p-[0.2rem] justify-center w-1/2 rounded-lg space-x-2 ${
             qrCodeOrPdf === "qrcode" ? "bg-gray-700" : ""
           }`}
           onClick={() => setQrCodeOrPdf("qrcode")}

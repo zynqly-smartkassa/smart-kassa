@@ -139,8 +139,85 @@ router.get("/invoices/:id", authenticateToken, async (req, res) => {
   try {
     const user_id = req.user.userId;
     const company_id = req.user.companyId;
+    const id = req.params.id;
 
-    
+    const listCommand = new ListObjectsV2Command({
+      Bucket: BUCKET_NAME,
+      Prefix: `Bills/${company_id}/${user_id}/`,
+    });
+
+    const response = await s3Client.send(listCommand);
+    const suffix = `_${id}.pdf`;
+
+    const actualFile = response.Contents?.find(
+      (file) => file.Key.endsWith(suffix) && file.Size > 0,
+    );
+
+    if (!actualFile) {
+      return res.status(404).json("Invoice not found");
+    }
+
+    const [url, downloadUrl] = await Promise.all([
+      getSignedUrl(
+        s3Client,
+        new GetObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: actualFile.Key,
+          ResponseContentType: "application/pdf",
+          ResponseContentDisposition: "inline",
+        }),
+        { expiresIn: 7 * 24 * 60 * 60 },
+      ),
+      getSignedUrl(
+        s3Client,
+        new GetObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: actualFile.Key,
+          ResponseContentType: "application/pdf",
+          ResponseContentDisposition: `attachment; filename="${actualFile.Key.split("/").pop()}"`,
+        }),
+        { expiresIn: 7 * 24 * 60 * 60 },
+      ),
+    ]);
+
+    /**
+     * @todo in the future, check if the driver/user is company owner or not (check role), so company owner sees
+     * every invoice of company, employee only it's own
+     */
+    const driverDataResult = await pool.query(
+      `SELECT first_name, last_name, email, phone_number from users where user_id = $1`,
+      [user_id],
+    );
+
+    const driverData = driverDataResult.rows[0];
+
+    const billingDataResult = await pool.query(
+      `SELECT amount_net, tax_rate, amount_tax, amount_gross, tip_amount, payment_method FROM billing WHERE billing_id = $1`,
+      [id],
+    );
+    const billingData = billingDataResult.rows[0];
+
+    return res.status(200).json({
+      driverData: {
+        name: `${driverData.first_name} ${driverData.last_name}`,
+        email: driverData.email,
+        phonenumber: driverData.phone_number,
+      },
+      billingData: {
+        billing_id: id,
+        amount_net: billingData.amount_net,
+        tax_rate: billingData.tax_rate,
+        amount_tax: billingData.amount_tax,
+        amount_gross: billingData.amount_gross,
+        tip_amount: billingData.tip_amount,
+        payment_method: billingData.payment_method,
+      },
+      key: actualFile.Key,
+      size: actualFile.Size,
+      lastModified: actualFile.LastModified,
+      url: url,
+      downloadUrl: downloadUrl,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json("Internal Server Error");
