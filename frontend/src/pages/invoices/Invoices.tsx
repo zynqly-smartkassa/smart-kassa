@@ -27,16 +27,16 @@ import type { InvoiceFiles } from "@/types/InvoiceFile";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import LoadingInvoices from "@/components/Invoices/LoadingInvoices";
 import EmptyInvoices from "@/components/Invoices/EmptyInvoices";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import QrCodeScanner from "@/components/Invoices/QrCodeScanner";
-//, useParams
+import SingleInvoice from "./SingleInvoice";
 
 const Invoices = () => {
   const dispatch: AppDispatch = useDispatch();
   const bills = useSelector((state: RootState) => state.setBills.bills);
   const [loading, setLoading] = useState(true);
   const [files, setFiles] = useState<InvoiceFiles[]>([]);
-  //  const { id } = useParams();
+  const { id } = useParams();
   const retryRef = useRef(true);
   const navigator = useNavigate();
 
@@ -48,6 +48,10 @@ const Invoices = () => {
     loadBills();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (id) {
+    return <SingleInvoice />
+  }
 
   return (
     <section className="flex flex-col w-full min-h-screen">
@@ -81,7 +85,9 @@ const Invoices = () => {
                     <Info
                       className="absolute top-4 right-4"
                       onClick={() =>
-                        navigator(`/invoices/${file.billingData?.billing_id}`)
+                        navigator(`/invoices/${file.billingData?.billing_id}`, {
+                          state: file
+                        })
                       }
                     />
                     <QrCodeScanner

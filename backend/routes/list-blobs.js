@@ -48,7 +48,7 @@ router.get("/invoices", authenticateToken, async (req, res) => {
 
     // Only actual files (no markers)
     const actualFiles = (response.Contents || []).filter(
-      (item) => item.Size > 0
+      (item) => item.Size > 0,
     );
 
     // generate Presigned URLs (7 days for RKSV Compliance)
@@ -63,7 +63,7 @@ router.get("/invoices", authenticateToken, async (req, res) => {
               ResponseContentType: "application/pdf",
               ResponseContentDisposition: "inline",
             }),
-            { expiresIn: 7 * 24 * 60 * 60 }
+            { expiresIn: 7 * 24 * 60 * 60 },
           ),
           getSignedUrl(
             s3Client,
@@ -73,7 +73,7 @@ router.get("/invoices", authenticateToken, async (req, res) => {
               ResponseContentType: "application/pdf",
               ResponseContentDisposition: `attachment; filename="${file.Key.split("/").pop()}"`,
             }),
-            { expiresIn: 7 * 24 * 60 * 60 }
+            { expiresIn: 7 * 24 * 60 * 60 },
           ),
         ]);
 
@@ -83,7 +83,7 @@ router.get("/invoices", authenticateToken, async (req, res) => {
          */
         const driverDataResult = await pool.query(
           `SELECT first_name, last_name, email, phone_number from users where user_id = $1`,
-          [user_id]
+          [user_id],
         );
 
         const driverData = driverDataResult.rows[0];
@@ -91,7 +91,7 @@ router.get("/invoices", authenticateToken, async (req, res) => {
         const billing_id = file.Key.match(/_([^_]+)\.pdf$/)?.[1];
         const billingDataResult = await pool.query(
           `SELECT amount_net, tax_rate, amount_tax, amount_gross, tip_amount, payment_method FROM billing WHERE billing_id = $1`,
-          [billing_id]
+          [billing_id],
         );
         const billingData = billingDataResult.rows[0];
 
@@ -116,7 +116,7 @@ router.get("/invoices", authenticateToken, async (req, res) => {
           url: url,
           downloadUrl: downloadUrl,
         };
-      })
+      }),
     );
 
     // Sort by lastModified date, newest first
@@ -131,95 +131,21 @@ router.get("/invoices", authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching invoices from S3:", error);
-    res.status(500).send({ error: "Internal Server Error", path: "invoices" });
+    res.status(500).json({ error: "Internal Server Error", path: "invoices" });
   }
 });
 
-/**
- * @warning DO NOT USE! OLD FUNCTION!
- */
-router.post(
-  "/invoices",
-  authenticateToken,
-  upload.single("newInvoice"),
-  async (req, res) => {
-    try {
-      const user_id = req.user.userId;
-      const company_id = req.user.companyId;
-      const billing_id = req.body.billingId;
-      const newInvoice = await invoicePDFService.generateInvoicePdf(billing_id);
+router.get("/invoices/:id", authenticateToken, async (req, res) => {
+  try {
+    const user_id = req.user.userId;
+    const company_id = req.user.companyId;
 
-      if (!newInvoice) {
-        return res.status(400).send({
-          error: "No File for the invoice provided",
-          path: "invoices",
-        });
-      }
-
-      // Timestamp for unique file names
-      const timestamp = Date.now();
-      const filename = `Bills/${company_id}/${user_id}/${timestamp}_${billing_id}.pdf`;
-
-      const putCommand = new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: filename,
-        Body: newInvoice,
-        ContentType: newInvoice.mimetype,
-      });
-
-      await s3Client.send(putCommand);
-
-      // Presigned URL for Response
-      const url = await getSignedUrl(
-        s3Client,
-        new GetObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: filename,
-        }),
-        { expiresIn: 7 * 24 * 60 * 60 }
-      );
-
-      const driverDataResult = await pool.query(
-        `SELECT first_name, last_name, email, phone_number from users where user_id = $1`,
-        [user_id]
-      );
-      const driverData = driverDataResult.rows[0];
-
-      const billingDataResult = await pool.query(
-        `SELECT amount_net, tax_rate, amount_tax, amount_gross, tip_amount, payment_method FROM billing WHERE billing_id = $1`,
-        [billing_id]
-      );
-      const billingData = billingDataResult.rows[0];
-
-      return res.status(200).send({
-        driverData: {
-          name: `${driverData.first_name} ${driverData.last_name}`,
-          email: driverData.email,
-          phonenumber: driverData.phone_number,
-        },
-        billingData: {
-          billing_id: billing_id,
-          amount_net: billingData.amount_net,
-          tax_rate: billingData.tax_rate,
-          amount_tax: billingData.amount_tax,
-          amount_gross: billingData.amount_gross,
-          tip_amount: billingData.tip_amount,
-          payment_method: billingData.payment_method,
-        },
-        message: "Invoice uploaded successfully",
-        key: filename,
-        url: url,
-        size: newInvoice.size,
-        lastModified: new Date(timestamp),
-      });
-    } catch (error) {
-      console.error("Error uploading invoice to S3:", error);
-      res
-        .status(500)
-        .send({ error: "Internal Server Error", path: "invoices" });
-    }
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json("Internal Server Error");
   }
-);
+});
 
 router.get("/avatar", authenticateToken, async (req, res) => {
   try {
@@ -232,7 +158,7 @@ router.get("/avatar", authenticateToken, async (req, res) => {
 
     const response = await s3Client.send(listCommand);
     const actualFiles = (response.Contents || []).filter(
-      (item) => item.Size > 0
+      (item) => item.Size > 0,
     );
 
     // generate Presigned URLs (1 Hour for Avatars)
@@ -244,14 +170,14 @@ router.get("/avatar", authenticateToken, async (req, res) => {
             Bucket: BUCKET_NAME,
             Key: file.Key,
           }),
-          { expiresIn: 3600 } // 1 Hour
+          { expiresIn: 3600 }, // 1 Hour
         );
 
         return {
           key: file.Key,
           url: url,
         };
-      })
+      }),
     );
 
     return res
@@ -298,7 +224,7 @@ router.put(
               Key: file.Key,
             });
             await s3Client.send(deleteCommand);
-          })
+          }),
         );
       }
 
@@ -326,7 +252,7 @@ router.put(
           Bucket: BUCKET_NAME,
           Key: filename,
         }),
-        { expiresIn: 3600 }
+        { expiresIn: 3600 },
       );
 
       return res.status(200).send({
@@ -340,7 +266,7 @@ router.put(
         .status(500)
         .send({ error: "Internal Server Error", details: error.message });
     }
-  }
+  },
 );
 
 export default router;

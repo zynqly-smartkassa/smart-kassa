@@ -1,5 +1,180 @@
-const SingleInvoice = () => {
-  return <div>SingleInvoice</div>;
+import { useLocation, useNavigate, useParams } from "react-router";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Calendar,
+  CreditCard,
+  Banknote,
+  User,
+  Receipt,
+  Download,
+  ExternalLink,
+  ArrowDown,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import PdfReader from "@/components/Invoices/PdfReader";
+import StatusOverlay from "@/components/StatusOverlay";
+import type { InvoiceFiles } from "@/types/InvoiceFile";
+import { formatDate } from "@/utils/formatDate";
+import { fetchDownload } from "@/utils/invoices/fetchDownload";
+
+const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
+  const navigator = useNavigate();
+  const location = useLocation();
+  const { id } = useParams();
+
+  const file: InvoiceFiles | undefined =
+    invoice ?? (location.state as InvoiceFiles);
+
+  const labelClass = "text-gray-500 text-sm md:text-base";
+  const valueClass = "font-bold text-base md:text-xl";
+
+  if (!file) {
+    return (
+      <StatusOverlay
+        text="Rechnungsdaten konnten nicht geladen werden. Bitte gehen Sie zurück und versuchen Sie es erneut."
+        isError={true}
+      />
+    );
+  }
+
+  const isCard = file.billingData?.payment_method === "card";
+
+  return (
+    <div className="w-full flex flex-col gap-6 md:gap-8 items-center z-20">
+      <Button
+        variant="ghost"
+        onClick={() => navigator("/invoices")}
+        className="self-start p-0"
+      >
+        <ArrowLeft />
+        <span className="font-bold text-2xl">Rechnungsdetails</span>
+      </Button>
+
+      <div className="w-full">
+        <PdfReader InvoiceFile={file} />
+      </div>
+
+      <button
+        className="bg-black p-2 rounded-full animate-bounce"
+        onClick={() => {
+          window.scrollBy({ top: 500, behavior: "smooth" });
+        }}
+      >
+        <ArrowDown className="w-4 h-4" />
+      </button>
+
+      <div className="w-full flex flex-col gap-4">
+        <div className="flex items-center gap-1">
+          <span className={labelClass}>Beleg-Nr:</span>
+          <span className={valueClass}>
+            #{file.billingData?.billing_id ?? id}
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-2 w-full md:flex-row md:gap-8">
+          <div className="flex flex-row gap-1 items-center">
+            <BadgeCheck size={28} fill="#10B981" color="green" />
+            <span className={valueClass}>Rechnung erfolgreich erstellt</span>
+          </div>
+
+          <div className="flex flex-row gap-8 md:w-1/2">
+            <div className="flex flex-col text-left w-1/3 md:w-full md:flex-row md:gap-1 md:items-center">
+              <span className={labelClass}>Zahlung:</span>
+              <div className="flex items-center gap-1">
+                {isCard ? (
+                  <CreditCard className="relative top-[0.1rem] w-5 h-5 text-violet-500" />
+                ) : (
+                  <Banknote className="relative top-[0.1rem] w-5 h-5 text-green-500" />
+                )}
+                <span className={valueClass}>
+                  {isCard ? "Karte" : "Bargeld"}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-gray-500/30 w-0.5 h-full" />
+
+            <div className="flex flex-col text-left ">
+              <span className={labelClass}>Datum:</span>
+              <div className="flex relative items-baseline gap-1">
+                <Calendar className="relative top-[0.2rem] w-5 h-5 text-orange-500" />
+                <span className={valueClass}>
+                  {formatDate(file.lastModified?.toString()) ?? "–"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
+          <div className="flex flex-col gap-1">
+            <span className={labelClass}>Brutto</span>
+            <span className="font-bold text-xl text-violet-600 dark:text-violet-400">
+              €{file.billingData?.amount_gross}
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className={labelClass}>Netto</span>
+            <span className={valueClass}>€{file.billingData?.amount_net}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className={labelClass}>
+              MwSt ({file.billingData?.tax_rate?.split(".00")[0]}%)
+            </span>
+            <span className={valueClass}>€{file.billingData?.amount_tax}</span>
+          </div>
+          {Number(file.billingData?.tip_amount) > 0 && (
+            <div className="flex flex-col gap-1">
+              <span className={labelClass}>Trinkgeld</span>
+              <span className={valueClass}>
+                €{file.billingData?.tip_amount}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {file.driverData?.name && (
+          <div className="w-full flex flex-row gap-2 items-center pt-2 border-t">
+            <User size={22} className="text-blue-500" />
+            <span className={labelClass}>Fahrer:</span>
+            <span className={valueClass}>{file.driverData.name}</span>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2 justify-center pt-2">
+          <Button variant="outline" onClick={() => navigator("/invoices")}>
+            <Receipt className="w-4 h-4 mr-2" />
+            Alle Rechnungen
+          </Button>
+
+          {file.url && (
+            <Button variant="outline" asChild>
+              <a href={file.url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Online ansehen
+              </a>
+            </Button>
+          )}
+
+          {file.downloadUrl && (
+            <Button
+              className="bg-violet-500 hover:bg-violet-600 text-white font-bold"
+              onClick={() =>
+                fetchDownload(
+                  file.downloadUrl,
+                  file.key?.split("/").pop() || "Rechnung",
+                )
+              }
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Herunterladen
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default SingleInvoice;
