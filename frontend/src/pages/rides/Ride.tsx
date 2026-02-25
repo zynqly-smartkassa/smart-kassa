@@ -31,7 +31,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import StatusOverlay from "../../components/StatusOverlay";
 import { ROUTING_CONFIG } from "../../utils/config";
-import { driverIcon, locationIcon } from "../../utils/icons";
+import { driverIcon, locationIcon } from "../../utils/rides/icons";
 import type { RideInfo } from "@/types/RideInfoForBill";
 import { setRideInfo } from "@/utils/invoices/setRideInfo";
 
@@ -383,6 +383,7 @@ const Ride = () => {
 
           reInitialize();
           const rideInfo: RideInfo = {
+            ride_id: ride_id,
             start_address: startAddress ?? "",
             end_address: endAddress ?? "",
             start_time: startTime,

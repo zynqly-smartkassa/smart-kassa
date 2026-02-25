@@ -22,13 +22,17 @@ export const setRideInfo = {
   async getRideInfo(): Promise<RideInfo | null> {
     if (isMobile) {
       const { value } = await Preferences.get({ key: keyForRideInfo });
-      return JSON.parse(value!) as RideInfo;
+      if (value) {
+        return JSON.parse(value!) as RideInfo;
+      } else {
+        return null;
+      }
     } else {
       const rideInfo = localStorage.getItem(keyForRideInfo);
       if (rideInfo) {
         return JSON.parse(rideInfo) as RideInfo;
       } else {
-        throw new Error("No Ride Info found in local Storage");
+        return null;
       }
     }
   },

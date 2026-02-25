@@ -20,7 +20,7 @@ import {
   useInvalidEmail,
   useInvalidPassword,
 } from "../../../hooks/userfeedback/useValidator";
-import * as authModule from "../../../utils/auth";
+import * as authModule from "../../../utils/auth/auth";
 import type { USER_DTO } from "../../../../constants/User";
 import Home from "../../Home";
 
@@ -37,7 +37,7 @@ vi.mock("axios");
 
 // When signInUser is called by login() inside auth.ts, which we are also tracking, then this custom
 // function is called wether the main action itself.
-vi.mock("../../redux/slices/userSlice", () => ({
+vi.mock("../../../../redux/slices/userSlice", () => ({
   // redux action calls are returning this very object
   signInUser: (payload: USER_DTO) => ({ type: "user/signInUser", payload }),
 }));

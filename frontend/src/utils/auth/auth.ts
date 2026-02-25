@@ -1,10 +1,12 @@
 import axios, { AxiosError } from "axios";
-import { AuthStorage } from "./secureStorage";
-import type { AppDispatch } from "../../redux/store";
+import { AuthStorage } from "../secureStorage";
+import type { AppDispatch } from "../../../redux/store";
 import { getOrCreateDeviceId } from "./deviceId";
-import { signInUser, signOutUser } from "../../redux/slices/userSlice";
+import { signInUser, signOutUser } from "../../../redux/slices/userSlice";
 import { refreshAccessToken } from "./jwttokens";
-import { clearBillState } from "../../redux/slices/invoices";
+import { clearBillState } from "../../../redux/slices/invoices";
+import { setAuthenticated } from "../../../redux/slices/authSlice";
+import { setLink } from "../../../redux/slices/footerLinksSlice";
 
 export async function register(
   firstName: string,
@@ -14,7 +16,7 @@ export async function register(
   password: string,
   fn: string,
   atu: string,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
 ) {
   try {
     const { data } = await axios.post(
@@ -31,7 +33,7 @@ export async function register(
         user_agent: navigator.userAgent,
         device_name: navigator.platform + " " + navigator.appName,
       },
-      { withCredentials: true } // to set the refresh token in the Cookie
+      { withCredentials: true }, // to set the refresh token in the Cookie
     );
 
     if (!data) {
@@ -48,8 +50,11 @@ export async function register(
         lastName: lastName,
         email: email,
         phoneNumber: phoneNumber,
-      })
+      }),
     );
+
+    dispatch(setAuthenticated());
+    dispatch(setLink(1));
 
     return await data;
   } catch (error) {
@@ -118,7 +123,7 @@ export async function register(
 export async function login(
   email: string,
   password: string,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
 ) {
   if (!email || !password) {
     throw new Error("Missing Fields");
@@ -136,7 +141,7 @@ export async function login(
       },
       {
         withCredentials: true,
-      }
+      },
     );
     const data = await response.data;
     const accessToken = await data.accessToken;
@@ -155,8 +160,11 @@ export async function login(
         lastName: user.name.split(" ")[1],
         email: user.email,
         phoneNumber: "phone number need implementation",
-      })
+      }),
     );
+
+    dispatch(setAuthenticated());
+    dispatch(setLink(1));
 
     return await data;
   } catch (error) {
@@ -223,7 +231,7 @@ export async function logOut(dispatch: AppDispatch, retry: boolean = true) {
       {
         headers: { Authorization: `Bearer ${accessToken}` },
         withCredentials: true,
-      }
+      },
     );
 
     if (!response || !response.data) {
@@ -288,7 +296,7 @@ export async function logOut(dispatch: AppDispatch, retry: boolean = true) {
 export async function deleteAccount(
   password: string,
   dispatch: AppDispatch,
-  retry: boolean = true
+  retry: boolean = true,
 ) {
   try {
     let accessToken: string | null;
@@ -308,7 +316,7 @@ export async function deleteAccount(
           Authorization: `Bearer ${accessToken}`,
         },
         withCredentials: true,
-      }
+      },
     );
 
     if (!response || !response.data) {

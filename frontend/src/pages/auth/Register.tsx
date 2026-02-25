@@ -25,7 +25,7 @@ import { toastMessages } from "../../content/auth/toastMessages";
 import type { AppDispatch, RootState } from "../../../redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useWarningToast } from "../../hooks/userfeedback/useToast";
-import { register } from "../../utils/auth";
+import { register } from "../../utils/auth/auth";
 import { toast } from "sonner";
 import { handleRegisterError } from "../../utils/errorHandling";
 import type {

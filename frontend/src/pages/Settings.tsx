@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Account from "../../components/settings/Account";
-import Notifications from "../notifications/inlineSlider/Notifications";
-import UiStyling from "../../components/settings/UiStyling";
+import Account from "../components/settings/Account";
+import Notifications from "../components/settings/Notifications";
+import UiStyling from "../components/settings/UiStyling";
 
 /**
  * Main settings page component with tabbed navigation.

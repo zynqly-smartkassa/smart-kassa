@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { AuthStorage } from "./secureStorage";
+import { AuthStorage } from "../secureStorage";
 import { getOrCreateDeviceId } from "./deviceId";
 
 /**
@@ -27,8 +27,6 @@ export async function verifyAccessToken() {
 
     return response.data;
   } catch {
-    
-
     // For ANY other error (network, timeout, 401, 403, 500, etc.),
     // always try to refresh the access token
     await AuthStorage.clearAccessToken();
@@ -44,7 +42,7 @@ export async function verifyAccessToken() {
             Authorization: `Bearer ${newAccessToken}`,
           },
           withCredentials: true,
-        }
+        },
       );
 
       return response.data;
@@ -67,7 +65,7 @@ export async function refreshAccessToken() {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/refresh`,
       { device_id: await getOrCreateDeviceId() },
-      { withCredentials: true }
+      { withCredentials: true },
     );
 
     if (!response || !response.data) {

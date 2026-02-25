@@ -2,7 +2,7 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
 import { useEffect, useState, type JSX } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/layout/AppSidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 import SearchInput from "@/components/inputs/SearchInput";
 import { isMobile } from "@/hooks/layout/use-mobile";
@@ -10,7 +10,7 @@ import type { AppDispatch, RootState } from "../../../redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { setLink } from "../../../redux/slices/footerLinksSlice";
 import { NotificationsMessages } from "../../pages/notifications/inlineSlider/NotificationsMessages";
-import { fetchAvatar } from "@/utils/getAvatar";
+import { fetchAvatar } from "@/utils/profile/getAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { setAvatarState } from "../../../redux/slices/avatarSlice";
 

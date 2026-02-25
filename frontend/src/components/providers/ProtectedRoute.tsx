@@ -1,4 +1,4 @@
-import { verifyAccessToken } from "../../utils/jwttokens";
+import { verifyAccessToken } from "../../utils/auth/jwttokens";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../../redux/store";
 import { signInUser } from "../../../redux/slices/userSlice";

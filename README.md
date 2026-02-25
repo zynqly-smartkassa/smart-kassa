@@ -466,6 +466,8 @@ Your app will be available at: `https://smart-kassa.vercel.app`
 
 ## Project Structure
 
+> For a detailed breakdown of the frontend `src/` folder and its conventions, see **[frontend/STRUCTURE.md](./frontend/STRUCTURE.md)**.
+
 ```
 smart-kassa/
 ├── backend/                    # Backend API (Node.js + Express)

@@ -45,7 +45,7 @@ import type { AppDispatch } from "../../../redux/store";
 import { useDispatch } from "react-redux";
 import { appendBillState } from "../../../redux/slices/invoices";
 import type { Files } from "@/types/InvoiceFile";
-import { refreshAccessToken } from "@/utils/jwttokens";
+import { refreshAccessToken } from "@/utils/auth/jwttokens";
 import type { RideInfo } from "@/types/RideInfoForBill";
 import { setRideInfo } from "@/utils/invoices/setRideInfo";
 import LoadingPayment from "@/components/Payment/LoadingPayment";

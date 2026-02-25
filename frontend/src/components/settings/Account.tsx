@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { deleteAccount, logOut } from "@/utils/auth";
+import { deleteAccount, logOut } from "@/utils/auth/auth";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,16 +32,16 @@ import {
 import { toastMessages } from "@/content/auth/toastMessages";
 import axios, { AxiosError } from "axios";
 import { AuthStorage } from "@/utils/secureStorage";
-import { refreshAccessToken } from "@/utils/jwttokens";
+import { refreshAccessToken } from "@/utils/auth/jwttokens";
 import { Label } from "@/components/ui/label";
 import { User } from "lucide-react";
-import { updateProfile } from "@/utils/updateProfile";
+import { updateProfile } from "@/utils/profile/updateProfile";
 import { handleUpdateProfileError } from "@/utils/errorHandling/updateProfileErrorHandler";
 import {
   useInvalidEmail,
   useInvalidUsername,
 } from "@/hooks/userfeedback/useValidator";
-import { fetchAvatar } from "@/utils/getAvatar";
+import { fetchAvatar } from "@/utils/profile/getAvatar";
 import { setAvatarState } from "../../../redux/slices/avatarSlice";
 import { setLink } from "../../../redux/slices/footerLinksSlice";
 

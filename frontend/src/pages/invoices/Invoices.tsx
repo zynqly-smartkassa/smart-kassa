@@ -36,7 +36,7 @@ import {
 } from "../../components/ui/card";
 import { AuthStorage } from "../../utils/secureStorage";
 import axios, { AxiosError } from "axios";
-import { refreshAccessToken } from "../../utils/jwttokens";
+import { refreshAccessToken } from "../../utils/auth/jwttokens";
 import { toast } from "sonner";
 import { formatDate } from "@/utils/formatDate";
 import { fetchDownload } from "@/utils/invoices/fetchDownload";

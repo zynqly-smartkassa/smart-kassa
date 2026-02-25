@@ -1,16 +1,16 @@
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
-import { updateUser } from "../../redux/slices/userSlice";
-import { refreshAccessToken } from "./jwttokens";
-import { AuthStorage } from "./secureStorage";
-import type { AppDispatch } from "../../redux/store";
+import { updateUser } from "../../../redux/slices/userSlice";
+import { refreshAccessToken } from "../auth/jwttokens";
+import { AuthStorage } from "../secureStorage";
+import type { AppDispatch } from "../../../redux/store";
 
 export async function updateProfile(
   retry: boolean = true,
   firstName: string,
   lastName: string,
   email: string,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
 ) {
   let accessToken: string | null;
   if (retry) {
@@ -31,7 +31,7 @@ export async function updateProfile(
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     dispatch(
@@ -39,7 +39,7 @@ export async function updateProfile(
         firstName: firstName,
         lastName: lastName,
         email: email,
-      })
+      }),
     );
 
     toast.success("Profil erfolgreich aktualisiert");
@@ -57,20 +57,20 @@ export async function updateProfile(
         throw new Error("Sitzung abgelaufen. Bitte melden Sie sich erneut an.");
       } else if (error.status === 409) {
         throw new Error(
-          "Diese E-Mail-Adresse wird bereits verwendet. Bitte verwenden Sie eine andere E-Mail-Adresse."
+          "Diese E-Mail-Adresse wird bereits verwendet. Bitte verwenden Sie eine andere E-Mail-Adresse.",
         );
       } else if (error.status === 400) {
         throw new Error(
-          "Ungültige Eingabe. Bitte überprüfen Sie Ihre Angaben."
+          "Ungültige Eingabe. Bitte überprüfen Sie Ihre Angaben.",
         );
       } else {
         throw new Error(
-          "Profil konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut."
+          "Profil konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
         );
       }
     } else {
       throw new Error(
-        "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+        "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
       );
     }
   }
