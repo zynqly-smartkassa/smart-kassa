@@ -1,9 +1,15 @@
 import { FileText } from "lucide-react";
 import { useIsMobile } from "@/hooks/layout/use-mobile";
 import type { InvoiceFiles } from "@/types/InvoiceFile";
-import { Worker, Viewer } from "@react-pdf-viewer/core";
+import { Worker, Viewer, SpecialZoomLevel } from "@react-pdf-viewer/core";
 
-const PdfReader = ({ InvoiceFile }: { InvoiceFile: InvoiceFiles }) => {
+const PdfReader = ({
+  InvoiceFile,
+  maxSize,
+}: {
+  InvoiceFile: InvoiceFiles;
+  maxSize?: true;
+}) => {
   const mobileView = useIsMobile();
 
   if (!InvoiceFile.url) {
@@ -26,10 +32,19 @@ const PdfReader = ({ InvoiceFile }: { InvoiceFile: InvoiceFiles }) => {
     <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
       <div
         className={`${
-          mobileView ? "h-[40vh]" : "h-[60vh]"
-        } min-h-52 overflow-auto rounded-xl border border-border/40`}
+          maxSize
+            ? "h-full w-full overflow-auto"
+            : mobileView
+            ? "h-[40vh] min-h-52 overflow-auto rounded-xl border border-border/40"
+            : "h-[60vh] min-h-52 overflow-auto rounded-xl border border-border/40"
+        }`}
       >
-        <Viewer fileUrl={InvoiceFile.url} defaultScale={mobileView ? 0.475 : 1} />
+        <Viewer
+          fileUrl={InvoiceFile.url}
+          defaultScale={
+            maxSize ? SpecialZoomLevel.PageWidth : mobileView ? 0.475 : 1
+          }
+        />
       </div>
     </Worker>
   );

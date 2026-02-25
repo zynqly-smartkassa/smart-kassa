@@ -10,18 +10,27 @@ import {
   Download,
   ExternalLink,
   ArrowDown,
+  QrCode,
+  StickyNote,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import PdfReader from "@/components/Invoices/PdfReader";
 import StatusOverlay from "@/components/StatusOverlay";
 import type { InvoiceFiles } from "@/types/InvoiceFile";
 import { formatDate } from "@/utils/formatDate";
 import { fetchDownload } from "@/utils/invoices/fetchDownload";
+import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { DialogContent } from "@/components/ui/dialog";
+import { useState } from "react";
+import { isMobile, useIsMobile } from "@/hooks/layout/use-mobile";
 
 const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
   const navigator = useNavigate();
   const location = useLocation();
+  const mobileView = useIsMobile();
   const { id } = useParams();
+  const [qrCodeOrPdf, setQrCodeOrPdf] = useState(isMobile ? "qrcode" : "pdf");
 
   const file: InvoiceFiles | undefined =
     invoice ?? (location.state as InvoiceFiles);
@@ -51,9 +60,50 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
         <span className="font-bold text-2xl">Rechnungsdetails</span>
       </Button>
 
-      <div className="w-full">
-        <PdfReader InvoiceFile={file} />
+      <div className="w-11/12 flex rounded-lg p-[0.1rem] bg-black">
+        <button
+          className={`flex p-[0.2rem] w-1/2 rounded-lg space-x-2 ${
+            qrCodeOrPdf === "pdf" ? "bg-gray-700" : ""
+          }`}
+          onClick={() => setQrCodeOrPdf("pdf")}
+        >
+          <StickyNote />
+          <p className="font-bold">Rechnung</p>
+        </button>
+        <button
+          className={`flex p-[0.2rem] w-1/2 rounded-lg space-x-2 ${
+            qrCodeOrPdf === "qrcode" ? "bg-gray-700" : ""
+          }`}
+          onClick={() => setQrCodeOrPdf("qrcode")}
+        >
+          <QrCode />
+          <p className="font-bold">Qr-Code</p>
+        </button>
       </div>
+
+      {qrCodeOrPdf === "pdf" ? (
+        <Dialog>
+          <DialogTrigger className="w-full">
+            <PdfReader InvoiceFile={file} />
+          </DialogTrigger>
+          <DialogContent className="flex flex-col items-center justify-center h-[98dvh] w-[98vw] p-2 sm:h-[95dvh] sm:w-[95vw] sm:max-w-4xl sm:p-4 gap-0">
+            <div className="w-full h-full overflow-hidden rounded-lg">
+              <PdfReader InvoiceFile={file} maxSize />
+            </div>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        (file.downloadUrl ?? file.url) && (
+          <div className="my-4 flex justify-center">
+            <div className="p-4 bg-white rounded-lg w-fit">
+              <QRCodeSVG
+                size={mobileView ? window.innerWidth - 120 : 500}
+                value={file.downloadUrl ?? file.url ?? ""}
+              />
+            </div>
+          </div>
+        )
+      )}
 
       <button
         className="bg-black p-2 rounded-full animate-bounce"
