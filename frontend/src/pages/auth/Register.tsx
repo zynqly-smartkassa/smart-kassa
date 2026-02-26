@@ -377,9 +377,6 @@ function Register() {
             >
               {r.buttons.register}
             </Button>
-            <Button type="button" variant="outline" className="w-full">
-              {r.buttons.google}
-            </Button>
             <div className="w-full flex justify-center mt-2 text-center">
               <div className="text-sm text-muted-foreground">
                 <p>{r.footer.text}</p>

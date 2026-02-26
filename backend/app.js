@@ -49,15 +49,13 @@ app.use(
   cors({
     origin: [
       "https://smart-kassa.vercel.app",
-      "http://localhost", // Capacitor Android/iOS
-      "https://localhost",
-      "http://localhost:5173",
-      "capacitor://localhost",
-      "http://localhost:5173",
+      "http://localhost", // Capacitor Android
+      "capacitor://localhost", // Capacitor iOS
+      process.env.NODE_ENV === "development" && "http://localhost:5173",
       process.env.DEBUG_URL, // to test/debug
     ],
     credentials: true, // Allow cookies to be sent
-  })
+  }),
 );
 
 // Parse incoming JSON request bodies
@@ -110,7 +108,8 @@ app.use((req, res) => {
 
 // LOCAL Server Configuration
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 
-app.listen(PORT, () => {
-  console.log(`SmartKassa API running on port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`SmartKassa API running on http://${HOST}:${PORT}`);
 });

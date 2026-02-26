@@ -6,7 +6,7 @@ const Notifications = () => {
 
       {/* Page Header */}
       <div className="page-header-container">
-        <h2 className="page-title">Benachrichtigungseinstellungen</h2>
+        <h2 className="page-title break-words">Benachrichtigungseinstellungen</h2>
         <p className="subheader">
           Verwalten Sie Ihre Benachrichtigungen. Aktivieren oder deaktivieren Sie die Benachrichtigungen, die Sie erhalten möchten.
         </p>

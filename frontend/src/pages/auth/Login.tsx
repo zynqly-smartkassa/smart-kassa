@@ -187,9 +187,6 @@ function Login() {
             >
               {l.buttons.login}
             </Button>
-            <Button type="button" variant="outline" className="w-full">
-              {l.buttons.google}
-            </Button>
             <div className="w-full flex justify-center mt-2 text-center">
               <div className="text-sm text-muted-foreground">
                 <p>{l.footer.text}</p>

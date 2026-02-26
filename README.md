@@ -290,6 +290,70 @@ For live reload during mobile development:
 
 ---
 
+## Scripts
+
+### Root (run from project root)
+
+| Script | Command | Beschreibung |
+|--------|---------|--------------|
+| `npm run dev` | `concurrently start-frontend start-backend` | Startet Frontend **und** Backend gleichzeitig — der schnellste Weg für lokale Entwicklung |
+| `npm run start-frontend` | `npm run dev --prefix frontend` | Startet nur das Frontend (Vite Dev Server) |
+| `npm run start-backend` | `npm run dev --prefix backend` | Startet nur das Backend (Express + Auto-Reload) |
+| `npm run android` | frontend build → cap sync → cap run android | Baut die App, synchronisiert Capacitor und startet sie auf einem Android-Gerät/Emulator |
+| `npm run ios` | frontend build → cap sync → cap run ios | Baut die App, synchronisiert Capacitor und startet sie auf einem iOS-Gerät/Simulator (nur macOS) |
+
+---
+
+### Frontend (`cd frontend`)
+
+#### Entwicklung
+
+| Script | Command | Beschreibung |
+|--------|---------|--------------|
+| `npm run dev` | `vite --host` | Startet den Vite Dev Server mit Hot-Reload. `--host` macht ihn im lokalen Netzwerk erreichbar (nötig für Mobile Live Reload) |
+| `npm run preview` | `vite preview` | Startet einen lokalen Server für den **Production Build** — zum Testen vor dem Deployment |
+
+#### Build & Code-Qualität
+
+| Script | Command | Beschreibung |
+|--------|---------|--------------|
+| `npm run build` | `tsc -b && vite build` | TypeScript-Typencheck + Production Build (Output im `dist/` Ordner) |
+| `npm run lint` | `eslint .` | Analysiert den Code auf Stilfehler und potenzielle Bugs |
+
+#### Tests
+
+| Script | Command | Beschreibung |
+|--------|---------|--------------|
+| `npm run test` | `vitest` | Führt alle Unit-Tests mit Vitest aus |
+| `npm run testc` | `vitest --coverage` | Führt alle Tests aus **und** erstellt einen Coverage-Report (zeigt, wie viel Code getestet ist) |
+
+#### Dokumentation & Tools
+
+| Script | Command | Beschreibung |
+|--------|---------|--------------|
+| `npm run docs` | `typedoc --plugin typedoc-plugin-markdown` | Generiert API-Dokumentation aus den TypeDoc-Kommentaren im Code |
+| `npm run email` | `email dev --dir src/pages/notifications/emails` | Startet einen lokalen Preview-Server für die E-Mail-Templates |
+
+#### Mobile (Capacitor)
+
+| Script | Command | Beschreibung |
+|--------|---------|--------------|
+| `npm run android` | build → cap sync → cap run android | Baut die App, synct native Dateien und deployt direkt auf ein Android-Gerät/Emulator |
+| `npm run ios` | build → cap sync → cap run ios | Baut die App, synct native Dateien und deployt direkt auf ein iOS-Gerät/Simulator |
+| `npm run android:open` | build → cap sync → cap open android | Öffnet das Projekt in **Android Studio** (zum manuellen Debuggen/Konfigurieren) |
+| `npm run ios:open` | build → cap sync → cap open ios | Öffnet das Projekt in **Xcode** (zum manuellen Debuggen/Konfigurieren) |
+
+---
+
+### Backend (`cd backend`)
+
+| Script | Command | Beschreibung |
+|--------|---------|--------------|
+| `npm run dev` | `npm install && node --watch app.js` | Installiert Dependencies und startet den Server mit **Auto-Reload** — bei jeder Dateiänderung wird der Server automatisch neu gestartet |
+| `npm run start` | `node app.js` | Startet den Server **ohne** Auto-Reload — für Production-Umgebungen |
+
+---
+
 ## Deployment
 
 ### Backend Deployment on Railway

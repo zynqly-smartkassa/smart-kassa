@@ -59,12 +59,12 @@ export default function RootLayout(): JSX.Element {
   };
   const footerLinks: IfooterLinks[] = [
     {
-      name: "Start Ride",
+      name: "Start Fahrt",
       path: "/ride",
-      onWeb: { isOnWeb: !isMobile, name: "Statistics", path: "/" },
+      onWeb: { isOnWeb: !isMobile, name: "Statistiken", path: "/" },
     },
     { name: "Home", path: "/" },
-    { name: "Account", path: "/settings" },
+    { name: "Profil", path: "/settings" },
   ];
 
   useEffect(() => {
