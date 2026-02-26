@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../../redux/store";
 import { signInUser } from "../../../redux/slices/userSlice";
 import type { USER_DTO } from "../../../constants/User";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import {
   setAuthenticated,
@@ -12,6 +12,8 @@ import {
 import { handleTokenError } from "../../utils/errorHandling";
 import StatusOverlay from "../StatusOverlay";
 import { setLink } from "../../../redux/slices/footerLinksSlice";
+import { setRideInfo } from "@/utils/invoices/setRideInfo";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -27,6 +29,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   // Kann man später mit einem Auth-Context oder localStorage machen
   const dispatch: AppDispatch = useDispatch();
   const navigator = useNavigate();
+  const showOnce = useRef(true);
 
   // Check if the user is getting loaded currently
   const { isLoading, isAuthenticated } = useSelector(
@@ -56,6 +59,19 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         );
         dispatch(setAuthenticated());
         dispatch(setLink(1));
+        const rideInfo = await setRideInfo.getRideInfo();
+        if (rideInfo && showOnce.current) {
+          toast("Offene Rechnung gefunden", {
+            action: {
+              label: "Zurück zur Fahrt?",
+              onClick: async () =>
+                await navigator(`/payment/${rideInfo.ride_id}`, {
+                  state: rideInfo,
+                }),
+            },
+          });
+          showOnce.current = false;
+        }
       }
     } catch (error) {
       handleTokenError(error);

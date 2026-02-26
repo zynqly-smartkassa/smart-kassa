@@ -15,8 +15,6 @@ import {
   getMonthlyStats,
   getWeeklyStats,
 } from "../utils/dashboard";
-import { setRideInfo } from "../utils/invoices/setRideInfo";
-import { toast } from "sonner";
 import { useNavigate } from "react-router";
 
 export type RidesStats = {
@@ -63,18 +61,6 @@ function Home(): JSX.Element {
         setDailyData(daily);
         setWeeklyData(weekly);
         setMonthlyData(monthly);
-        const rideInfo = await setRideInfo.getRideInfo();
-        if (rideInfo) {
-          toast("Offene Rechnung gefunden", {
-            action: {
-              label: "Zurück zur Fahrt?",
-              onClick: async () =>
-                await navigator(`/payment/${rideInfo.ride_id}`, {
-                  state: rideInfo,
-                }),
-            },
-          });
-        }
       } catch (error) {
         console.error("Failed to fetch dashboard stats", error);
       }

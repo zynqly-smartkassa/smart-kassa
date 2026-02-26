@@ -122,10 +122,10 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
         <span className="font-bold text-2xl">Rechnungsdetails</span>
       </Button>
 
-      <div className="w-11/12 md:w-9/12 lg:w-7/12 flex rounded-lg p-[0.1rem] bg-black">
+      <div className="w-11/12 md:w-9/12 lg:w-7/12 flex rounded-lg p-[0.1rem] bg-gray-200 dark:bg-black">
         <button
           className={`flex p-[0.2rem] justify-center w-1/2 rounded-lg space-x-2 ${
-            qrCodeOrPdf === "pdf" ? "bg-gray-700" : ""
+            qrCodeOrPdf === "pdf" ? "dark:bg-gray-700 bg-gray-300" : ""
           }`}
           onClick={() => setQrCodeOrPdf("pdf")}
         >
@@ -134,7 +134,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
         </button>
         <button
           className={`flex p-[0.2rem] justify-center w-1/2 rounded-lg space-x-2 ${
-            qrCodeOrPdf === "qrcode" ? "bg-gray-700" : ""
+            qrCodeOrPdf === "qrcode" ? "dark:bg-gray-700 bg-gray-300" : ""
           }`}
           onClick={() => setQrCodeOrPdf("qrcode")}
         >
@@ -168,7 +168,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
       )}
 
       <button
-        className="bg-black p-2 rounded-full animate-bounce"
+        className="dark:bg-black bg-gray-300 hover:bg-gray-400/50 p-2 rounded-full animate-bounce"
         onClick={() => {
           window.scrollBy({ top: 500, behavior: "smooth" });
         }}
