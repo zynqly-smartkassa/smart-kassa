@@ -41,9 +41,6 @@ import NoRideDataWarning from "@/components/Payment/NoRideDataWarning";
 import { useForm } from "react-hook-form";
 import { AuthStorage } from "@/utils/secureStorage";
 import axios, { AxiosError } from "axios";
-import type { AppDispatch } from "../../../redux/store";
-import { useDispatch } from "react-redux";
-import { appendBillState } from "../../../redux/slices/invoices";
 import type { InvoiceFiles } from "@/types/InvoiceFile";
 import { refreshAccessToken } from "@/utils/auth/jwttokens";
 import type { RideInfo } from "@/types/RideInfoForBill";
@@ -70,7 +67,7 @@ const Invoice = () => {
 
   const startAddressParagraph = useRef<HTMLParagraphElement>(null);
   const [lineheight, setLineheight] = useState(2.75);
-  const dispatch: AppDispatch = useDispatch();
+  const [invoice, setInvoice] = useState<InvoiceFiles | null>(null);
 
   const getRideData = useCallback(async () => {
     const rideData =
@@ -165,7 +162,7 @@ const Invoice = () => {
           },
         },
       );
-      dispatch(appendBillState(data.files as InvoiceFiles));
+      setInvoice(data.files);
     } catch (error) {
       if (error instanceof AxiosError) {
         const tokenError =
@@ -218,7 +215,9 @@ const Invoice = () => {
       {
         className: "mt-5 md:mt-0",
         success: async () => {
-          await navigate(`/invoices`);
+          await navigate(`/invoices/${invoice?.billingData?.billing_id}`, {
+            state: invoice,
+          });
           await setRideInfo.removeRideInfo();
           return "Rechnung erflogreich erstellt";
         },

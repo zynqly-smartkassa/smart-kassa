@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../../redux/store";
 import {
   FileText,
   Download,
@@ -32,8 +30,6 @@ import QrCodeScanner from "@/components/Invoices/QrCodeScanner";
 import SingleInvoice from "./SingleInvoice";
 
 const Invoices = () => {
-  const dispatch: AppDispatch = useDispatch();
-  const bills = useSelector((state: RootState) => state.setBills.bills);
   const [loading, setLoading] = useState(true);
   const [files, setFiles] = useState<InvoiceFiles[]>([]);
   const { id } = useParams();
@@ -41,8 +37,8 @@ const Invoices = () => {
   const navigator = useNavigate();
 
   const loadBills = useCallback(async () => {
-    await fetchBills(bills, retryRef, dispatch, setFiles, setLoading);
-  }, [dispatch, bills]);
+    await fetchBills(retryRef, setFiles, setLoading);
+  }, []);
 
   useEffect(() => {
     loadBills();
@@ -50,7 +46,7 @@ const Invoices = () => {
   }, []);
 
   if (id) {
-    return <SingleInvoice />
+    return <SingleInvoice />;
   }
 
   return (
@@ -86,7 +82,7 @@ const Invoices = () => {
                       className="absolute top-4 right-4"
                       onClick={() =>
                         navigator(`/invoices/${file.billingData?.billing_id}`, {
-                          state: file
+                          state: file,
                         })
                       }
                     />

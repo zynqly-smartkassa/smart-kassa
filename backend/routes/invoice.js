@@ -172,12 +172,34 @@ router.post(
           new GetObjectCommand({
             Bucket: BUCKET_NAME,
             Key: filename,
+            ResponseContentType: "application/pdf",
+            ResponseContentDisposition: "inline",
           }),
           { expiresIn: 7 * 24 * 60 * 60 },
         );
       } catch (error) {
         console.error(
           "Error generating presigned URL (continuing without URL):",
+          error,
+        );
+        // File is uploaded successfully, just no temporary URL available
+      }
+
+      let downloadUrl = null;
+      try {
+        downloadUrl = await getSignedUrl(
+          s3Client,
+          new GetObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: filename,
+            ResponseContentType: "application/pdf",
+            ResponseContentDisposition: `attachment; filename="${filename.split("/").pop()}"`,
+          }),
+          { expiresIn: 7 * 24 * 60 * 60 },
+        );
+      } catch (error) {
+        console.error(
+          "Error generating presigned Download-URL (continuing without Download-URL):",
           error,
         );
         // File is uploaded successfully, just no temporary URL available
@@ -213,10 +235,10 @@ router.post(
           },
           key: filename,
           url: url,
+          downloadUrl: downloadUrl,
           size: newInvoice.size,
           lastModified: new Date(timestamp),
         },
-
         message: "Invoice uploaded successfully",
       });
     } catch (error) {

@@ -2,10 +2,8 @@ import type { InvoiceFiles } from "@/types/InvoiceFile";
 import axios, { AxiosError } from "axios";
 import type { Dispatch, SetStateAction } from "react";
 import { toast } from "sonner";
-import { appendBillState } from "../../../redux/slices/invoices";
 import { refreshAccessToken } from "../auth/jwttokens";
 import { AuthStorage } from "../secureStorage";
-import type { AppDispatch } from "../../../redux/store";
 
 /**
  * Function used to append a Bill and create a Bill with the billing id
@@ -20,11 +18,10 @@ import type { AppDispatch } from "../../../redux/store";
  * @package types
  */
 export const appendNewBill = (
-  dispatch: AppDispatch,
   billing_id: string | number,
   setFiles?: Dispatch<SetStateAction<InvoiceFiles[]>>,
 ) => {
-  toast.promise(appendNewBillController(true, dispatch, billing_id, setFiles), {
+  toast.promise(appendNewBillController(true, billing_id, setFiles), {
     success: "Rechnung manuell hinzugefügt",
     error: "Ein unerwarteter Fehler ist aufgetreten.",
     loading: "Rechnung wird hinzugefügt",
@@ -34,7 +31,6 @@ export const appendNewBill = (
 
 const appendNewBillController = async (
   retry: boolean = true,
-  dispatch: AppDispatch,
   billing_id: string | number,
   setFiles?: Dispatch<SetStateAction<InvoiceFiles[]>>,
 ) => {
@@ -57,7 +53,6 @@ const appendNewBillController = async (
       },
     );
 
-    dispatch(appendBillState(data as InvoiceFiles));
 
     if (setFiles) {
       setFiles((prev) => [...prev, data as InvoiceFiles]);
@@ -76,7 +71,6 @@ const appendNewBillController = async (
         retry = false;
         return await appendNewBillController(
           false,
-          dispatch,
           billing_id,
           setFiles,
         );
