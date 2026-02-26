@@ -1,4 +1,4 @@
-import type { Dispatch, MutableRefObject, SetStateAction } from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { AuthStorage } from "@/utils/secureStorage";
@@ -6,10 +6,15 @@ import { refreshAccessToken } from "@/utils/auth/jwttokens";
 import type { InvoiceFiles } from "@/types/InvoiceFile";
 
 export const fetchBills = async (
-  retryRef: MutableRefObject<boolean>,
+  retryRef: RefObject<boolean>,
   setFiles: Dispatch<SetStateAction<InvoiceFiles[]>>,
   setLoading: Dispatch<SetStateAction<boolean>>,
+  setToken: Dispatch<SetStateAction<string[]>>,
+  index: number,
+  tokenLength: number,
+  token?: string,
 ): Promise<void> => {
+  setLoading(true);
   try {
     let accessToken: string | null;
     if (retryRef.current) {
@@ -24,10 +29,17 @@ export const fetchBills = async (
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        params: {
+          token: token,
+          limit: 10,
+        },
       },
     );
 
     setFiles(data.files);
+    if (index - 1 === tokenLength && data.nextContinuationToken) {
+      setToken((prev) => [...prev, data.nextContinuationToken]);
+    }
     setLoading(false);
     retryRef.current = true;
   } catch (error) {
@@ -44,6 +56,10 @@ export const fetchBills = async (
           retryRef,
           setFiles,
           setLoading,
+          setToken,
+          index,
+          tokenLength,
+          token,
         );
       } else if (isAuthError && !retryRef.current) {
         toast.error("Sitzung abgelaufen. Bitte melden Sie sich erneut an.");

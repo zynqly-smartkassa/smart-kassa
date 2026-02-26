@@ -3,7 +3,6 @@ import toastSlice from "./slices/toastSlice";
 import userSlice from "./slices/userSlice";
 import authSlice from "./slices/authSlice";
 import footerLinkSlice from "./slices/footerLinksSlice";
-import invoicesSlice from "./slices/invoices";
 import notificationsSlice from "./slices/notificationsSlice";
 import avatarSlice from "./slices/avatarSlice";
 
@@ -13,7 +12,6 @@ export const store = configureStore({
     user: userSlice,
     authState: authSlice,
     setFooterLink: footerLinkSlice,
-    setBills: invoicesSlice,
     notificationsState: notificationsSlice,
     avatarState: avatarSlice,
   },

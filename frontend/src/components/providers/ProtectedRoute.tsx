@@ -62,6 +62,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         const rideInfo = await setRideInfo.getRideInfo();
         if (rideInfo && showOnce.current) {
           toast("Offene Rechnung gefunden", {
+            id: "open-invoice-reminder",
             action: {
               label: "Zurück zur Fahrt?",
               onClick: async () =>

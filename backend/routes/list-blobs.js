@@ -38,13 +38,20 @@ router.get("/invoices", authenticateToken, async (req, res) => {
   try {
     const user_id = req.user.userId;
     const company_id = req.user.companyId;
+    const { token } = req.query;
 
     const listCommand = new ListObjectsV2Command({
       Bucket: BUCKET_NAME,
       Prefix: `Bills/${company_id}/${user_id}/`,
+      ContinuationToken: token,
+      MaxKeys: 10,
     });
 
     const response = await s3Client.send(listCommand);
+    let NextContinuationToken = null;
+    if (response.IsTruncated) {
+      NextContinuationToken = response.NextContinuationToken;
+    }
 
     // Only actual files (no markers)
     const actualFiles = (response.Contents || []).filter(
@@ -119,14 +126,10 @@ router.get("/invoices", authenticateToken, async (req, res) => {
       }),
     );
 
-    // Sort by lastModified date, newest first
-    const sortedFiles = filesWithUrls.sort((a, b) => {
-      return new Date(b.lastModified) - new Date(a.lastModified);
-    });
-
     res.status(200).send({
-      files: sortedFiles,
-      count: sortedFiles.length,
+      files: filesWithUrls,
+      count: filesWithUrls.length,
+      nextContinuationToken: NextContinuationToken,
       message: "Fetched Invoices Successfully",
     });
   } catch (error) {
