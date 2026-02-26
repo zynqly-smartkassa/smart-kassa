@@ -35,9 +35,15 @@ globalThis.ResizeObserver = class {
 // It needs to stand here, because otherwise the tests would access the real "axios" function
 vi.mock("axios");
 
+// Home uses useNavigate + API calls — stub it out so the router test target is lightweight
+vi.mock("../../Home", () => ({
+  default: () => <div data-testid="home">Home</div>,
+}));
+
 // When signInUser is called by login() inside auth.ts, which we are also tracking, then this custom
 // function is called wether the main action itself.
 vi.mock("../../../../redux/slices/userSlice", () => ({
+  default: (state = {}) => state,
   // redux action calls are returning this very object
   signInUser: (payload: USER_DTO) => ({ type: "user/signInUser", payload }),
 }));

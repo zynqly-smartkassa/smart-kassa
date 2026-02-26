@@ -15,7 +15,7 @@ import {
   getMonthlyStats,
   getWeeklyStats,
 } from "../utils/dashboard";
-import { setRideInfo } from "@/utils/invoices/setRideInfo";
+import { setRideInfo } from "../utils/invoices/setRideInfo";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 

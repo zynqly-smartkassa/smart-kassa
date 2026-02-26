@@ -1,5 +1,5 @@
-import { isMobile } from "@/hooks/layout/use-mobile";
-import type { RideInfo } from "@/types/RideInfoForBill";
+import { isMobile } from "../../hooks/layout/use-mobile";
+import type { RideInfo } from "../../types/RideInfoForBill";
 import { Preferences } from "@capacitor/preferences";
 
 export const keyForRideInfo = "KEY_FOR_RIDE_INFO";

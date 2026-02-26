@@ -33,7 +33,7 @@ import StatusOverlay from "../../components/StatusOverlay";
 import { ROUTING_CONFIG } from "../../utils/config";
 import { driverIcon, locationIcon } from "../../utils/rides/icons";
 import type { RideInfo } from "@/types/RideInfoForBill";
-import { setRideInfo } from "@/utils/invoices/setRideInfo";
+import { setRideInfo } from "../../utils/invoices/setRideInfo";
 
 /**
  * The Rides page, where a driver can start/end a Ride
