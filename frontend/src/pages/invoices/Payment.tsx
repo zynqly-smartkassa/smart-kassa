@@ -39,12 +39,9 @@ import { formatDate } from "@/utils/formatDate";
 import { toast } from "sonner";
 import NoRideDataWarning from "@/components/Payment/NoRideDataWarning";
 import { useForm } from "react-hook-form";
-import { AuthStorage } from "@/utils/secureStorage";
-import axios, { AxiosError } from "axios";
-import type { InvoiceFiles } from "@/types/InvoiceFile";
-import { refreshAccessToken } from "@/utils/auth/jwttokens";
 import type { RideInfo } from "@/types/RideInfoForBill";
 import { setRideInfo } from "@/utils/invoices/setRideInfo";
+import { sendBill } from "@/utils/invoices/sendBill";
 import LoadingPayment from "@/components/Payment/LoadingPayment";
 
 /**
@@ -124,76 +121,6 @@ const Invoice = () => {
   const amount_net = amount_gross / (1 + tax_rate);
   const amount_tax = amount_gross - amount_net;
 
-  // billingData is built inside sendBill to capture form values at submit time
-  const sendBill = async (retry: boolean = true) => {
-    const values = form.getValues();
-    const ridePrice = parseFloat(values.ride_price?.toString() || "0") || 0;
-    const tip = parseFloat(values.tip?.toString() || "0") || 0;
-    const taxRate = ride.ride_type === "Taxifahrt" ? 0.1 : 0.2;
-    const gross = ridePrice + tip;
-    const net = gross / (1 + taxRate);
-    const tax = gross - net;
-
-    const billingData = {
-      ride_id: id,
-      amount_net: parseFloat(net.toFixed(2)),
-      tax_rate: taxRate,
-      amount_tax: parseFloat(tax.toFixed(2)),
-      amount_gross: parseFloat(gross.toFixed(2)),
-      payment_method: values.zahlungmethode,
-      tip_amount: tip,
-    };
-
-    try {
-      let accessToken: string | null;
-
-      if (retry) {
-        accessToken = await AuthStorage.getAccessToken();
-      } else {
-        accessToken = await refreshAccessToken();
-      }
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/invoice`,
-        billingData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
-      return data.files as InvoiceFiles;
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        const tokenError =
-          error.status === 403 ||
-          error.status === 401 ||
-          error.response?.data?.path === "auth middleware";
-
-        if (tokenError && retry) {
-          // First retry with refreshed token
-          retry = false;
-          return await sendBill(false);
-        } else if (tokenError && !retry) {
-          // Second attempt failed - session expired
-          console.error(error);
-          throw new Error(
-            "Sitzung abgelaufen. Bitte melden Sie sich erneut an.",
-          );
-        } else if (error.status === 409) {
-          throw new Error("Diese Rechnung existiert bereits.");
-        } else {
-          console.error(error);
-          throw new Error(
-            "Ressourcen konnten nicht geladen werden, überprüfen Sie Ihre Internetverbindung.",
-          );
-        }
-      } else {
-        console.error(error);
-        throw new Error("Ein unerwarteter Fehler ist aufgetreten.");
-      }
-    }
-  };
-
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -207,9 +134,17 @@ const Invoice = () => {
       return;
     }
 
+    const values = form.getValues();
+
     toast.promise(
       async () => {
-        return await sendBill(true);
+        return await sendBill({
+          rideId: id,
+          rideType: ride.ride_type,
+          ridePrice: parseFloat(values.ride_price?.toString() || "0") || 0,
+          tip: parseFloat(values.tip?.toString() || "0") || 0,
+          paymentMethod: values.zahlungmethode,
+        });
       },
       {
         className: "mt-5 md:mt-0",

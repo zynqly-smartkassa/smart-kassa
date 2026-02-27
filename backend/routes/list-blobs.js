@@ -97,7 +97,7 @@ router.get("/invoices", authenticateToken, async (req, res) => {
 
         const billing_id = file.Key.match(/_([^_]+)\.pdf$/)?.[1];
         const billingDataResult = await pool.query(
-          `SELECT amount_net, tax_rate, amount_tax, amount_gross, tip_amount, payment_method FROM billing WHERE billing_id = $1`,
+          `SELECT amount_net, tax_rate, amount_tax, amount_gross, tip_amount, payment_method, ride_id FROM billing WHERE billing_id = $1`,
           [billing_id],
         );
         const billingData = billingDataResult.rows[0];
@@ -116,6 +116,7 @@ router.get("/invoices", authenticateToken, async (req, res) => {
             amount_gross: billingData.amount_gross,
             tip_amount: billingData.tip_amount,
             payment_method: billingData.payment_method,
+            ride_id: billingData.ride_id,
           },
           key: file.Key,
           size: file.Size,
@@ -195,7 +196,7 @@ router.get("/invoices/:id", authenticateToken, async (req, res) => {
     const driverData = driverDataResult.rows[0];
 
     const billingDataResult = await pool.query(
-      `SELECT amount_net, tax_rate, amount_tax, amount_gross, tip_amount, payment_method FROM billing WHERE billing_id = $1`,
+      `SELECT amount_net, tax_rate, amount_tax, amount_gross, tip_amount, payment_method, ride_id FROM billing WHERE billing_id = $1`,
       [id],
     );
     const billingData = billingDataResult.rows[0];
@@ -214,6 +215,7 @@ router.get("/invoices/:id", authenticateToken, async (req, res) => {
         amount_gross: billingData.amount_gross,
         tip_amount: billingData.tip_amount,
         payment_method: billingData.payment_method,
+        ride_id: billingData.ride_id,
       },
       key: actualFile.Key,
       size: actualFile.Size,

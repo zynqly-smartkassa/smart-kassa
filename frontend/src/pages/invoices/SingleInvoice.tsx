@@ -12,6 +12,7 @@ import {
   ArrowDown,
   QrCode,
   StickyNote,
+  Car,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -21,12 +22,10 @@ import { formatDate } from "@/utils/formatDate";
 import { fetchDownload } from "@/utils/invoices/fetchDownload";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { DialogContent } from "@/components/ui/dialog";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { isMobile, useIsMobile } from "@/hooks/layout/use-mobile";
 import { toast } from "sonner";
-import { AuthStorage } from "@/utils/secureStorage";
-import { refreshAccessToken } from "@/utils/auth/jwttokens";
-import axios, { AxiosError } from "axios";
+import { fetchBill as fetchBillUtil } from "@/utils/invoices/fetchBill";
 import LoadingSingleInvoice from "@/components/Invoices/LoadingSingleInvoice";
 import ErrorSingleInvoice from "@/components/Invoices/ErrorSingleInvoice";
 
@@ -39,7 +38,6 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
   const [file, setFile] = useState(invoice);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const retryRef = useRef(true);
 
   const fetchBill = useCallback(async () => {
     setLoading(false);
@@ -47,49 +45,16 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
       setFile(location.state);
     } else {
       try {
-        let accessToken: string | null;
-        if (retryRef.current) {
-          accessToken = await AuthStorage.getAccessToken();
-        } else {
-          accessToken = await refreshAccessToken();
-        }
-
-        const { data } = await axios.get(
-          `${import.meta.env.VITE_API_URL}/list-blobs/invoices/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
-
+        const data = await fetchBillUtil(id);
         setFile(data);
       } catch (error) {
-        if (error instanceof AxiosError) {
-          const isAuthError =
-            error.status === 403 ||
-            error.status === 401 ||
-            error.response?.data?.path === "auth middleware";
-
-          if (isAuthError && retryRef.current) {
-            retryRef.current = false;
-            return await fetchBill();
-          } else if (isAuthError && !retryRef.current) {
-            toast.error("Sitzung abgelaufen. Bitte melden Sie sich erneut an.");
-            setError(true);
-            setLoading(false);
-          } else {
-            toast.error(
-              "Rechnung konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
-            );
-            setError(true);
-            setLoading(false);
-          }
-        } else {
-          toast.error("Ein unerwarteter Fehler ist aufgetreten.");
-          setError(true);
-          setLoading(false);
-        }
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Ein unerwarteter Fehler ist aufgetreten.",
+        );
+        setError(true);
+        setLoading(false);
       }
     }
 
@@ -254,6 +219,20 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
             <User size={22} className="text-blue-500" />
             <span className={labelClass}>Fahrer:</span>
             <span className={valueClass}>{file.driverData.name}</span>
+          </div>
+        )}
+
+        {file.billingData && (
+          <div className="-ml-4">
+            <Button
+              variant={"link"}
+              onClick={async () =>
+                await navigator(`/ride/${file.billingData?.ride_id}`)
+              }
+            >
+              <Car />
+              Zur Fahrt
+            </Button>
           </div>
         )}
 

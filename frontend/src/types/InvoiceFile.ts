@@ -12,6 +12,7 @@ export interface InvoiceFiles {
     payment_method: string;
     tax_rate: string;
     tip_amount: string;
+    ride_id: string;
   };
   driverData?: {
     email: string;
