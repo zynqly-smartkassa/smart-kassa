@@ -89,6 +89,14 @@ const Invoices = () => {
                 <Card
                   key={index}
                   className="relative rounded-xl border border-border/40 bg-sidebar dark:bg-sidebar shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                  onClick={async () =>
+                    await navigator(
+                      `/invoices/${file.billingData?.billing_id}`,
+                      {
+                        state: file,
+                      },
+                    )
+                  }
                 >
                   <CardHeader className="flex flex-row justify-between items-start pb-2">
                     <div className="flex items-center gap-2">
@@ -102,8 +110,8 @@ const Invoices = () => {
                       </div>
                       <Info
                         className="absolute top-4 right-4"
-                        onClick={() =>
-                          navigator(
+                        onClick={async () =>
+                          await navigator(
                             `/invoices/${file.billingData?.billing_id}`,
                             {
                               state: file,

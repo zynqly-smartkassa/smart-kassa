@@ -77,15 +77,18 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
           } else if (isAuthError && !retryRef.current) {
             toast.error("Sitzung abgelaufen. Bitte melden Sie sich erneut an.");
             setError(true);
+            setLoading(false);
           } else {
             toast.error(
               "Rechnung konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
             );
             setError(true);
+            setLoading(false);
           }
         } else {
           toast.error("Ein unerwarteter Fehler ist aufgetreten.");
           setError(true);
+          setLoading(false);
         }
       }
     }
@@ -105,7 +108,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
     return <LoadingSingleInvoice />;
   }
 
-  if (error) {
+  if (error && !loading) {
     return <ErrorSingleInvoice onRetry={fetchBill} />;
   }
 
@@ -145,7 +148,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
 
       {qrCodeOrPdf === "pdf" ? (
         <Dialog>
-          <DialogTrigger className="w-full">
+          <DialogTrigger className="w-full lg:w-1/2">
             <PdfReader InvoiceFile={file} />
           </DialogTrigger>
           <DialogContent className="flex flex-col items-center justify-center h-[98dvh] w-[98vw] p-2 sm:h-[95dvh] sm:w-[95vw] sm:max-w-4xl sm:p-4 gap-0">
@@ -219,7 +222,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
           </div>
         </div>
 
-        <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
+        <div className="w-full lg:w-1/2 grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
           <div className="flex flex-col gap-1">
             <span className={labelClass}>Brutto</span>
             <span className="font-bold text-xl text-violet-600 dark:text-violet-400">

@@ -67,7 +67,6 @@ const Invoice = () => {
 
   const startAddressParagraph = useRef<HTMLParagraphElement>(null);
   const [lineheight, setLineheight] = useState(2.75);
-  const [invoice, setInvoice] = useState<InvoiceFiles | null>(null);
 
   const getRideData = useCallback(async () => {
     const rideData =
@@ -162,7 +161,7 @@ const Invoice = () => {
           },
         },
       );
-      setInvoice(data.files);
+      return data.files as InvoiceFiles;
     } catch (error) {
       if (error instanceof AxiosError) {
         const tokenError =
@@ -210,16 +209,16 @@ const Invoice = () => {
 
     toast.promise(
       async () => {
-        await sendBill(true);
+        return await sendBill(true);
       },
       {
         className: "mt-5 md:mt-0",
-        success: async () => {
-          await navigate(`/invoices/${invoice?.billingData?.billing_id}`, {
-            state: invoice,
+        success: async (invoiceData) => {
+          await navigate(`/invoices/${invoiceData?.billingData?.billing_id}`, {
+            state: invoiceData,
           });
           await setRideInfo.removeRideInfo();
-          return "Rechnung erflogreich erstellt";
+          return "Rechnung erfolgreich erstellt";
         },
         error: (err) => {
           if (err instanceof Error) {
