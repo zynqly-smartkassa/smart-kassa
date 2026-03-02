@@ -24,6 +24,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import pool from "./db.js";
 // API-Routes
 import refreshRoutes from "./routes/refresh.js";
 import registerRoutes from "./routes/register.js";
@@ -51,7 +52,7 @@ app.use(
       "https://smart-kassa.vercel.app",
       "http://localhost", // Capacitor Android
       "capacitor://localhost", // Capacitor iOS
-      process.env.NODE_ENV === "development" && "http://localhost:5173",
+      process.env.NODE_ENV !== "production" && "http://localhost:5173",
       process.env.DEBUG_URL, // to test/debug
     ],
     credentials: true, // Allow cookies to be sent
@@ -87,12 +88,27 @@ app.use("/api/dashboard", dashboardRoutes);
 
 /**
  * Health Check Endpoint
- * Used to verify the server is running
+ * Verifies the server AND database connection are ready.
+ * Playwright and GitHub Actions use this to wait until the backend is truly up.
+ * @route GET /health
+ * @access Public
+ */
+app.get("/health", async (_, res) => {
+  try {
+    await pool.query("SELECT 1");
+    return res.json({ status: "ok" });
+  } catch (err) {
+    return res.status(503).json({ status: "error", message: err.message });
+  }
+});
+
+/**
+ * Root Endpoint
  * @route GET /
  * @access Public
  */
 app.get("/", (_, res) => {
-  res.send("SmartKassa API - Server running");
+  res.send("SmartKasse API - Server running");
 });
 
 /**

@@ -71,3 +71,6 @@ DerivedData/
 # Redundant patterns (cleanup)
 android/**/.gradle/
 android/**/build/
+
+/playwright-report
+/test-results

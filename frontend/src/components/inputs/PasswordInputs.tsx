@@ -39,7 +39,7 @@ const PasswordInputs = ({
               onChange={(e) => value.onChangeListener(e.target.value)}
               onBlur={value.onBlurListener}
               onClick={() => resizeKeyboard()}
-              data-testid={value.id}
+              data-testid={value.testid ?? value.id}
               autoComplete={value.autocomplete}
             />
 

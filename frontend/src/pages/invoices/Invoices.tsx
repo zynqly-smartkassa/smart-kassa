@@ -22,7 +22,6 @@ import { fetchBills } from "@/utils/invoices/fetchBills";
 import { formatDate } from "@/utils/formatDate";
 import { fetchDownload } from "@/utils/invoices/fetchDownload";
 import type { InvoiceFiles } from "@/types/InvoiceFile";
-import "@react-pdf-viewer/core/lib/styles/index.css";
 import LoadingInvoices from "@/components/Invoices/LoadingInvoices";
 import EmptyInvoices from "@/components/Invoices/EmptyInvoices";
 import { useNavigate, useParams } from "react-router";

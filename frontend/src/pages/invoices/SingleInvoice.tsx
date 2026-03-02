@@ -12,6 +12,7 @@ import {
   ArrowDown,
   QrCode,
   StickyNote,
+  X,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ import type { InvoiceFiles } from "@/types/InvoiceFile";
 import { formatDate } from "@/utils/formatDate";
 import { fetchDownload } from "@/utils/invoices/fetchDownload";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { DialogContent } from "@/components/ui/dialog";
+import { DialogClose, DialogContent } from "@/components/ui/dialog";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isMobile, useIsMobile } from "@/hooks/layout/use-mobile";
 import { toast } from "sonner";
@@ -145,13 +146,14 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
 
       {qrCodeOrPdf === "pdf" ? (
         <Dialog>
-          <DialogTrigger className="w-full">
+          <DialogTrigger className=" flex justify-center">
             <PdfReader InvoiceFile={file} />
           </DialogTrigger>
-          <DialogContent className="flex flex-col items-center justify-center h-[98dvh] w-[98vw] p-2 sm:h-[95dvh] sm:w-[95vw] sm:max-w-4xl sm:p-4 gap-0">
-            <div className="w-full h-full overflow-hidden rounded-lg">
-              <PdfReader InvoiceFile={file} maxSize />
-            </div>
+          <DialogContent className="flex flex-col items-center justify-center p-2 sm:h-[95dvh] sm:w-[95vw] sm:max-w-4xl sm:p-4 gap-0">
+            <DialogClose enterKeyHint="send">
+              <X className="text-transparent w-full"></X>
+            </DialogClose>
+            <PdfReader InvoiceFile={file} maxSize={!mobileView} />
           </DialogContent>
         </Dialog>
       ) : (

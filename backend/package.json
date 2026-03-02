@@ -6,7 +6,8 @@
   "main": "app.js",
   "scripts": {
     "dev": "npm install && node --watch app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev:test": "node --env-file=.env.test --watch app.js"
   },
   "engines": {
     "node": ">=18.18"
@@ -33,6 +34,7 @@
     "puppeteer": "^24.33.1"
   },
   "devDependencies": {
-    "@types/express": "^5.0.6"
+    "@types/express": "^5.0.6",
+    "dotenv-cli": "^11.0.0"
   }
 }

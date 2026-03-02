@@ -144,6 +144,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "vorname",
+      testid: "vorname",
       label: r.labels.vorname,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -170,6 +171,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "nachname",
+      testid: "nachname",
       label: r.labels.nachanme,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -197,6 +199,7 @@ function Register() {
         (invalidEmail && showHint.EmailFocused && "border-2 border-red-500") ||
         "",
       id: "email",
+      testid: "email",
       label: r.labels.email,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, EmailFocused: true })),
@@ -217,6 +220,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "Telefonnummer",
+      testid: "Telefonnummer",
       label: r.labels.phone,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -243,6 +247,7 @@ function Register() {
       className:
         (invalidFN && showHint.FNFocused && "border-2 border-red-500") || "",
       id: "FirmenBuchNummer",
+      testid: "FirmenBuchNummer",
       label: r.labels.fn,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, FNFocused: true })),
@@ -260,6 +265,7 @@ function Register() {
       className:
         (invalidATU && showHint.ATUFocused && "border-2 border-red-500") || "",
       id: "ATU",
+      testid: "ATU",
       label: r.labels.atu,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, ATUFocused: true })),
@@ -283,6 +289,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "password",
+      testid: "password",
       label: r.labels.password,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -315,6 +322,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "confirmPassword",
+      testid: "confirmPassword",
       label: r.labels.confirmPassword,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -373,7 +381,7 @@ function Register() {
               type="submit"
               className="btn-auth-submit"
               disabled={formUnvalid}
-              data-testid="register"
+              data-testid="registerButton"
             >
               {r.buttons.register}
             </Button>

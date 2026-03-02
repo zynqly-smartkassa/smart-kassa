@@ -56,6 +56,7 @@ export interface LoginShowError {
 export interface Container {
   label: string;
   id: string;
+  testid?: string;
   placeholder: string;
   type: HTMLInputTypeAttribute;
   value: string;
@@ -71,6 +72,7 @@ export interface Container {
 export interface PasswordContainer {
   label: string;
   id: string;
+  testid?: string;
   placeholder: string;
   type: HTMLInputTypeAttribute;
   title: string;
