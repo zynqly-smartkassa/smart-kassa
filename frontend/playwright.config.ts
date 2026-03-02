@@ -17,6 +17,10 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+    },
   ],
   webServer: [
     {
@@ -26,7 +30,8 @@ export default defineConfig({
       // but before the DB connection is established.
       url: "http://localhost:3000/health",
       reuseExistingServer: !process.env.CI,
-      timeout: 10_000,
+      // CI needs more time (Remote-DB + Cold Start)
+      timeout: process.env.CI ? 60_000 : 30_000,
     },
     {
       command: "npm run dev",
