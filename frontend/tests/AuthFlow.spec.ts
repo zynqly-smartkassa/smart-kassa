@@ -144,7 +144,7 @@ test.describe("Auth Flow", () => {
     await page.getByTestId(m.confirmPassword).fill(TEST_USER.password);
     await page.getByTestId(m.deleteAccountButton).click();
     await expect(page).toHaveURL("/register", { timeout: 5_000 });
-    await page.reload()
+    await page.reload();
     await expect(page).toHaveURL("/register", { timeout: 5_000 });
   });
 });
