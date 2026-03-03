@@ -44,6 +44,7 @@ import {
 import { fetchAvatar } from "@/utils/profile/getAvatar";
 import { setAvatarState } from "../../../redux/slices/avatarSlice";
 import { setLink } from "../../../redux/slices/footerLinksSlice";
+import { authTestIds } from "../../../constants/authDataTestId";
 
 /**
  * Account settings page component.
@@ -63,6 +64,7 @@ const Account = (): JSX.Element => {
   const [loading, setLoading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
   const avatarState = useSelector((state: RootState) => state.avatarState.url);
+  const { modal: m } = authTestIds;
 
   useEffect(() => {
     if (avatarState) {
@@ -514,7 +516,12 @@ const Account = (): JSX.Element => {
           </div>
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="btn-danger">Mein Konto löschen</Button>
+              <Button
+                className="btn-danger"
+                data-testid={m.deleteAccountTrigger}
+              >
+                Mein Konto löschen
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <form
@@ -573,11 +580,13 @@ const Account = (): JSX.Element => {
                         value={deletePassword}
                         onChange={(e) => setDeletePassword(e.target.value)}
                         className="h-11 bg-gray-100 dark:bg-gray-700 border border-red-400 focus:ring-2 focus:ring-red-500"
+                        data-testid={m.confirmPassword}
                       />
                     </div>
                     <Button
                       type="submit"
                       disabled={!deletePassword}
+                      data-testid={m.deleteAccountButton}
                       className=" my-2
                 bg-red-500 text-white font-extrabold w-full md:w-56 py-3
                 transition-all duration-200
