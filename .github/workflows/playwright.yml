@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 jobs:
-  test:
+  e2e-test:
     name: E2E Tests (${{ matrix.browser }})
     runs-on: ubuntu-latest
 
@@ -31,9 +31,17 @@ jobs:
             frontend/package-lock.json
             backend/package-lock.json
 
+      - name: Sync package.json and package-lock.json (backend)
+        run: npm install
+        working-directory: backend
+
       - name: Install backend dependencies
         run: npm ci
         working-directory: backend
+
+      - name: Sync package.json and package-lock.json (frontend)
+        run: npm install
+        working-directory: frontend
 
       - name: Install frontend dependencies
         run: npm ci
@@ -49,11 +57,13 @@ jobs:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
           JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          S3_REGION: ${{ secrets.S3_REGION }}
         run: |
           printf '%s\n' \
             "DATABASE_URL=${DATABASE_URL}" \
             "JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}" \
             "JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}" \
+            "S3_REGION=${S3_REGION}" \
             "NODE_ENV=test" \
             "PORT=3000" \
             "HOST=0.0.0.0" \
@@ -68,7 +78,7 @@ jobs:
         working-directory: frontend
 
       - name: Upload Playwright report
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.browser }}
