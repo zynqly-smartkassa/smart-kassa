@@ -53,6 +53,7 @@ app.use(
       "http://localhost", // Capacitor Android
       "capacitor://localhost", // Capacitor iOS
       process.env.NODE_ENV !== "production" && "http://localhost:5173",
+      process.env.NODE_ENV !== "production" && "http://localhost:5174",
       process.env.DEBUG_URL, // to test/debug
     ],
     credentials: true, // Allow cookies to be sent

@@ -125,6 +125,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
 
       <div className="w-11/12 md:w-9/12 lg:w-7/12 flex rounded-lg p-[0.1rem] bg-gray-200 dark:bg-black">
         <button
+          data-testid="pdf-tab"
           className={`flex p-[0.2rem] justify-center w-1/2 rounded-lg space-x-2 ${
             qrCodeOrPdf === "pdf" ? "dark:bg-gray-700 bg-gray-300" : ""
           }`}
@@ -134,6 +135,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
           <p className="font-bold">Rechnung</p>
         </button>
         <button
+          data-testid="qrcode-tab"
           className={`flex p-[0.2rem] justify-center w-1/2 rounded-lg space-x-2 ${
             qrCodeOrPdf === "qrcode" ? "dark:bg-gray-700 bg-gray-300" : ""
           }`}
@@ -158,7 +160,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
         </Dialog>
       ) : (
         (file.downloadUrl ?? file.url) && (
-          <div className="my-4 flex justify-center">
+          <div data-testid="qrcode-container" className="my-4 flex justify-center">
             <div className="p-4 bg-white rounded-lg w-fit">
               <QRCodeSVG
                 size={mobileView ? window.innerWidth - 120 : 500}
