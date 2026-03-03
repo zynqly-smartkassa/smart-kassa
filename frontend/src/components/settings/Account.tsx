@@ -460,7 +460,12 @@ const Account = (): JSX.Element => {
           </div>
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="btn-main-action">Abmelden</Button>
+              <Button
+                className="btn-main-action"
+                data-testid="modal-logout-trigger"
+              >
+                Abmelden
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -472,6 +477,7 @@ const Account = (): JSX.Element => {
               </DialogHeader>
               <DialogFooter>
                 <Button
+                  data-testid="modal-logout-button"
                   onClick={async () => {
                     toast.promise(
                       async () => {
