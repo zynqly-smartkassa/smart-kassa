@@ -43,7 +43,12 @@ export const toDeletedUser: RegisterableUser = {
  * This user must exist in the test database before `RideFlow.spec.ts` runs.
  * Create once manually or via a DB seed script — the ride flow never deletes this account.
  */
-export const LOGIN_USER = {
+export const LOGIN_USER: RegisterableUser = {
+  vorname: "John",
+  nachname: "Doe",
   email: "john@doe.com",
   password: "Passwort#1",
+  telefon: `+43 660 ${String(RUN_ID).slice(-7)}`,
+  fn: `FN${String(RUN_ID).slice(-6)}b`,
+  atu: `ATU${String(RUN_ID).slice(-9)}`,
 } as const;

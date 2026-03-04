@@ -67,7 +67,6 @@ const Invoice = () => {
 
   const startAddressParagraph = useRef<HTMLParagraphElement>(null);
   const [lineheight, setLineheight] = useState(2.75);
-  const [invoice, setInvoice] = useState<InvoiceFiles | null>(null);
 
   const getRideData = useCallback(async () => {
     const rideData =
@@ -126,7 +125,7 @@ const Invoice = () => {
   const amount_tax = amount_gross - amount_net;
 
   // billingData is built inside sendBill to capture form values at submit time
-  const sendBill = async (retry: boolean = true) => {
+  const sendBill = async (retry: boolean = true): Promise<InvoiceFiles> => {
     const values = form.getValues();
     const ridePrice = parseFloat(values.ride_price?.toString() || "0") || 0;
     const tip = parseFloat(values.tip?.toString() || "0") || 0;
@@ -162,7 +161,7 @@ const Invoice = () => {
           },
         },
       );
-      setInvoice(data.files);
+      return data.files;
     } catch (error) {
       if (error instanceof AxiosError) {
         const tokenError =
@@ -210,13 +209,13 @@ const Invoice = () => {
 
     toast.promise(
       async () => {
-        await sendBill(true);
+        return await sendBill(true);
       },
       {
         className: "mt-5 md:mt-0",
-        success: async () => {
-          await navigate(`/invoices/${invoice?.billingData?.billing_id}`, {
-            state: invoice,
+        success: async (data: InvoiceFiles) => {
+          await navigate(`/invoices/${data?.billingData?.billing_id}`, {
+            state: data,
           });
           await setRideInfo.removeRideInfo();
           return "Rechnung erflogreich erstellt";

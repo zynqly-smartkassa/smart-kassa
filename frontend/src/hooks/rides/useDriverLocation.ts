@@ -58,8 +58,6 @@ export const useDriverLocation = () => {
           position.coords.longitude,
         ]);
 
-        // Start live tracking
-        /* 
         watchId = await Geolocation.watchPosition(
           {
             enableHighAccuracy: isMobile, //isMobile
@@ -78,9 +76,8 @@ export const useDriverLocation = () => {
                 position.coords.longitude,
               ]);
             }
-          }
+          },
         );
-        */
       } catch (error: unknown) {
         handleGeolocationError(error);
       }

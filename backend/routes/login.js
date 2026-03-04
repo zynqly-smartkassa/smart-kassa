@@ -60,7 +60,7 @@ router.post("/", async (req, res) => {
         users.company_id
       FROM users
       WHERE users.email = $1 AND users.is_deleted = false`,
-      [email]
+      [email],
     );
 
     // Check if user exists
@@ -68,7 +68,6 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "User not found" });
     }
 
-    
     const user = result.rows[0];
     // Verify password against stored Argon2 hash
     const valid = await argon2.verify(user.password_hash, password);
@@ -81,7 +80,7 @@ router.post("/", async (req, res) => {
       userId: user.user_id,
       email: user.email,
       name: `${user.first_name} ${user.last_name}`,
-      companyId: user.company_id
+      companyId: user.company_id,
     };
 
     // Generate both access and refresh tokens
@@ -118,7 +117,7 @@ router.post("/", async (req, res) => {
         client_ip,
         device_name,
         device_id,
-      ]
+      ],
     );
 
     // Store refresh token in httpOnly cookie (not accessible via JavaScript)
@@ -129,7 +128,6 @@ router.post("/", async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       path: "/",
     });
-
     // Return access token and user info to client
     res.json({
       message: "Login successful",

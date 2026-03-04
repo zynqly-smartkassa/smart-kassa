@@ -59,7 +59,7 @@ router.post("/", async (req, res) => {
     !end_lat ||
     !end_lng ||
     !duration ||
-    !distance ||
+    distance === null || // if in testing environment fake movement is deactivated, returns true
     !ride_type ||
     !whole_ride
   ) {
@@ -93,7 +93,7 @@ router.post("/", async (req, res) => {
       `
             SELECT company_id FROM users WHERE user_id = $1
             `,
-      [user_id]
+      [user_id],
     );
 
     if (userRes.rows.length === 0) {
@@ -104,7 +104,7 @@ router.post("/", async (req, res) => {
 
     if (!company_id) {
       throw new Error(
-        `User with ID ${user_id} is not assigned to a company. Billing cannot be created.`
+        `User with ID ${user_id} is not assigned to a company. Billing cannot be created.`,
       );
     }
 
@@ -136,7 +136,7 @@ router.post("/", async (req, res) => {
         distance,
         ride_type,
         JSON.stringify(whole_ride),
-      ]
+      ],
     );
 
     if (!rideRes.rows || rideRes.rows.length === 0) {
