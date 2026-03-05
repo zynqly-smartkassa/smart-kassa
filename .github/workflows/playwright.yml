@@ -31,24 +31,16 @@ jobs:
             frontend/package-lock.json
             backend/package-lock.json
 
-      - name: Sync package.json and package-lock.json (backend)
-        run: npm install
-        working-directory: backend
-
       - name: Install backend dependencies
         run: npm ci
         working-directory: backend
-
-      - name: Sync package.json and package-lock.json (frontend)
-        run: npm install
-        working-directory: frontend
 
       - name: Install frontend dependencies
         run: npm ci
         working-directory: frontend
 
       - name: Install Playwright browser + system dependencies
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        run: npx playwright install --with-deps
         working-directory: frontend
 
       # Creates backend/.env.test from GitHub Secrets

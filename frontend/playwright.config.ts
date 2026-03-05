@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const VIENNA = { latitude: 48.2082, longitude: 16.3738 };
+
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
@@ -13,13 +15,32 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
+    // Desktop-Browser: all Tests except RideFlow
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      testIgnore: ["**/RideFlow.spec.ts"],
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+      testIgnore: ["**/RideFlow.spec.ts"],
     },
     {
       name: "webkit",
       use: { ...devices["Desktop Safari"] },
+      testIgnore: ["**/RideFlow.spec.ts"],
+    },
+    // Dedicated Mobile project only for RideFlow
+    // Playwright emulates iPhone 13 via Chromium CDP (only browser with full device emulation support)
+    {
+      name: "mobile",
+      use: {
+        ...devices["iPhone 13"],
+        geolocation: VIENNA,
+        permissions: ["geolocation"],
+      },
+      testMatch: ["**/RideFlow.spec.ts"],
     },
   ],
   webServer: [

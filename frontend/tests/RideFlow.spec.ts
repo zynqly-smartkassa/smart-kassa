@@ -1,4 +1,4 @@
-import { test, expect, devices } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { LOGIN_USER } from "./userCredentials";
 import { loginUser } from "./helpers";
 import { rideTestIds } from "../constants/rideDataTestId";
@@ -7,25 +7,13 @@ const ri = rideTestIds.ride;
 const p = rideTestIds.payment;
 const inv = rideTestIds.invoice;
 
-// Vienna city center for GPS mock
-const VIENNA = { latitude: 48.2082, longitude: 16.3738 };
-
-/**
- * iPhone 13 emulation — the ride page only shows its UI on mobile (md:hidden).
- * Geolocation is mocked since Capacitor falls back to navigator.geolocation in the browser.
- */
-test.use({
-  ...devices["iPhone 13"],
-  geolocation: VIENNA,
-  permissions: ["geolocation"],
-});
+// iPhone 13 + Geolocation Vienna in "mobile-chrome" Playwright-Projekt set (playwright.config.ts)
 
 test.describe("Ride Flow (Mobile)", () => {
   test("Log in using existing User (John Doe) → Start Ride → End Ride → Payment → Invoice with QR Code", async ({
     page,
   }) => {
     await loginUser(page, LOGIN_USER);
-
 
     await page.goto("/ride");
 
@@ -56,7 +44,6 @@ test.describe("Ride Flow (Mobile)", () => {
     await page.getByTestId(p.submitButton).click();
 
     await expect(page).toHaveURL(/\/invoices\//, { timeout: 15_000 });
-
 
     await page.getByTestId(inv.qrcodeTab).click();
     await expect(page.getByTestId(inv.qrcodeContainer)).toBeVisible({
