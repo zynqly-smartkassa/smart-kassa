@@ -24,21 +24,6 @@ export const createUniqueUser = (
 };
 
 /**
- * A user registered in the logout test and reused in the login+delete test.
- * The email is intentionally fixed so it can be found across sequential tests within the same run.
- * FN, ATU and phone are unique per run to avoid DB conflicts on re-registration.
- */
-export const toDeletedUser: RegisterableUser = {
-  vorname: "Max",
-  nachname: "Mustermann",
-  email: "playwright_reload_1@test.at",
-  telefon: `+43 660 ${String(RUN_ID).slice(-7)}`,
-  fn: `FN${String(RUN_ID).slice(-6)}b`,
-  atu: `ATU${String(RUN_ID).slice(-9)}`,
-  password: "Test1234!",
-} as const;
-
-/**
  * Fixed credentials for the dedicated ride-flow test user.
  * This user must exist in the test database before `RideFlow.spec.ts` runs.
  * Create once manually or via a DB seed script — the ride flow never deletes this account.

@@ -27,7 +27,7 @@ router.delete("/", authenticateToken, async (req, res) => {
 
     console.error(
       "Delete Account Error: Fields Missing \n",
-      missingFieldsMessage
+      missingFieldsMessage,
     );
 
     return res.status(400).send({
@@ -42,7 +42,7 @@ router.delete("/", authenticateToken, async (req, res) => {
     // user has to provide his password to delete his account
     const dbpassword = await pool.query(
       "SELECT password_hash FROM users where user_id = $1",
-      [user_id]
+      [user_id],
     );
 
     if (dbpassword.rowCount === 0) {
@@ -54,7 +54,7 @@ router.delete("/", authenticateToken, async (req, res) => {
 
     const validPassword = await argon2.verify(
       dbpassword.rows[0].password_hash,
-      password
+      password,
     );
 
     if (!validPassword) {
@@ -66,7 +66,7 @@ router.delete("/", authenticateToken, async (req, res) => {
 
     const result = await pool.query(
       `UPDATE users SET email = null, phone_number = NULL, first_name = 'Deleted', last_name = 'User', password_hash = NULL, is_deleted = true, deleted_at = NOW() WHERE user_id = $1`,
-      [user_id]
+      [user_id],
     );
 
     if (result.rowCount === 0) {
@@ -78,7 +78,7 @@ router.delete("/", authenticateToken, async (req, res) => {
 
     await pool.query(
       `UPDATE session SET user_agent = NULL, client_ip = NULL, device_name = NULL where user_id = $1`,
-      [user_id]
+      [user_id],
     );
 
     /**
@@ -86,13 +86,13 @@ router.delete("/", authenticateToken, async (req, res) => {
      */
     const company = await pool.query(
       `SELECT company_id FROM users WHERE user_id = $1`,
-      [user_id]
+      [user_id],
     );
 
     if (company.rows[0].company_id) {
       await pool.query(
         `UPDATE company SET is_deleted = TRUE, deleted_at = NOW() WHERE company_id = $1`,
-        [company.rows[0].company_id]
+        [company.rows[0].company_id],
       );
     }
 
