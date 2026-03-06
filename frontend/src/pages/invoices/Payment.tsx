@@ -290,6 +290,7 @@ const Invoice = () => {
                         <div className="space-y-3">
                           <button
                             type="button"
+                            data-testid="payment-card"
                             onClick={() => field.onChange("card")}
                             className={`w-full p-4 rounded-lg border-2 transition-all ${
                               field.value === "card"
@@ -329,6 +330,7 @@ const Invoice = () => {
 
                           <button
                             type="button"
+                            data-testid="payment-cash"
                             onClick={() => field.onChange("cash")}
                             className={`w-full p-4 rounded-lg border-2 transition-all ${
                               field.value === "cash"
@@ -390,6 +392,7 @@ const Invoice = () => {
                             type="number"
                             placeholder="0.00"
                             className="pl-7"
+                            data-testid="ride-price"
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseFloat(e.target.value))
@@ -421,6 +424,7 @@ const Invoice = () => {
                             type="number"
                             placeholder="0.00"
                             className="pl-7"
+                            data-testid="payment-tip"
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseFloat(e.target.value))
@@ -463,6 +467,7 @@ const Invoice = () => {
               <CardFooter>
                 <Button
                   type="submit"
+                  data-testid="create-invoice"
                   disabled={form.formState.isSubmitting}
                   className="w-full"
                   size="lg"

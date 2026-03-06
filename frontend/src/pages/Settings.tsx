@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Account from "../components/settings/Account";
 import Notifications from "../components/settings/Notifications";
 import UiStyling from "../components/settings/UiStyling";
+import type { JSX } from "react";
 
 /**
  * Main settings page component with tabbed navigation.
@@ -15,7 +16,7 @@ import UiStyling from "../components/settings/UiStyling";
  *
  * @returns {JSX.Element} A tabbed settings interface with three main sections.
  */
-const Settings = () => {
+const Settings = (): JSX.Element => {
   return (
     <Tabs defaultValue="account" className="w-full flex flex-col">
       <TabsList className="grid grid-cols-4 gap-3 w-full md:w-auto max-w-[400px]">

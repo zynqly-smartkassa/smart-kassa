@@ -13,6 +13,7 @@ import {
   QrCode,
   StickyNote,
   Car,
+  X,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import type { InvoiceFiles } from "@/types/InvoiceFile";
 import { formatDate } from "@/utils/formatDate";
 import { fetchDownload } from "@/utils/invoices/fetchDownload";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { DialogContent } from "@/components/ui/dialog";
+import { DialogClose, DialogContent } from "@/components/ui/dialog";
 import { useCallback, useEffect, useState } from "react";
 import { isMobile, useIsMobile } from "@/hooks/layout/use-mobile";
 import { toast } from "sonner";
@@ -92,6 +93,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
 
       <div className="w-11/12 md:w-9/12 lg:w-7/12 flex rounded-lg p-[0.1rem] bg-gray-200 dark:bg-black">
         <button
+          data-testid="pdf-tab"
           className={`flex p-[0.2rem] justify-center w-1/2 rounded-lg space-x-2 ${
             qrCodeOrPdf === "pdf" ? "dark:bg-gray-700 bg-gray-300" : ""
           }`}
@@ -101,6 +103,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
           <p className="font-bold">Rechnung</p>
         </button>
         <button
+          data-testid="qrcode-tab"
           className={`flex p-[0.2rem] justify-center w-1/2 rounded-lg space-x-2 ${
             qrCodeOrPdf === "qrcode" ? "dark:bg-gray-700 bg-gray-300" : ""
           }`}
@@ -116,15 +119,16 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
           <DialogTrigger className="w-full lg:w-1/2">
             <PdfReader InvoiceFile={file} />
           </DialogTrigger>
-          <DialogContent className="flex flex-col items-center justify-center h-[98dvh] w-[98vw] p-2 sm:h-[95dvh] sm:w-[95vw] sm:max-w-4xl sm:p-4 gap-0">
-            <div className="w-full h-full overflow-hidden rounded-lg">
-              <PdfReader InvoiceFile={file} maxSize />
-            </div>
+          <DialogContent className="flex flex-col items-center justify-center p-2 sm:h-[95dvh] sm:w-[95vw] sm:max-w-4xl sm:p-4 gap-0">
+            <DialogClose enterKeyHint="send">
+              <X className="text-transparent w-full"></X>
+            </DialogClose>
+            <PdfReader InvoiceFile={file} maxSize={!mobileView} />
           </DialogContent>
         </Dialog>
       ) : (
         (file.downloadUrl ?? file.url) && (
-          <div className="my-4 flex justify-center">
+          <div data-testid="qrcode-container" className="my-4 flex justify-center">
             <div className="p-4 bg-white rounded-lg w-fit">
               <QRCodeSVG
                 size={mobileView ? window.innerWidth - 120 : 500}

@@ -36,17 +36,15 @@ router.post("/", authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
       `UPDATE session SET is_revoked = true, expires_at = '1970-01-01 00:00:00' WHERE refresh_token = $1 AND user_id = $2 AND device_id = $3`,
-      [refreshToken, user_id, device_id]
+      [refreshToken, user_id, device_id],
     );
 
     if (result.rowCount === 0) {
-      return res
-        .status(404)
-        .send({
-          error: "No Session found",
-          message:
-            "No Session found to log out user, check if the provided values are correct",
-        });
+      return res.status(404).send({
+        error: "No Session found",
+        message:
+          "No Session found to log out user, check if the provided values are correct",
+      });
     }
 
     res.clearCookie("refreshToken", {

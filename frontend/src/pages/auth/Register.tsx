@@ -36,6 +36,7 @@ import type {
 import Inputs from "../../components/inputs/Inputs";
 import PasswordInputs from "../../components/inputs/PasswordInputs";
 import { useCheckForNews } from "../../hooks/userfeedback/useNews";
+import { authTestIds } from "../../../constants/authDataTestId";
 
 /**
  * The Sign Up page, where users Sign Up
@@ -144,6 +145,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "vorname",
+      testid: authTestIds.register.vorname,
       label: r.labels.vorname,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -170,6 +172,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "nachname",
+      testid: authTestIds.register.nachname,
       label: r.labels.nachanme,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -197,6 +200,7 @@ function Register() {
         (invalidEmail && showHint.EmailFocused && "border-2 border-red-500") ||
         "",
       id: "email",
+      testid: authTestIds.register.email,
       label: r.labels.email,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, EmailFocused: true })),
@@ -217,6 +221,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "Telefonnummer",
+      testid: authTestIds.register.telefonnummer,
       label: r.labels.phone,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -243,6 +248,7 @@ function Register() {
       className:
         (invalidFN && showHint.FNFocused && "border-2 border-red-500") || "",
       id: "FirmenBuchNummer",
+      testid: authTestIds.register.firmenBuchNummer,
       label: r.labels.fn,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, FNFocused: true })),
@@ -260,6 +266,7 @@ function Register() {
       className:
         (invalidATU && showHint.ATUFocused && "border-2 border-red-500") || "",
       id: "ATU",
+      testid: authTestIds.register.atu,
       label: r.labels.atu,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, ATUFocused: true })),
@@ -283,6 +290,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "password",
+      testid: authTestIds.register.password,
       label: r.labels.password,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -315,6 +323,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "confirmPassword",
+      testid: authTestIds.register.confirmPassword,
       label: r.labels.confirmPassword,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -373,14 +382,14 @@ function Register() {
               type="submit"
               className="btn-auth-submit"
               disabled={formUnvalid}
-              data-testid="register"
+              data-testid={authTestIds.register.registerButton}
             >
               {r.buttons.register}
             </Button>
             <div className="w-full flex justify-center mt-2 text-center">
               <div className="text-sm text-muted-foreground">
                 <p>{r.footer.text}</p>
-                <Link to="/login" className="auth-link" data-testid="loginLink">
+                <Link to="/login" className="auth-link" data-testid={authTestIds.register.loginLink}>
                   {r.footer.link}
                 </Link>
               </div>

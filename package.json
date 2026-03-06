@@ -14,7 +14,8 @@
    "start-ios":"npm run ios --prefix frontend && echo \"Make sure to use a deployed Backend (not on localhost)\"",
    "ios":"npm run ios --prefix frontend && echo \"Make sure to use a deployed Backend (not on localhost)\"",
    "dev":"concurrently \"npm run start-frontend\" \"npm run start-backend\"",
-   "install": "concurrently \"npm install\" \"npm install --prefix frontend\" \"npm install --prefix backend\""
+   "install": "concurrently \"npm install\" \"npm install --prefix frontend\" \"npm install --prefix backend\"",
+   "test":"concurrently \"npm run dev:test --prefix backend\" \"npm run test --prefix frontend\""
   },
   "repository": {
     "type": "git",

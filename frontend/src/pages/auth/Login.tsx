@@ -30,6 +30,7 @@ import type {
 } from "../../../constants/Compontents";
 import Inputs from "../../components/inputs/Inputs";
 import PasswordInputs from "../../components/inputs/PasswordInputs";
+import { authTestIds } from "../../../constants/authDataTestId";
 
 /**
  * The Login page, where users sign in
@@ -88,6 +89,7 @@ function Login() {
         (invalidemail && showHint.EmailFocused && "border-2 border-red-500") ||
         "",
       id: "email",
+      testid: authTestIds.login.email,
       label: l.labels.email,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, EmailFocused: true })),
@@ -111,6 +113,7 @@ function Login() {
           "border-2 border-red-500") ||
         "",
       id: "password",
+      testid: authTestIds.login.password,
       label: "", // Empty label since we render it manually with forgot password link
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -183,7 +186,7 @@ function Login() {
               className="btn-auth-submit"
               variant="default"
               disabled={formUnvalid}
-              data-testid="login"
+              data-testid={authTestIds.login.loginButton}
             >
               {l.buttons.login}
             </Button>
@@ -193,7 +196,7 @@ function Login() {
                 <Link
                   to="/register"
                   className="auth-link"
-                  data-testid="registerLink"
+                  data-testid={authTestIds.login.registerLink}
                 >
                   {l.footer.link}
                 </Link>
