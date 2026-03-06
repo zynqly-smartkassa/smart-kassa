@@ -22,7 +22,7 @@ test.describe("Ride Flow (Mobile)", () => {
     await page.getByTestId(ri.selectTrigger).click();
     await page.getByRole("option", { name: "Taxifahrt" }).click();
 
-    await page.getByTestId(ri.address).fill("Graz, Hauptbahnhof");
+    await page.getByTestId(ri.address).fill("Herrengasse 1, 8010 Graz");
 
     await page.getByTestId(ri.calculateRoute).click();
 

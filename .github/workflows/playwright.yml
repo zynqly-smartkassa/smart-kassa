@@ -50,12 +50,20 @@ jobs:
           JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           S3_REGION: ${{ secrets.S3_REGION }}
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
         run: |
           printf '%s\n' \
             "DATABASE_URL=${DATABASE_URL}" \
             "JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}" \
             "JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}" \
             "S3_REGION=${S3_REGION}" \
+            "S3_ENDPOINT=${S3_ENDPOINT}" \
+            "S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}" \
+            "S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}" \
+            "S3_BUCKET_NAME=${S3_BUCKET_NAME}" \
             "NODE_ENV=test" \
             "PORT=3000" \
             "HOST=0.0.0.0" \
