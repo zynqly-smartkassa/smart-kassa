@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <Group
+      location = "group:App"
+      name = "App">
+      <FileRef
+         location = "container:App.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "container:App.xcworkspace">
+      </FileRef>
+      <FileRef
+         location = "container:Podfile">
+      </FileRef>
+      <FileRef
+         location = "group:Assets.xcassets">
+      </FileRef>
+      <Group
+         location = "group:Base.lproj"
+         name = "Base.lproj">
+         <FileRef
+            location = "group:LaunchScreen.storyboard">
+         </FileRef>
+         <FileRef
+            location = "group:Main.storyboard">
+         </FileRef>
+      </Group>
+      <FileRef
+         location = "group:config.xml">
+      </FileRef>
+      <Group
+         location = "group:public"
+         name = "public">
+         <FileRef
+            location = "group:index.html">
+         </FileRef>
+         <FileRef
+            location = "group:cordova.js">
+         </FileRef>
+         <FileRef
+            location = "group:dot.png">
+         </FileRef>
+         <FileRef
+            location = "group:vite.svg">
+         </FileRef>
+         <FileRef
+            location = "group:Logo.png">
+         </FileRef>
+         <FileRef
+            location = "group:bericht.png">
+         </FileRef>
+         <FileRef
+            location = "group:karte3.png">
+         </FileRef>
+         <FileRef
+            location = "group:cordova_plugins.js">
+         </FileRef>
+         <FileRef
+            location = "group:manifest.webmanifest">
+         </FileRef>
+         <Group
+            location = "group:assets"
+            name = "assets">
+            <FileRef
+               location = "group:web-Ds7YY7Il.js">
+            </FileRef>
+            <FileRef
+               location = "group:web-CvAMlzIB.js">
+            </FileRef>
+            <FileRef
+               location = "group:icon-only-DlWNviqM.jpg">
+            </FileRef>
+            <FileRef
+               location = "group:index-BYkvq3_E.js">
+            </FileRef>
+            <FileRef
+               location = "group:index-BA8IvtGx.css">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:Logo.svg">
+         </FileRef>
+         <FileRef
+            location = "group:fahrten.png">
+         </FileRef>
+      </Group>
+      <FileRef
+         location = "group:capacitor.config.json">
+      </FileRef>
+      <FileRef
+         location = "group:AppDelegate.swift">
+      </FileRef>
+      <FileRef
+         location = "group:Info.plist">
+      </FileRef>
+   </Group>
+   <FileRef
+      location = "group:App.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Pods/Pods.xcodeproj">
+   </FileRef>
+</Workspace>

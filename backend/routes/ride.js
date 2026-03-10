@@ -27,11 +27,103 @@ const router = express.Router();
  * @body {string} duration (required)
  * @body {float} distance (required)
  * @body {string} ride_type (required)
+ * @body {jsonb string} whole_ride (required)
+ * @returns {Object} 400 - Missing required fields
  * @returns {Object} 500 - Internal server error
  */
 router.post("/", async (req, res) => {
-    const {
+  const {
+    user_id,
+    start_address,
+    start_time,
+    start_lat,
+    start_lng,
+    end_address,
+    end_time,
+    end_lat,
+    end_lng,
+    duration,
+    distance,
+    ride_type,
+    whole_ride,
+  } = req.body;
+
+  if (
+    !user_id ||
+    !start_address ||
+    !start_time ||
+    !start_lat ||
+    !start_lng ||
+    !end_address ||
+    !end_time ||
+    !end_lat ||
+    !end_lng ||
+    !duration ||
+    distance === null || // if in testing environment fake movement is deactivated, returns true
+    !ride_type ||
+    !whole_ride
+  ) {
+    return res.status(400).json({
+      status: "error",
+      code: "MISSING_FIELDS",
+      message: "Missing required fields",
+      received: {
+        user_id: user_id,
+        start_address: start_address,
+        start_time: start_time,
+        start_lat: start_lat,
+        start_lng: start_lng,
+        end_address: end_address,
+        end_time: end_time,
+        end_lat: end_lat,
+        end_lng: end_lng,
+        duration: duration,
+        distance: distance,
+        ride_type: ride_type,
+        whole_ride: whole_ride,
+      },
+    });
+  }
+
+  try {
+    // Begin of database transaction, if an operation fails, all queries roll back
+    await pool.query("BEGIN");
+
+    const userRes = await pool.query(
+      `
+            SELECT company_id FROM users WHERE user_id = $1
+            `,
+      [user_id],
+    );
+
+    if (userRes.rows.length === 0) {
+      throw new Error(`User with ID ${user_id} not found`);
+    }
+
+    const company_id = userRes.rows[0].company_id;
+
+    if (!company_id) {
+      throw new Error(
+        `User with ID ${user_id} is not assigned to a company. Billing cannot be created.`,
+      );
+    }
+
+    // Random vehicle id for test purposes, when vehicle_id gets implemented refactor the code!
+    const vehicle_id = Math.floor(Math.random() * 100 + 1);
+
+    const rideRes = await pool.query(
+      `
+            INSERT INTO ride
+                (user_id, vehicle_id,
+                start_address, start_time, start_lat, start_lng,
+                end_address, end_time, end_lat, end_lng,
+                duration, distance, ride_type, whole_ride)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            RETURNING ride_id
+            `,
+      [
         user_id,
+        vehicle_id,
         start_address,
         start_time,
         start_lat,
@@ -43,69 +135,36 @@ router.post("/", async (req, res) => {
         duration,
         distance,
         ride_type,
-    } = req.body;
+        JSON.stringify(whole_ride),
+      ],
+    );
 
-    if (
-        !user_id ||
-        !start_address ||
-        !start_time ||
-        !start_lat ||
-        !start_lng ||
-        !end_address ||
-        !end_time ||
-        !end_lat ||
-        !end_lng ||
-        !duration ||
-        !distance ||
-        !ride_type
-    ) {
-        return res.status(400).json({ error: "Missing required fields" });
+    if (!rideRes.rows || rideRes.rows.length === 0) {
+      return res.status(500).json({
+        status: "error",
+        message: "Ride could not be created",
+      });
     }
 
+    const ride_id = rideRes.rows[0].ride_id;
 
-    try {
-        // Begin of database transaction, if an operation fails, all queries roll back
-        await pool.query("BEGIN");
+    await pool.query("COMMIT");
 
-        // Random vehicle id for test purposes, when vehicle_id gets implemented refactor the code!
-        const vehicle_id = Math.floor(Math.random() * 100 + 1);
-
-        const rideRes = await pool.query(
-            `
-            INSERT INTO ride
-                (user_id, vehicle_id,
-                start_address, start_time, start_lat, start_lng,
-                end_address, end_time, end_lat, end_lng,
-                duration, distance, ride_type)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-            RETURNING ride_id
-            `,
-            [
-                user_id, vehicle_id,
-                start_address, start_time, start_lat, start_lng,
-                end_address, end_time, end_lat, end_lng,
-                duration, distance, ride_type
-            ]
-        );
-
-        const ride_id = rideRes.rows[0].ride_id;
-
-        res.json({
-            message: "Ride successfully saved",
-            ride_info: {
-                ride_id: ride_id,
-                vehicle_id: vehicle_id,
-            },
-        });
-
-        await pool.query("COMMIT");
-    } catch (error) {
-        await pool.query("ROLLBACK");
-        const errorResponse = "\nDEBUG PRINT\n";
-        console.error(errorResponse)
-        return res.status(500).send({ error: errorResponse, message: "Internal Server Error" });
-
-    }
+    res.json({
+      status: "success",
+      message: "Ride and invoice successfully saved",
+      ride_info: {
+        ride_id: ride_id,
+        vehicle_id: vehicle_id,
+      },
+    });
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    return res.status(500).send({
+      error: "Internal Server Error",
+      details: error.message,
+    });
+  }
 });
 
 /**
@@ -115,7 +174,7 @@ router.post("/", async (req, res) => {
  * @access Public
  */
 router.get("/", (req, res) => {
-    res.send("Server running on route /ride");
+  res.send("Server running on route /ride");
 });
 
 export default router;

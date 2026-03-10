@@ -1,14 +1,20 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./pages/auth/Register";
 import Home from "./pages/Home";
 import Login from "./pages/auth/Login";
-import RootLayout from "./layout/RootLayout";
-import Settings from "./pages/settings/Settings";
+import RootLayout from "./components/providers/RootLayout";
+import Settings from "./pages/Settings";
 import { useEffect } from "react";
 import { StatusBar } from "@capacitor/status-bar";
-import { Capacitor } from "@capacitor/core";
 import Ride from "./pages/rides/Ride";
 import AllRides from "./pages/rides/AllRides";
+import { isMobile } from "./hooks/layout/use-mobile";
+import Invoices from "./pages/invoices/Invoices";
+import { ProtectedRoute } from "./components/providers/ProtectedRoute";
+import Payment from "./pages/invoices/Payment";
+import Documentation from "./pages/Documentation";
+import Help from "./pages/Help";
+import SingleInvoice from "./pages/invoices/SingleInvoice";
 
 /**
  * The Routes are all declared here
@@ -16,8 +22,6 @@ import AllRides from "./pages/rides/AllRides";
  */
 
 function App() {
-  const isMobile = Capacitor.isNativePlatform();
-
   /**
    * to set the Statusbar Color on the Mobile App
    */
@@ -25,7 +29,7 @@ function App() {
     if (isMobile) {
       StatusBar.setBackgroundColor({ color: "#000000" });
     }
-  }, [isMobile]);
+  }, []);
 
   return (
     <Router>
@@ -34,22 +38,24 @@ function App() {
 
         <Route
           element={
-            isMobile ? (
-              // Mobile: No ProtectedRoute, direct access
+            <ProtectedRoute>
               <RootLayout />
-            ) : (
-              // Web: Use ProtectedRoute
-              
-                <RootLayout />
-            
-            )
+            </ProtectedRoute>
           }
         >
           <Route path="/" element={<Home />} />
+          <Route path="/documentation" element={<Documentation />} />
+          <Route path="/help" element={<Help />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/ride" element={<Ride />} />
           <Route path="/all-rides" element={<AllRides />}>
             <Route path=":id" element={<AllRides />} />
+          </Route>
+          <Route path="/invoices" element={<Invoices />}>
+            <Route path=":id" element={<SingleInvoice />} />
+          </Route>
+          <Route path="/payment" element={<Payment />}>
+            <Route path=":id" element={<Payment />} />
           </Route>
         </Route>
 

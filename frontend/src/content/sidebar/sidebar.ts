@@ -1,7 +1,12 @@
-import { Home, BarChart, Wallet, BookOpen, Settings,
-  Car, Receipt, List, UserSquare, Truck, CalendarClock,
-  BadgePercent, Download, Info
- } from "lucide-react";
+import {
+  Home,
+  BookOpen,
+  Settings,
+  Car,
+  Receipt,
+  List,
+  Info,
+} from "lucide-react";
 
 export interface SidebarItem {
   label: string;
@@ -25,35 +30,24 @@ export const sidebarSections: SidebarSection[] = [
         icon: Home,
       },
       {
-        label: "Analytics",
-        path: "/analytics",
-        icon: BarChart,
-      },
-      {
-        label: "Finances",
-        path: "/finances",
-        icon: Wallet,
-      },
-      {
-        label: "Docs",
+        label: "Dokumentation",
         path: "/documentation",
         icon: BookOpen,
       },
-      
     ],
   },
 
   {
-    title: "Taxi Management",
+    title: "Taxi Verwaltung",
     items: [
       {
-        label: "Start a ride",
+        label: "Fahrt starten",
         path: "/ride",
         icon: Car,
-        onlyMobile: true
+        onlyMobile: true,
       },
-       {
-        label: "All Rides",
+      {
+        label: "Alle Fahrten",
         path: "/all-rides",
         icon: List,
       },
@@ -62,55 +56,21 @@ export const sidebarSections: SidebarSection[] = [
         path: "/invoices",
         icon: Receipt,
       },
-      {
-        label: "Fahrer",
-        path: "/drivers",
-        icon: UserSquare,
-      },
-      {
-        label: "Fahrzeuge",
-        path: "/vehicles",
-        icon: Truck,
-      },
     ],
   },
-
   {
-    title: "Administration",
+    title: "Weitere",
     items: [
       {
-        label: "Dienstplan",
-        path: "/shift-plan",
-        icon: CalendarClock,
-      },
-      {
-        label: "Tarife",
-        path: "/pricing",
-        icon: BadgePercent,
-      },
-
-      {
-        label: "Transfer",
-        path: "/transfer",
-        icon: Download,
-      },
-    ],
-  },
-
-   {
-    title: "Utils",
-    items: [
-      {
-        label: "Help",
+        label: "Hilfe",
         path: "/help",
         icon: Info,
       },
       {
-        label: "Settings",
+        label: "Einstellungen",
         path: "/settings",
         icon: Settings,
       },
     ],
   },
 ];
-

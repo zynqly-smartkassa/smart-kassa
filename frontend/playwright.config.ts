@@ -1,49 +1,64 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
-import dotenv from 'dotenv';
-import path from 'path';
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+const VIENNA = { latitude: 48.2082, longitude: 16.3738 };
 
 export default defineConfig({
-  testDir: './__tests__/e2e',
-
-  fullyParallel: true,
-
+  testDir: "./tests",
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
-
   retries: process.env.CI ? 2 : 0,
-
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  workers: 3,
+  reporter: [["html", { open: "never" }], ["list"]],
   use: {
-    baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    baseURL: "http://localhost:5173",
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
   },
-
   projects: [
+    // Desktop-Browser: all Tests except RideFlow
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+      testIgnore: ["**/RideFlow.spec.ts"],
     },
-
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+      testIgnore: ["**/RideFlow.spec.ts"],
     },
-
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+      testIgnore: ["**/RideFlow.spec.ts"],
+    },
+    // Dedicated Mobile project only for RideFlow
+    // Playwright emulates iPhone 13 via Chromium CDP (only browser with full device emulation support)
+    {
+      name: "mobile",
+      use: {
+        ...devices["iPhone 13"],
+        geolocation: VIENNA,
+        permissions: ["geolocation"],
+      },
+      testMatch: ["**/RideFlow.spec.ts"],
     },
   ],
-
-  webServer: {
-    command: 'npm run start',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: "npm run dev:test --prefix ../backend",
+      // /health checks that Express AND the DB are ready before tests start.
+      // Without this Playwright would start tests as soon as the port opens,
+      // but before the DB connection is established.
+      url: "http://localhost:3000/health",
+      reuseExistingServer: !process.env.CI,
+      // CI needs more time (Remote-DB + Cold Start)
+      timeout: process.env.CI ? 60_000 : 30_000,
+    },
+    {
+      command: "npm run dev",
+      url: "http://localhost:5173",
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+    },
+  ],
 });

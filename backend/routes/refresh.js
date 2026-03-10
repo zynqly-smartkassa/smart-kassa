@@ -27,9 +27,13 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   // Extract refresh token from httpOnly cookie
   const refreshToken = req.cookies.refreshToken;
+  const device_id = req.body.device_id;
 
   if (!refreshToken) {
-    return res.status(401).json({ error: "Refresh token required" });
+    if (!req.body.refreshToken) {
+      return res.status(401).json({ error: "Refresh token required" });
+    }
+    refreshToken = req.body.refreshToken;
   }
 
   try {
@@ -42,8 +46,8 @@ router.post("/", async (req, res) => {
     // Verify token exists in database and hasn't expired or been revoked
     const tokenRes = await pool.query(
       `SELECT * FROM session
-       WHERE refresh_token = $1 AND user_id = $2 AND expires_at > NOW()`,
-      [refreshToken, decoded.userId]
+       WHERE refresh_token = $1 AND user_id = $2 AND expires_at > NOW() AND device_id = $3 AND is_revoked = false`,
+      [refreshToken, decoded.userId, device_id]
     );
 
     if (tokenRes.rows.length === 0) {
@@ -54,10 +58,19 @@ router.post("/", async (req, res) => {
 
     // Fetch current user information for the new access token
     const userRes = await pool.query(
-      `SELECT user_id, first_name, last_name, email FROM users
-       WHERE user_id = $1`,
+      `SELECT user_id, first_name, last_name, email, company_id FROM users
+       WHERE user_id = $1 AND is_deleted = FALSE`,
       [decoded.userId]
     );
+
+    if (userRes.rowCount === 0) {
+      return res
+        .status(404)
+        .send({
+          error: "No User found",
+          message: "Either User does not exist anymore or User was deleted",
+        });
+    }
 
     const user = userRes.rows[0];
 
@@ -66,6 +79,7 @@ router.post("/", async (req, res) => {
       userId: user.user_id,
       email: user.email,
       name: `${user.first_name} ${user.last_name}`,
+      companyId: user.company_id,
     });
 
     // Return new access token to client

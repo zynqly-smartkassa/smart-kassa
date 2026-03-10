@@ -1,6 +1,8 @@
 # AI Tools
 .claude
+CLAUDE.md
 .claude/*
+pipeline.md
 
 # Logs
 logs
@@ -9,6 +11,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+
+#vscode
+.vscode
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -73,6 +78,7 @@ web_modules/
 .env
 .env.*
 !.env.example
+.secrets
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -148,5 +154,12 @@ vite.config.ts.timestamp-*
 # Tools
 .claude/
 
-#Code Editor
+# Code Editor
 .vscode
+.idea
+
+# Frontend Documentation folder
+frontend/docs
+
+# Local files
+*.pdf

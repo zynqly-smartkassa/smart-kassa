@@ -11,9 +11,19 @@ router.get("/", authenticateToken, async (req, res) => {
   try {
     const userRes = await pool.query(
       `SELECT user_id, first_name, last_name, email, phone_number 
-      FROM users WHERE user_id = $1`,
+      FROM users WHERE user_id = $1 AND is_deleted = FALSE`,
       [req.user.userId]
     );
+
+    if (userRes.rowCount === 0) {
+      return res
+        .status(404)
+        .send({
+          error: "User not found",
+          message:
+            "User was not found, either User does not exist or was deleted",
+        });
+    }
 
     const user = userRes.rows[0];
 

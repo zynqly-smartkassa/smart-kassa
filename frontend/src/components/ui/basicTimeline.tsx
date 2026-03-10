@@ -4,21 +4,21 @@ import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineContent from '@mui/lab/TimelineContent';
-import type { Ride } from 'constants/Ride';
+import type { AllRide } from '../../../constants/AllRide';
 
 export interface dataArgs {
   label: string;
   value: string;
 }
 
-export function getRideTimeline(ride: Ride): dataArgs[] {
+export function getRideTimeline(ride: AllRide): dataArgs[] {
   // Formats a timestamp into: "DD Mon YY, HH:MM Uhr"
   function formatDateTime(dateStr: string) {
     const date = new Date(dateStr);
 
     // Extract date components
     const day = date.getDate();
-    const month = date.toLocaleString("en-US", { month: "short" }); // e.g. "Dec"
+    const month = date.toLocaleString("de-DE", { month: "short" }); // e.g. "Dez"
     const year = date.getFullYear().toString().slice(2); // last two digits
 
     // Format time to 24h (HH:MM)
@@ -40,11 +40,11 @@ export function getRideTimeline(ride: Ride): dataArgs[] {
   // Creates two timeline entries: Start and End
   const rideInfo: dataArgs[] = [
     {
-      label: "Start Info",
+      label: "Start-Info",
       value: `${formatDateTime(ride.start_time)} | ${formatAddress(ride.start_address)}`
     },
     {
-      label: "End Info",
+      label: "End-Info",
       value: `${formatDateTime(ride.end_time)} | ${formatAddress(ride.end_address)}`
     }
   ];
@@ -54,7 +54,7 @@ export function getRideTimeline(ride: Ride): dataArgs[] {
 }
 
 export default function BasicTimeline(labelClass: string, valueClass: string,
-  ride: Ride
+  ride: AllRide
 ) {
 
   const timelineData: dataArgs[] = getRideTimeline(ride);

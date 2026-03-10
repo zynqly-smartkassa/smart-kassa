@@ -14,21 +14,23 @@ import {
   useInvalidEmail,
   useInvalidPassword,
   type PASSWORD_VALIDATOR,
-} from "../../hooks/useValidator";
+} from "../../hooks/userfeedback/useValidator";
 import { authContent } from "../../content/auth/auth";
 import { validationMessages } from "../../content/auth/validationMessages";
 import { toastMessages } from "../../content/auth/toastMessages";
-import { useWarningToast } from "../../hooks/useToast";
+import { useWarningToast } from "../../hooks/userfeedback/useToast";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../../redux/store";
-import { login } from "../../utils/auth";
+import { login } from "../../utils/auth/auth";
+import { handleLoginError } from "../../utils/errorHandling";
 import type {
   Container,
   LoginShowError,
   PasswordContainer,
 } from "../../../constants/Compontents";
-import Inputs from "../../components/Inputs";
-import PasswordInputs from "../../components/PasswordInputs";
+import Inputs from "../../components/inputs/Inputs";
+import PasswordInputs from "../../components/inputs/PasswordInputs";
+import { authTestIds } from "../../../constants/authDataTestId";
 
 /**
  * The Login page, where users sign in
@@ -60,31 +62,20 @@ function Login() {
   const invalidPassword: PASSWORD_VALIDATOR = useInvalidPassword(password);
 
   async function handleLogin() {
-    try {
-      await login(email, password, dispatch);
-      handleToast(true);
-      navigator("/");
-    } catch (error) {
-      console.error(error);
-      handleToast(false);
-      return false;
-    }
-  }
-
-  async function handleToast(isLoginSuccessful: boolean) {
-    if (isLoginSuccessful) {
-      toast(t.success.title, {
-        position: "top-center",
-        closeButton: true,
+    toast.promise(
+      async () => {
+        await login(email, password, dispatch);
+      },
+      {
+        loading: "Anmelden...",
+        success: async () => {
+          await navigator("/");
+          return t.success.title;
+        },
+        error: (err) => handleLoginError(err),
         className: "mt-5 md:mt-0",
-      });
-    } else {
-      toast(t.error.title, {
-        position: "top-center",
-        closeButton: true,
-        className: "mt-5 md:mt-0",
-      });
-    }
+      },
+    );
   }
 
   useWarningToast(toastState.showWarning, t.warning.title, dispatch);
@@ -98,6 +89,7 @@ function Login() {
         (invalidemail && showHint.EmailFocused && "border-2 border-red-500") ||
         "",
       id: "email",
+      testid: authTestIds.login.email,
       label: l.labels.email,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, EmailFocused: true })),
@@ -109,6 +101,7 @@ function Login() {
       validation: invalidemail && showHint.EmailFocused,
       validationMessage: v.email.invalid,
       value: email,
+      autocomplete: "email",
     },
   ];
 
@@ -120,6 +113,7 @@ function Login() {
           "border-2 border-red-500") ||
         "",
       id: "password",
+      testid: authTestIds.login.password,
       label: "", // Empty label since we render it manually with forgot password link
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -137,6 +131,7 @@ function Login() {
       ],
       validationMessage: [v.password.tooShort],
       value: password,
+      autocomplete: "current-password",
     },
   ];
 
@@ -171,16 +166,10 @@ function Login() {
               {/* Password Container - with forgot password link */}
               <div>
                 <div className="flex items-center mb-2">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
+                  <label htmlFor="password" className="form-label">
                     {l.labels.password}
                   </label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm text-muted-foreground font-extrabold underline hover:text-violet-400"
-                  >
+                  <a href="#" className="auth-link-small">
                     {l.links.forgotPassword}
                   </a>
                 </div>
@@ -194,23 +183,20 @@ function Login() {
           <CardFooter className="flex-col gap-2">
             <Button
               type="submit"
-              className="w-full bg-black text-white dark:bg-white dark:text-black"
+              className="btn-auth-submit"
               variant="default"
               disabled={formUnvalid}
-              data-testid="login"
+              data-testid={authTestIds.login.loginButton}
             >
               {l.buttons.login}
-            </Button>
-            <Button type="button" variant="outline" className="w-full">
-              {l.buttons.google}
             </Button>
             <div className="w-full flex justify-center mt-2 text-center">
               <div className="text-sm text-muted-foreground">
                 <p>{l.footer.text}</p>
                 <Link
                   to="/register"
-                  className="font-extrabold underline hover:text-violet-400"
-                  data-testid="registerLink"
+                  className="auth-link"
+                  data-testid={authTestIds.login.registerLink}
                 >
                   {l.footer.link}
                 </Link>

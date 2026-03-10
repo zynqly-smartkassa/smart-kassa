@@ -17,8 +17,9 @@ import { verifyAccessToken } from "../utils/jwt.js";
  * @example
  * // Protect a route
  * router.get("/profile", authenticateToken, (req, res) => {
- *   console.log(req.user.userId); // User ID from token
- *   console.log(req.user.email);  // User email from token
+ *   console.log(req.user.userId);    // User ID from token
+ *   console.log(req.user.email);     // User email from token
+ *   console.log(req.user.companyId); // User's company ID from token
  * });
  */
 export function authenticateToken(req, res, next) {

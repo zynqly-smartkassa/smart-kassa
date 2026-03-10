@@ -1,7 +1,5 @@
+import { isMobile } from "../hooks/layout/use-mobile";
 import { Preferences } from "@capacitor/preferences";
-import { Capacitor } from "@capacitor/core";
-
-const isMobile = Capacitor.isNativePlatform();
 
 /**
  * Secure storage utility that uses Capacitor Preferences on mobile
@@ -13,7 +11,7 @@ export const SecureStorage = {
    */
   async set(key: string, value: string): Promise<void> {
     if (isMobile) {
-      await Preferences.set({ key, value });
+      await Preferences.set({ key: key, value: value });
     } else {
       localStorage.setItem(key, value);
     }
@@ -24,7 +22,7 @@ export const SecureStorage = {
    */
   async get(key: string): Promise<string | null> {
     if (isMobile) {
-      const { value } = await Preferences.get({ key });
+      const { value } = await Preferences.get({ key: key });
       return value;
     } else {
       return localStorage.getItem(key);
@@ -36,7 +34,7 @@ export const SecureStorage = {
    */
   async remove(key: string): Promise<void> {
     if (isMobile) {
-      await Preferences.remove({ key });
+      await Preferences.remove({ key: key });
     } else {
       localStorage.removeItem(key);
     }
@@ -59,13 +57,10 @@ export const SecureStorage = {
  */
 export const AuthStorage = {
   /**
-   * Save access and refresh tokens
+   * Save access token
    */
-  async setTokens(accessToken: string, refreshToken?: string): Promise<void> {
+  async setAccessToken(accessToken: string): Promise<void> {
     await SecureStorage.set("accessToken", accessToken);
-    if (refreshToken) {
-      await SecureStorage.set("refreshToken", refreshToken);
-    }
   },
 
   /**
@@ -75,18 +70,7 @@ export const AuthStorage = {
     return await SecureStorage.get("accessToken");
   },
 
-  /**
-   * Get the refresh token
-   */
-  async getRefreshToken(): Promise<string | null> {
-    return await SecureStorage.get("refreshToken");
-  },
-
-  /**
-   * Remove all tokens (for logout)
-   */
-  async clearTokens(): Promise<void> {
+  async clearAccessToken(): Promise<void> {
     await SecureStorage.remove("accessToken");
-    await SecureStorage.remove("refreshToken");
   },
 };

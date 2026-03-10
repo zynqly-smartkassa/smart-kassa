@@ -1,10 +1,21 @@
 import axios, { AxiosError } from "axios";
 
+/**
+ * Fetches all rides for a specific user from the backend API.
+ * 
+ * This function makes a POST request to the `/all-rides` endpoint with the user ID
+ * and returns all ride records associated with that user. It includes comprehensive
+ * error handling for various HTTP status codes.
+ * 
+ * @param {number} user_id - The ID of the user whose rides should be retrieved.
+ * @returns {Promise<any>} A promise that resolves to the ride data object containing all user rides.
+ * @throws {Error} Throws specific errors for 400 (invalid fields), 409 (conflict), 500 (server error), or unknown errors.
+ */
 export async function getAllRides(
   user_id: number
 ) {
   try {
-    const { data } = await axios.post("http://localhost:3000/all-rides", {user_id}, {
+    const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/all-rides`, {user_id}, {
       headers:  {
         "Content-Type": "application/json"
       },
@@ -18,6 +29,8 @@ export async function getAllRides(
 
     if (err instanceof AxiosError) {
 
+      console.error(err.response?.data)
+
       //500
       if (err.response?.status === 500) {
         throw new Error("Internal Server Error");
@@ -25,6 +38,7 @@ export async function getAllRides(
 
       //400
       if (err.response?.status === 400) {
+
         throw new Error("Missing or invalid ride fields");
       }
 

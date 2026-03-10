@@ -30,24 +30,37 @@ const router = express.Router();
  */
 
 router.post("/", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, user_agent, device_name, device_id } = req.body;
 
   if (!email || !password) {
     return res.status(400).send({ error: "Missing required fields" });
   }
 
+  // to check if device data is being sent
+  if (!device_id || !user_agent || !device_name) {
+    return res.status(400).send({
+      error:
+        "Missing fields required for multi-device user authentication and user info",
+    });
+  }
+
+  // client ip for the session db
+  const client_ip = req.socket.address();
+
   try {
+    await pool.query("BEGIN");
     // Query database for user by email
     const result = await pool.query(
-      `SELECT 
+      `SELECT
         users.user_id,
         users.password_hash,
         users.email,
         users.first_name,
-        users.last_name
+        users.last_name,
+        users.company_id
       FROM users
-      WHERE users.email = $1`,
-      [email]
+      WHERE users.email = $1 AND users.is_deleted = false`,
+      [email],
     );
 
     // Check if user exists
@@ -56,7 +69,6 @@ router.post("/", async (req, res) => {
     }
 
     const user = result.rows[0];
-
     // Verify password against stored Argon2 hash
     const valid = await argon2.verify(user.password_hash, password);
     if (!valid) {
@@ -68,6 +80,7 @@ router.post("/", async (req, res) => {
       userId: user.user_id,
       email: user.email,
       name: `${user.first_name} ${user.last_name}`,
+      companyId: user.company_id,
     };
 
     // Generate both access and refresh tokens
@@ -77,21 +90,44 @@ router.post("/", async (req, res) => {
     // Calculate refresh token expiration (30 days from now)
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    // Update session record with new refresh token and expiration
+    /**
+     * Query to either update or insert a new row of data for user session
+     * each user has a session row, where info like device data and the refresh token and the expiration data is saved
+     * It also ensures that each device that the user is loged into has it's own refresh token to ensure that the user can be loged
+     * in on his account on many devices, it also provides the possibilty to show the user on which devices his account is loged in
+     */
     await pool.query(
-      `UPDATE session SET expires_at = $1, refresh_token = $2 WHERE user_id = $3`,
-      [expiresAt, refreshToken, user.user_id]
+      `INSERT INTO session (user_id, refresh_token, expires_at, user_agent, client_ip, device_name, device_id, is_revoked) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, false) 
+        ON CONFLICT (device_id, user_id) 
+        DO UPDATE SET 
+          user_id = EXCLUDED.user_id, 
+          refresh_token = EXCLUDED.refresh_token, 
+          expires_at = EXCLUDED.expires_at, 
+          user_agent = EXCLUDED.user_agent, 
+          client_ip = EXCLUDED.client_ip, 
+          device_name = EXCLUDED.device_name,
+          device_id = EXCLUDED.device_id,
+          is_revoked = false`,
+      [
+        user.user_id,
+        refreshToken,
+        expiresAt,
+        user_agent,
+        client_ip,
+        device_name,
+        device_id,
+      ],
     );
 
     // Store refresh token in httpOnly cookie (not accessible via JavaScript)
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true, // Prevents XSS attacks
       secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "none", // // Protection via HTTPS
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       path: "/",
     });
-
     // Return access token and user info to client
     res.json({
       message: "Login successful",
@@ -102,7 +138,10 @@ router.post("/", async (req, res) => {
         name: `${user.first_name} ${user.last_name}`,
       },
     });
+
+    await pool.query("COMMIT");
   } catch (err) {
+    await pool.query("ROLLBACK");
     console.error("Error in /login:", err);
     res.status(500).json({ error: "Internal server error" });
   }

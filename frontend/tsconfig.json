@@ -6,7 +6,7 @@
   ],
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
-    "baseUrl": ".",
+    "types": ["node"],
     "paths": {
       "@/*": ["./src/*"]
     }

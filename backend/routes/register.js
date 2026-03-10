@@ -42,6 +42,9 @@ router.post("/", async (req, res) => {
     password,
     fn,
     atu,
+    device_id,
+    user_agent,
+    device_name,
   } = req.body;
 
   try {
@@ -57,6 +60,15 @@ router.post("/", async (req, res) => {
     ) {
       return res.status(400).send({ error: "Missing required fields" });
     }
+
+    if (!device_id || !user_agent || !device_name) {
+      return res.status(400).send({
+        error:
+          "Missing fields required for multi-device user authentication and user info",
+      });
+    }
+
+    const client_ip = req.socket.address();
 
     // Check for duplicate email
     const checkuser = await pool.query("SELECT * FROM users WHERE email = $1", [
@@ -77,13 +89,34 @@ router.post("/", async (req, res) => {
     let userId;
 
     try {
-        // Begin of database transaction, if an operation fails, all queries roll back
+      // Begin of database transaction, if an operation fails, all queries roll back
       await pool.query("BEGIN");
 
       // Insert company into company table and return the generated company_id
+
+      // DUMMY DATA FOR COMPANY RECORD IN DATABASE
       const companyRes = await pool.query(
-        `INSERT INTO company (fn, atu)
-        VALUES($1, $2)
+        `
+        INSERT INTO company 
+        (
+        fn,
+        atu,
+        company_name,
+        street,
+        postal_code,
+        city,
+        country
+        )
+        VALUES
+        (
+        $1,
+        $2,
+        'Taxi Drive GmbH',
+        'Rechbauerstraße 67',
+        '8010',
+        'Graz',
+        'Österreich'
+        )
         RETURNING company_id`,
         [fn, atu]
       );
@@ -105,6 +138,7 @@ router.post("/", async (req, res) => {
         userId: userId,
         email: email,
         name: `${first_name} ${last_name}`,
+        companyId: companyId
       };
 
       // Generate both access and refresh tokens
@@ -114,13 +148,21 @@ router.post("/", async (req, res) => {
       // Insert account record with hashed password and refresh token
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
 
+      /**
+       * inserting data into the session table that is being used to store the refresh token, it's experation date, and also to ensure
+       * user's can be loged into their accounts on many devices (each device stores a device_id in it's local storage, to differentiate between devices the user uses )
+       */
       await pool.query(
-        `INSERT INTO session (user_id, refresh_token, created_at, expires_at)
-       VALUES ($1, $2, NOW(), $3)`,
+        `INSERT INTO session (user_id, refresh_token, created_at, expires_at, user_agent, client_ip, device_name, device_id, is_revoked)
+       VALUES ($1, $2, NOW(), $3, $4, $5, $6, $7, FALSE)`,
         [
           userId,
           refreshToken,
-          expiresAt
+          expiresAt,
+          user_agent,
+          client_ip,
+          device_name,
+          device_id,
         ]
       );
 
@@ -128,9 +170,12 @@ router.post("/", async (req, res) => {
     } catch (error) {
       await pool.query("ROLLBACK");
       const errorResponse = error;
-      console.error(errorResponse)
+      console.error(errorResponse);
       if (
-        /^Key \(phone_number\)=\(\+?\d+\s?\d+\) already exists\.$/.test(error.detail)) {
+        /^Key \(phone_number\)=\(\+?\d+\s?\d+\) already exists\.$/.test(
+          error.detail
+        )
+      ) {
         return res.status(409).send({
           error: `Ein Account mit der Telefonnumer '${phone_number}' existiert bereits.`,
         });
@@ -138,7 +183,7 @@ router.post("/", async (req, res) => {
 
       if (/Key \(fn\)=\(([^)]+)\)/.test(error.detail)) {
         return res.status(409).send({
-          error: `Ein Account mit der FN '${fn}' existiert bereits.`
+          error: `Ein Account mit der FN '${fn}' existiert bereits.`,
         });
       }
 
@@ -148,15 +193,16 @@ router.post("/", async (req, res) => {
         });
       }
 
-
-      return res.status(500).send({ error: errorResponse, message: "Internal Server Error" });
+      return res
+        .status(500)
+        .send({ error: errorResponse, message: "Internal Server Error" });
     }
 
     // Store refresh token in httpOnly cookie (not accessible via JavaScript)
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true, // Prevents XSS attacks
       secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "none", // Protection via HTTPS
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       path: "/",
     });

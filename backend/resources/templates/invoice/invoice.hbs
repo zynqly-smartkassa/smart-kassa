@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+
+    {{!-- style block has to be written exactly like this --> {{{styleContent}}} <-- Auto formatting will destroy css integration --}}
+    <style>
+        {{{styleContent}}}
+    </style>
+
+</head>
+
+<body>
+    <header> </header>
+
+    <main>
+        <div class="parent-border">
+            <div class="border">
+                <div class="parent parent-invoice-logo-type">
+                    <span class="invoice-type child">
+                        Rechnung
+                    </span>
+                    <img class="invoice-logo child" src="{{logoSrc}}" alt="Zynqly Logo" width="auto" height="100">
+                </div>
+
+                <div class="parent parent-invoice-table-address">
+                    <table class="child invoice-table-address">
+                        <tr class="table-addresses">
+                            <th>FIRMA</th>
+                            <th>RNr.</th>
+                        </tr>
+                        <tr class="temp">
+                            <td>{{company_name}}</td>
+                            <td>{{billing_id}}</td>
+                        </tr>
+                        <tr>
+                            <td>UID: {{company_atu}}</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>{{company_street}} {{street_addition}}</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>{{company_postal_code}} {{company_city}}</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>0699 147852369</td>
+                            <td></td>
+                        </tr>
+
+                    </table>
+                </div>
+
+                <div class="parent parent-invoice-table">
+                    <table class="invoice-table" style="border-spacing: 0;">
+
+                        <tr class="table-row-border">
+                            <th>ANZAHL</th>
+                            <th>ZAHLART</th>
+                            <th>FAHRTEN-TYP</th>
+                            <th>STEUER</th>
+                            <th>PREIS</th>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>{{billing_payment_method}}</td>
+                            <td>{{ride_type}}</td>
+                            <td>{{billing_tax_rate}} %</td>
+                            <td>€ {{billing_amount_net}}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="parent parent-invoice-total">
+                    <span class="invoice-total-text child">
+                        Betrag:
+                    </span>
+
+                    <span class="invoice-total child">
+                        EUR: {{billing_amount_gross}}
+                    </span>
+                </div>
+
+                <div class="parent parent-invoice-terms">
+                    <div class="child invoice-terms">
+                        <!-- For Future Content -->
+                        <!-- <h4>PLACEHOLDER</h4>
+                        <p>Placeholder</p>
+                        <p>Placeholder</p> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer></footer>
+
+</body>
+
+</html>

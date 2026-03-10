@@ -15,12 +15,14 @@ dotenv.config();
  * @param {string} payload.userId - The user's unique identifier
  * @param {string} payload.email - The user's email address
  * @param {string} payload.name - The user's full name
- * @returns {string} Signed JWT access token (expires in 5 minutes)
+ * @param {string} payload.companyId - The user's company identifier
+ * @returns {string} Signed JWT access token (expires in 15 minutes)
  * @example
  * const token = generateAccessToken({
  *   userId: 123,
  *   email: "user@example.com",
  *   name: "John Doe",
+ *   companyId: 456,
  * });
  */
 export function generateAccessToken(payload) {

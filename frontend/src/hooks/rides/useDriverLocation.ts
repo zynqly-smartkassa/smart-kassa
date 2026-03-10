@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Geolocation } from "@capacitor/geolocation";
+import { isMobile } from "../layout/use-mobile";
 
-/*
-Code not fully tested and implemented by Claude, do not use it in Production!
-*/
-export const useDriverLocation = (isRideActive: boolean) => {
+/**
+ * Custom hook that manages the driver's location using the Capacitor Geolocation API.
+ *
+ * This hook requests location permissions and retrieves the initial GPS position.
+ * It returns the current driver location as a coordinate tuple or null if not available.
+ *
+ * @returns {[number, number] | null} The driver's location as [latitude, longitude] or null if not yet determined.
+ */
+export const useDriverLocation = () => {
   const [driverLocation, setDriverLocation] = useState<[number, number] | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -28,7 +34,7 @@ export const useDriverLocation = (isRideActive: boolean) => {
                 position: "top-center",
                 closeButton: true,
                 className: "mt-5 md:mt-0",
-              }
+              },
             );
             return;
           }
@@ -40,10 +46,10 @@ export const useDriverLocation = (isRideActive: boolean) => {
           }
         }
 
-        // ✅ 3. Get initial position
+        // Get initial position
         const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 5000,
+          enableHighAccuracy: isMobile, //isMobile
+          timeout: 10000,
           maximumAge: 3000,
         });
 
@@ -52,16 +58,15 @@ export const useDriverLocation = (isRideActive: boolean) => {
           position.coords.longitude,
         ]);
 
-        // ✅ 4. Start live tracking
         watchId = await Geolocation.watchPosition(
           {
-            enableHighAccuracy: true,
+            enableHighAccuracy: isMobile, //isMobile
             timeout: 5000,
             maximumAge: 3000,
           },
           (position, err) => {
             if (err) {
-              handleGeolocationError();
+              handleGeolocationError(err);
               return;
             }
 
@@ -71,16 +76,16 @@ export const useDriverLocation = (isRideActive: boolean) => {
                 position.coords.longitude,
               ]);
             }
-          }
+          },
         );
-      } catch {
-        handleGeolocationError();
+      } catch (error: unknown) {
+        handleGeolocationError(error);
       }
     };
 
     initLocation();
 
-    // ✅ 5. Cleanup
+    // Cleanup
     return () => {
       if (watchId) {
         Geolocation.clearWatch({ id: watchId });
@@ -88,32 +93,26 @@ export const useDriverLocation = (isRideActive: boolean) => {
     };
   }, []);
 
-  useEffect(() => {
-    let lat = driverLocation?.[0] ?? 48.21;
-    let lng = driverLocation?.[1] ?? 16.36;
-
-    let interval: number | undefined;
-    if (isRideActive) {
-      interval = setInterval(() => {
-        lat += 0.0005;
-        lng += 0.0005;
-        setDriverLocation([lat, lng]);
-      }, 1000);
-    }
-
-
-    return () => clearInterval(interval);
-  }, [isRideActive, driverLocation]);
-
   return driverLocation;
 };
 
+/**
+ * Handles geolocation errors and displays appropriate error messages to the user.
+ *
+ * This function logs the error to the console and shows a toast notification with
+ * the error details. It specifically handles GeolocationPositionError instances.
+ *
+ * @param {unknown} err - The error object from the geolocation API.
+ */
+function handleGeolocationError(err: unknown) {
+  console.error("Geolocation error:", err);
+  let errorMessage = "GPS-Error";
 
-// Error Handler für Capacitor
-function handleGeolocationError() {
-  console.error("Geolocation error:");
-
-  const errorMessage = "GPS-Fehler aufgetreten";
+  if (err instanceof GeolocationPositionError) {
+    errorMessage += ": " + err.message;
+  } else {
+    errorMessage = "Uknown GPS-Error";
+  }
 
   toast(errorMessage, {
     position: "top-center",

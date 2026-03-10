@@ -1,6 +1,6 @@
 /* routing.css */
 
-/* Hintergrund und Textfarbe der Routing-Box */
+/* Background and text color of the routing box */
 .leaflet-routing-container {
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
@@ -8,32 +8,32 @@
   padding: 8px;
   border-radius: 8px;
 
-  /* Breite begrenzen */
+  /* Limit width */
   max-width: 300px;
   overflow: hidden;
 }
 
-/* Jeder Schritt */
+/* Each step */
 .leaflet-routing-step {
   color: white;
-  font-size: 12px; /* kleiner auf mobilen Geräten */
+  font-size: 12px; /* smaller on mobile devices */
   padding: 2px 0;
   line-height: 1.2;
 }
 
-/* Links in der Route Info */
+/* Links in the route info */
 .leaflet-routing-alternatives-container a {
   color: #fff;
   font-size: 12px;
 }
 
-/* Responsive Anpassung für kleine Screens */
+/* adjustment for small screens */
 @media (max-width: 600px) {
   .leaflet-routing-container {
-    max-width: 200px; /* Panel schmaler */
+    max-width: 200px; /* narrower */
     max-height: 250px;
-    font-size: 12px;   /* Text kleiner */
-    padding: 4px;      /* Weniger Padding */
+    font-size: 12px;   /* Text smaller */
+    padding: 4px;      /* Less padding */
   }
 
   .leaflet-routing-step {

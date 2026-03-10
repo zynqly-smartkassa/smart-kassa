@@ -1,0 +1,43 @@
+name: Vitest Unit Tests
+
+on: 
+  push: 
+    branches: [main, develop, test]
+  pull_request:
+    branches: [main, develop, test]
+
+jobs:
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Node 22+ required for @react-email packages (EBADENGINE otherwise)
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Run Vitetest Tests
+        run: npx vitest --reporter=junit --outputFile=test-results.xml
+        working-directory: frontend
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: failure()  
+        with:
+          name: Vitest Results
+          path: test-results.xml
+          reporter: java-junit
+
+          

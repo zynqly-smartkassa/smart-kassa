@@ -1,0 +1,12 @@
+{
+  "CORSRules": [
+    {
+      "AllowedHeaders": ["*"],
+      "AllowedMethods": ["GET", "HEAD", "POST", "PUT"],
+      "AllowedOrigins": ["http://localhost",
+      "https://localhost","http://localhost:5173","https://smart-kassa.vercel.app"],
+      "ExposeHeaders": ["Content-Disposition"],
+      "MaxAgeSeconds": 3000
+    }
+  ]
+}

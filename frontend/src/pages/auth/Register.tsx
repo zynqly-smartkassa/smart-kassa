@@ -18,28 +18,31 @@ import {
   useInvalidTelefonnummer,
   useInvalidUsername,
   type PASSWORD_VALIDATOR,
-} from "../../hooks/useValidator";
+} from "../../hooks/userfeedback/useValidator";
 import { authContent } from "../../content/auth/auth";
 import { validationMessages } from "../../content/auth/validationMessages";
 import { toastMessages } from "../../content/auth/toastMessages";
 import type { AppDispatch, RootState } from "../../../redux/store";
 import { useDispatch, useSelector } from "react-redux";
-import { useWarningToast } from "../../hooks/useToast";
-import { register } from "../../utils/auth";
+import { useWarningToast } from "../../hooks/userfeedback/useToast";
+import { register } from "../../utils/auth/auth";
 import { toast } from "sonner";
+import { handleRegisterError } from "../../utils/errorHandling";
 import type {
   Container,
   PasswordContainer,
   showError,
 } from "../../../constants/Compontents";
-import Inputs from "../../components/Inputs";
-import PasswordInputs from "../../components/PasswordInputs";
+import Inputs from "../../components/inputs/Inputs";
+import PasswordInputs from "../../components/inputs/PasswordInputs";
+import { useCheckForNews } from "../../hooks/userfeedback/useNews";
+import { authTestIds } from "../../../constants/authDataTestId";
 
 /**
  * The Sign Up page, where users Sign Up
  * @returns Register Page where Users can Sign Up
  * @author Casper Zielinski
- * @author Umejr Dzinovic
+ * @author
  */
 function Register() {
   // useState Hooks for the Form
@@ -53,7 +56,8 @@ function Register() {
   const [atu, setAtu] = useState("");
   const [firmenbuchnummer, setFirmenbuchnummer] = useState("");
   const [telefonnummer, setTelefonnummer] = useState("");
-
+  const [isRegistered, setIsRegistered] = useState(false);
+  useCheckForNews(isRegistered);
   const navigator = useNavigate();
 
   // Constant Values for Messages for the User
@@ -83,7 +87,7 @@ function Register() {
   const invalidPassword: PASSWORD_VALIDATOR = useInvalidPassword(password);
   const invalidConfirmPassword = useInvalidConfirmPassword(
     password,
-    confirmPassword
+    confirmPassword,
   );
 
   // Redux States and Dispatches
@@ -107,50 +111,30 @@ function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      await register(
-        firstname,
-        lastname,
-        email,
-        telefonnummer,
-        password,
-        firmenbuchnummer,
-        atu,
-        dispatch // to set Global User Variable (Injected)
-      );
-      toast.success(t.success.title, {
-        className: "mt-5 md:mt-0"
-      });
-      navigator("/");
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        if (error.message === "Email already exists") {
-          toast.error(t.error.emailAlreadyInUse, {
-            className: "mt-5 md:mt-0"
-          });
-        }
-        if (error.message === "FN already exists") {
-          toast.error(t.error.fnAlreadyInUse, {
-            className: "mt-5 md:mt-0"
-          });
-        }
-        if (error.message === "Phonenumber already exists") {
-          toast.error(t.error.phoneNumberAlreadyInUse, {
-            className: "mt-5 md:mt-0"
-          });
-        }
-        if (error.message === "ATU already exists") {
-          toast.error(t.error.atuAlreadyInUse, {
-            className: "mt-5 md:mt-0"
-          });
-        }
-      } else {
-        toast.error(t.error.title, {
-          className: "mt-5 md:mt-0"
-        });
-      }
-    }
+    toast.promise(
+      async () => {
+        await register(
+          firstname,
+          lastname,
+          email,
+          telefonnummer,
+          password,
+          firmenbuchnummer,
+          atu,
+          dispatch, // to set Global User Variable (Injected)
+        );
+      },
+      {
+        loading: "Registrierung...",
+        success: async () => {
+          await navigator("/");
+          setIsRegistered(true);
+          return t.success.title;
+        },
+        error: (err) => handleRegisterError(err),
+        className: "mt-5 md:mt-0",
+      },
+    );
   };
 
   const nameContainer: Container[] = [
@@ -161,6 +145,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "vorname",
+      testid: authTestIds.register.vorname,
       label: r.labels.vorname,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -178,6 +163,7 @@ function Register() {
       validation: invalidFirstname && showHint.Firstnamefocused,
       value: firstname,
       validationMessage: v.vorname.required,
+      autocomplete: "name",
     },
     {
       className:
@@ -186,6 +172,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "nachname",
+      testid: authTestIds.register.nachname,
       label: r.labels.nachanme,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -203,6 +190,7 @@ function Register() {
       validation: invalidLastname && showHint.LastnameFocused,
       value: lastname,
       validationMessage: v.nachname.required,
+      autocomplete: "family-name",
     },
   ];
 
@@ -212,6 +200,7 @@ function Register() {
         (invalidEmail && showHint.EmailFocused && "border-2 border-red-500") ||
         "",
       id: "email",
+      testid: authTestIds.register.email,
       label: r.labels.email,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, EmailFocused: true })),
@@ -223,6 +212,7 @@ function Register() {
       validation: invalidEmail && showHint.EmailFocused,
       validationMessage: v.email.invalid,
       value: email,
+      autocomplete: "email",
     },
     {
       className:
@@ -231,6 +221,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "Telefonnummer",
+      testid: authTestIds.register.telefonnummer,
       label: r.labels.phone,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -248,6 +239,7 @@ function Register() {
       validation: invalidTelefonNumber && showHint.TelefonnummerFocused,
       validationMessage: v.phone.invalid,
       value: telefonnummer,
+      autocomplete: "tel",
     },
   ];
 
@@ -256,6 +248,7 @@ function Register() {
       className:
         (invalidFN && showHint.FNFocused && "border-2 border-red-500") || "",
       id: "FirmenBuchNummer",
+      testid: authTestIds.register.firmenBuchNummer,
       label: r.labels.fn,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, FNFocused: true })),
@@ -267,11 +260,13 @@ function Register() {
       validation: invalidFN && showHint.FNFocused,
       validationMessage: v.fn.invalid,
       value: firmenbuchnummer,
+      autocomplete: "off",
     },
     {
       className:
         (invalidATU && showHint.ATUFocused && "border-2 border-red-500") || "",
       id: "ATU",
+      testid: authTestIds.register.atu,
       label: r.labels.atu,
       onBlurListener: () =>
         setShowHint((prev) => ({ ...prev, ATUFocused: true })),
@@ -283,6 +278,7 @@ function Register() {
       validation: invalidATU && showHint.ATUFocused,
       validationMessage: v.atu.invalid,
       value: atu,
+      autocomplete: "off",
     },
   ];
 
@@ -294,6 +290,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "password",
+      testid: authTestIds.register.password,
       label: r.labels.password,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -317,6 +314,7 @@ function Register() {
         v.password.tooShort,
       ],
       value: password,
+      autocomplete: "new-password",
     },
     {
       className:
@@ -325,6 +323,7 @@ function Register() {
           "border-2 border-red-500") ||
         "",
       id: "confirmPassword",
+      testid: authTestIds.register.confirmPassword,
       label: r.labels.confirmPassword,
       onBlurListener: () =>
         setShowHint((prev) => ({
@@ -346,6 +345,7 @@ function Register() {
         v.confirmPassword.invalid,
       ],
       value: confirmPassword,
+      autocomplete: "off",
     },
   ];
 
@@ -380,23 +380,16 @@ function Register() {
           <CardFooter className="flex-col gap-2">
             <Button
               type="submit"
-              className="w-full bg-black text-white dark:bg-white dark:text-black"
+              className="btn-auth-submit"
               disabled={formUnvalid}
-              data-testid="register"
+              data-testid={authTestIds.register.registerButton}
             >
               {r.buttons.register}
-            </Button>
-            <Button type="button" variant="outline" className="w-full">
-              {r.buttons.google}
             </Button>
             <div className="w-full flex justify-center mt-2 text-center">
               <div className="text-sm text-muted-foreground">
                 <p>{r.footer.text}</p>
-                <Link
-                  to="/login"
-                  className="font-extrabold underline hover:text-violet-400"
-                  data-testid="loginLink"
-                >
+                <Link to="/login" className="auth-link" data-testid={authTestIds.register.loginLink}>
                   {r.footer.link}
                 </Link>
               </div>

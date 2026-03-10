@@ -2,7 +2,7 @@
 
 export const monthData = [
   {
-    week: "Week 1",
+    week: "Woche 1",
     totalRevenue: 1870.40,
     totalRides: 82,
     totalKilometers: 590,
@@ -11,7 +11,7 @@ export const monthData = [
     avgRating: 4.83,
   },
   {
-    week: "Week 2",
+    week: "Woche 2",
     totalRevenue: 2012.90,
     totalRides: 89,
     totalKilometers: 620,
@@ -20,7 +20,7 @@ export const monthData = [
     avgRating: 4.88,
   },
   {
-    week: "Week 3",
+    week: "Woche 3",
     totalRevenue: 1940.25,
     totalRides: 85,
     totalKilometers: 605,
@@ -29,7 +29,7 @@ export const monthData = [
     avgRating: 4.91,
   },
   {
-    week: "Week 4",
+    week: "Woche 4",
     totalRevenue: 2175.00,
     totalRides: 97,
     totalKilometers: 670,

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/backend/resources/templates/invoice/invoice.css">
+</head>
+
+<body>
+    <header> </header>
+
+    <main>
+        <div class="parent-border">
+            <div class="border">
+                <div class="parent parent-invoice-logo-type">
+                    <span class="invoice-type child">
+                        Rechnung
+                    </span>
+                    <img class="invoice-logo child" src="/backend/resources/templates/invoice/Logo.svg"
+                        alt="Zynqly Logo" width="auto" height="100">
+                </div>
+
+                <div class="parent parent-invoice-table-address">
+                    <table class="child invoice-table-address">
+                        <tr class="table-addresses">
+                            <th>FIRMA</th>
+                            <th>RNr.</th>
+                        </tr>
+                        <tr class="temp">
+                            <td>Firmenname</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td>UID: ATU...</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Adresse</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>PLZ + City</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Telefonnummer</td>
+                            <td></td>
+                        </tr>
+
+                    </table>
+                </div>
+
+                <div class="parent parent-invoice-table">
+                    <table class="invoice-table" style="border-spacing: 0;">
+
+                        <tr class="table-row-border">
+                            <th>ANZAHL</th>
+                            <th>ZAHLART</th>
+                            <th>FAHRTEN-TYP</th>
+                            <th>STEUER</th>
+                            <th>PREIS</th>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>Bar</td>
+                            <td>...fahrt</td>
+                            <td>XX %</td>
+                            <td>XX €</td>
+                        </tr>
+                    </table>
+
+                </div>
+
+                <div class="parent parent-invoice-total">
+                    <span class="invoice-total-text child">
+                        Betrag:
+                    </span>
+
+                    <span class="invoice-total child">
+                        EUR: XX
+                    </span>
+                </div>
+
+                <div class="parent parent-invoice-terms">
+                    <div class="child invoice-terms">
+                        <!-- For Future Content -->
+                        <!-- <h4>PLACEHOLDER</h4>
+                        <p>Placeholder</p>
+                        <p>Placeholder</p> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer></footer>
+
+</body>
+
+</html>

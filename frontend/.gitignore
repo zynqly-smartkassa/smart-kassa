@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+docs
+
+# Changelogs
+CHANGELOG*.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -37,6 +42,10 @@ android/.idea/
 android/local.properties
 android/*.iml
 android/.cxx/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/src/main/res/xml/config.xml
 
 # Die APK Files
 *.apk
@@ -59,9 +68,18 @@ DerivedData/
 # Capacitor plugins
 .capacitor/
 
+<<<<<<< HEAD
 # Playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+=======
+# Redundant patterns (cleanup)
+android/**/.gradle/
+android/**/build/
+
+/playwright-report
+/test-results
+>>>>>>> test/e2e
