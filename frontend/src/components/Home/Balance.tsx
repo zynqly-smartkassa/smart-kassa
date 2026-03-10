@@ -1,3 +1,5 @@
+import { Car, Euro, CreditCard, FileKey } from "lucide-react";
+import type { ChartConfig } from "../ui/chart";
 import {
   Card,
   CardContent,
@@ -22,22 +24,36 @@ import type {
   MonthlyWeekStats,
   RidesStats,
 } from "../../pages/Home";
-import {
-  barChartConfig,
-  radialSeriesConfig,
-  chartKeys,
-  type Duration,
-} from "../../content/balance/config";
-import {
-  metrics,
-  type Metric,
-  chartData,
-  driverShare,
-  brutto,
-  netto,
-} from "../../content/balance/data";
 
-// configs & data moved to content/balance/*
+const barChartConfig = { rides: { label: "Fahrten" } } as const;
+
+const radialSeriesConfig = {
+  brutto: { label: "Brutto Umsatz", color: "#8b5cf6" },
+  netto: { label: "Netto Umsatz", color: "#f472b6" },
+  anteilFahrer: { label: "Anteil Fahrer", color: "#22c55e" },
+} satisfies ChartConfig;
+
+const chartKeys = { day: "hour", week: "day", month: "week" } as const;
+type Duration = keyof typeof chartKeys;
+
+type Metric = { label: string; value: string; icon: React.ComponentType<{ className?: string }> };
+
+const metrics: Metric[] = [
+  { label: "Fahrten", value: "25", icon: Car },
+  { label: "Ø / Fahrt", value: "3,5€", icon: FileKey },
+  { label: "Kartenzahlungen", value: "10", icon: CreditCard },
+  { label: "Barzahlungen", value: "15", icon: Euro },
+];
+
+const chartData = [
+  { key: "brutto", name: "Brutto Umsatz", value: 3764, fill: "#8b5cf6" },
+  { key: "netto", name: "Netto Umsatz", value: 1800, fill: "#f472b6" },
+  { key: "anteilFahrer", name: "Anteil Fahrer", value: 650, fill: "#22c55e" },
+];
+
+const driverShare = 650;
+const brutto = 3764;
+const netto = 1800;
 
 interface BalanceData {
   duration: Duration;

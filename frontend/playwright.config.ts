@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 const VIENNA = { latitude: 48.2082, longitude: 16.3738 };
 
 export default defineConfig({
-  testDir: "./tests",
+  testDir: "./__tests__/e2e",
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

@@ -29,7 +29,6 @@ import {
   handleLogoutError,
   handleDeleteAccountError,
 } from "@/utils/errorHandling";
-import { toastMessages } from "@/content/auth/toastMessages";
 import axios, { AxiosError } from "axios";
 import { AuthStorage } from "@/utils/secureStorage";
 import { refreshAccessToken } from "@/utils/auth/jwttokens";
@@ -44,7 +43,6 @@ import {
 import { fetchAvatar } from "@/utils/profile/getAvatar";
 import { setAvatarState } from "../../../redux/slices/avatarSlice";
 import { setLink } from "../../../redux/slices/footerLinksSlice";
-import { authTestIds } from "../../../constants/authDataTestId";
 
 /**
  * Account settings page component.
@@ -64,8 +62,6 @@ const Account = (): JSX.Element => {
   const [loading, setLoading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
   const avatarState = useSelector((state: RootState) => state.avatarState.url);
-  const { modal: m } = authTestIds;
-
   useEffect(() => {
     if (avatarState) {
       setPreview(avatarState);
@@ -464,7 +460,7 @@ const Account = (): JSX.Element => {
             <DialogTrigger asChild>
               <Button
                 className="btn-main-action"
-                data-testid={m.logoutTrigger}
+                data-testid="modal-logout-trigger"
               >
                 Abmelden
               </Button>
@@ -479,7 +475,7 @@ const Account = (): JSX.Element => {
               </DialogHeader>
               <DialogFooter>
                 <Button
-                  data-testid={m.logoutButton}
+                  data-testid="modal-logout-button"
                   onClick={async () => {
                     toast.promise(
                       async () => {
@@ -489,7 +485,7 @@ const Account = (): JSX.Element => {
                         loading: "Abmelden...",
                         success: () => {
                           navigator("/register");
-                          return toastMessages.logout.success.title;
+                          return "Erfolg: Erfolgreich abgemeldet!";
                         },
                         error: (err) => handleLogoutError(err),
                         className: "mt-5 md:mt-0",
@@ -518,7 +514,7 @@ const Account = (): JSX.Element => {
             <DialogTrigger asChild>
               <Button
                 className="btn-danger"
-                data-testid={m.deleteAccountTrigger}
+                data-testid="model-delete-account-trigger"
               >
                 Mein Konto löschen
               </Button>
@@ -547,7 +543,7 @@ const Account = (): JSX.Element => {
                       success: async () => {
                         setDeletePassword("");
                         await navigator("/register");
-                        return toastMessages.deleteAccount.success.title;
+                        return "Erfolg: Ihr Konto wurde erfolgreich gelöscht.";
                       },
                       error: (err) => handleDeleteAccountError(err),
                       className: "mt-5 md:mt-0",
@@ -580,13 +576,13 @@ const Account = (): JSX.Element => {
                         value={deletePassword}
                         onChange={(e) => setDeletePassword(e.target.value)}
                         className="h-11 bg-gray-100 dark:bg-gray-700 border border-red-400 focus:ring-2 focus:ring-red-500"
-                        data-testid={m.confirmPassword}
+                        data-testid="confirm-password-delete-account"
                       />
                     </div>
                     <Button
                       type="submit"
                       disabled={!deletePassword}
-                      data-testid={m.deleteAccountButton}
+                      data-testid="delete-account-button"
                       className=" my-2
                 bg-red-500 text-white font-extrabold w-full md:w-56 py-3
                 transition-all duration-200

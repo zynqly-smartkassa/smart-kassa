@@ -1,3 +1,4 @@
+import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { EyeClosed, Eye } from "lucide-react";
 import { Label } from "../ui/label";
@@ -6,76 +7,70 @@ import {
   InputGroupInput,
   InputGroupAddon,
 } from "../ui/input-group";
-import type { PasswordContainer } from "../../../constants/Compontents";
 import { resizeKeyboard } from "../../hooks/layout/keyboardResizer";
 
-interface PasswordInputsProps {
-  PasswordContainer: PasswordContainer[];
-  classname?: string;
+export interface FormPasswordFieldProps extends Omit<React.ComponentProps<"input">, "type"> {
+  /** Label rendered above the input. Omit when rendering an external label. */
+  label?: string;
+  /** Error message shown below the input (animated). */
+  error?: string;
+  /** Whether the password text is currently visible. */
+  showPassword: boolean;
+  /** Callback to toggle password visibility. */
+  onTogglePassword: () => void;
 }
 
-const PasswordInputs = ({
-  PasswordContainer,
-  classname,
-}: PasswordInputsProps) => {
-  return (
-    <div
-      className={
-        !classname ? "grid grid-cols-1 md:grid-cols-2 gap-6" : classname
-      }
-    >
-      {PasswordContainer.map((value, index) => (
-        <div key={index}>
-          <Label htmlFor={value.id}>{value.label}</Label>
-
-          <InputGroup className={value.className}>
-            <InputGroupInput
-              id={value.id}
-              type={value.showPassword ? "text" : "password"}
-              title="Über 6 Zeichen mit einer Zahl und einem Zeichen"
-              placeholder={value.placeholder}
-              required
-              value={value.value}
-              onChange={(e) => value.onChangeListener(e.target.value)}
-              onBlur={value.onBlurListener}
-              onClick={() => resizeKeyboard()}
-              data-testid={value.testid ?? value.id}
-              autoComplete={value.autocomplete}
-            />
-
-            <InputGroupAddon align="inline-end">
-              <div
-                onClick={() => value.setShowPassword((prev) => !prev)}
-                data-testid="password-toggle"
-                className="cursor-pointer"
-              >
-                {value.showPassword ? (
-                  <EyeClosed width={19} />
-                ) : (
-                  <Eye width={19} className="text-zinc-700" />
-                )}
-              </div>
-            </InputGroupAddon>
-          </InputGroup>
-          {value.validation.map((v, i) => (
-            <AnimatePresence key={i}>
-              {v && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-red-500 text-sm"
-                >
-                  {value.validationMessage[i]}
-                </motion.p>
-              )}
-            </AnimatePresence>
-          ))}
-        </div>
-      ))}
+/**
+ * A password input with a show/hide toggle and animated validation error.
+ * Uses forwardRef so it works directly with react-hook-form's `register()`.
+ */
+const FormPasswordField = React.forwardRef<HTMLInputElement, FormPasswordFieldProps>(
+  ({ label, error, showPassword, onTogglePassword, id, onClick, className, ...props }, ref) => (
+    <div>
+      {label && <Label htmlFor={id}>{label}</Label>}
+      <InputGroup className={error ? `border-2 border-red-500${className ? ` ${className}` : ""}` : className}>
+        <InputGroupInput
+          id={id}
+          ref={ref}
+          type={showPassword ? "text" : "password"}
+          onClick={(e) => {
+            resizeKeyboard();
+            onClick?.(e);
+          }}
+          {...props}
+        />
+        <InputGroupAddon align="inline-end">
+          <div
+            onClick={onTogglePassword}
+            data-testid="password-toggle"
+            className="cursor-pointer"
+          >
+            {showPassword ? (
+              <EyeClosed width={19} />
+            ) : (
+              <Eye width={19} className="text-zinc-700" />
+            )}
+          </div>
+        </InputGroupAddon>
+      </InputGroup>
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            key="error"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="text-red-500 text-sm"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
-  );
-};
+  ),
+);
 
-export default PasswordInputs;
+FormPasswordField.displayName = "FormPasswordField";
+
+export default FormPasswordField;

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -9,119 +11,56 @@ import {
   CardContent,
   CardFooter,
 } from "../../components/ui/card";
-import {
-  useInvalidATU,
-  useInvalidConfirmPassword,
-  useInvalidEmail,
-  useInvalidFirmenbuchnummer,
-  useInvalidPassword,
-  useInvalidTelefonnummer,
-  useInvalidUsername,
-  type PASSWORD_VALIDATOR,
-} from "../../hooks/userfeedback/useValidator";
-import { authContent } from "../../content/auth/auth";
-import { validationMessages } from "../../content/auth/validationMessages";
-import { toastMessages } from "../../content/auth/toastMessages";
-import type { AppDispatch, RootState } from "../../../redux/store";
-import { useDispatch, useSelector } from "react-redux";
-import { useWarningToast } from "../../hooks/userfeedback/useToast";
-import { register } from "../../utils/auth/auth";
 import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../../redux/store";
+import { useWarningToast } from "../../hooks/userfeedback/useToast";
+import { register as registerUser } from "../../utils/auth/auth";
 import { handleRegisterError } from "../../utils/errorHandling";
-import type {
-  Container,
-  PasswordContainer,
-  showError,
-} from "../../../constants/Compontents";
-import Inputs from "../../components/inputs/Inputs";
-import PasswordInputs from "../../components/inputs/PasswordInputs";
+import FormField from "../../components/inputs/Inputs";
+import FormPasswordField from "../../components/inputs/PasswordInputs";
 import { useCheckForNews } from "../../hooks/userfeedback/useNews";
-import { authTestIds } from "../../../constants/authDataTestId";
+
+import { registerSchema, type RegisterFormData } from "../../utils/validation/authSchemas";
 
 /**
- * The Sign Up page, where users Sign Up
- * @returns Register Page where Users can Sign Up
- * @author Casper Zielinski
- * @author
+ * Register page — users create a new account.
+ * Form state is managed by react-hook-form with Zod validation.
  */
 function Register() {
-  // useState Hooks for the Form
-  const [firstname, setFirstname] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [atu, setAtu] = useState("");
-  const [firmenbuchnummer, setFirmenbuchnummer] = useState("");
-  const [telefonnummer, setTelefonnummer] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
+
   useCheckForNews(isRegistered);
   const navigator = useNavigate();
 
-  // Constant Values for Messages for the User
-  const r = authContent.register;
-  const v = validationMessages.register;
-  const t = toastMessages.register;
-
-  // to show the user how to input valid data and in which input field
-  const [showHint, setShowHint] = useState<showError>({
-    Firstnamefocused: false,
-    LastnameFocused: false,
-    EmailFocused: false,
-    PasswordFocused: false,
-    ConfirmPasswordFocused: false,
-    ATUFocused: false,
-    FNFocused: false,
-    TelefonnummerFocused: false,
-  });
-
-  // invalid... returns true if used value is invalid
-  const invalidFirstname = useInvalidUsername(firstname);
-  const invalidLastname = useInvalidUsername(lastname);
-  const invalidEmail = useInvalidEmail(email);
-  const invalidATU = useInvalidATU(atu);
-  const invalidFN = useInvalidFirmenbuchnummer(firmenbuchnummer);
-  const invalidTelefonNumber = useInvalidTelefonnummer(telefonnummer);
-  const invalidPassword: PASSWORD_VALIDATOR = useInvalidPassword(password);
-  const invalidConfirmPassword = useInvalidConfirmPassword(
-    password,
-    confirmPassword,
-  );
-
-  // Redux States and Dispatches
   const toastState = useSelector((state: RootState) => state.toastState);
   const dispatch: AppDispatch = useDispatch();
 
-  // to show the User that he has to log in to use the app
-  useWarningToast(toastState.showWarning, t.warning.title, dispatch);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: "onTouched",
+  });
 
-  //Form Validator, so the username is not empty, the email is not unvalid and the password is min. 6 chars long, one Special char and one Digit
-  const formUnvalid =
-    invalidFirstname ||
-    invalidLastname ||
-    invalidEmail ||
-    invalidPassword.passwordIsInvalid ||
-    invalidConfirmPassword.invalid ||
-    invalidATU ||
-    invalidFN ||
-    invalidTelefonNumber;
+  useWarningToast(toastState.showWarning, "Hinweis: Sie müssen sich anmelden oder registrieren, bevor Sie unseren Service nutzen können.", dispatch);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: RegisterFormData) => {
     toast.promise(
       async () => {
-        await register(
-          firstname,
-          lastname,
-          email,
-          telefonnummer,
-          password,
-          firmenbuchnummer,
-          atu,
-          dispatch, // to set Global User Variable (Injected)
+        await registerUser(
+          data.vorname,
+          data.nachname,
+          data.email,
+          data.telefon,
+          data.password,
+          data.firmenbuchnummer,
+          data.atu,
+          dispatch,
         );
       },
       {
@@ -129,225 +68,13 @@ function Register() {
         success: async () => {
           await navigator("/");
           setIsRegistered(true);
-          return t.success.title;
+          return "Erfolg: Registrierung erfolgreich! Sie werden jetzt weitergeleitet";
         },
         error: (err) => handleRegisterError(err),
         className: "mt-5 md:mt-0",
       },
     );
   };
-
-  const nameContainer: Container[] = [
-    {
-      className:
-        (invalidFirstname &&
-          showHint.Firstnamefocused &&
-          "border-2 border-red-500") ||
-        "",
-      id: "vorname",
-      testid: authTestIds.register.vorname,
-      label: r.labels.vorname,
-      onBlurListener: () =>
-        setShowHint((prev) => ({
-          ...prev,
-          Firstnamefocused: true,
-        })),
-      onChangeListener: setFirstname,
-      onFocusListener: () =>
-        setShowHint((prev) => ({
-          ...prev,
-          Firstnamefocused: false,
-        })),
-      placeholder: r.placeholders.vorname,
-      type: "text",
-      validation: invalidFirstname && showHint.Firstnamefocused,
-      value: firstname,
-      validationMessage: v.vorname.required,
-      autocomplete: "name",
-    },
-    {
-      className:
-        (invalidLastname &&
-          showHint.LastnameFocused &&
-          "border-2 border-red-500") ||
-        "",
-      id: "nachname",
-      testid: authTestIds.register.nachname,
-      label: r.labels.nachanme,
-      onBlurListener: () =>
-        setShowHint((prev) => ({
-          ...prev,
-          LastnameFocused: true,
-        })),
-      onChangeListener: setLastname,
-      onFocusListener: () =>
-        setShowHint((prev) => ({
-          ...prev,
-          LastnameFocused: false,
-        })),
-      placeholder: r.placeholders.nachanme,
-      type: "text",
-      validation: invalidLastname && showHint.LastnameFocused,
-      value: lastname,
-      validationMessage: v.nachname.required,
-      autocomplete: "family-name",
-    },
-  ];
-
-  const verificationContainer: Container[] = [
-    {
-      className:
-        (invalidEmail && showHint.EmailFocused && "border-2 border-red-500") ||
-        "",
-      id: "email",
-      testid: authTestIds.register.email,
-      label: r.labels.email,
-      onBlurListener: () =>
-        setShowHint((prev) => ({ ...prev, EmailFocused: true })),
-      onChangeListener: setEmail,
-      onFocusListener: () =>
-        setShowHint((prev) => ({ ...prev, EmailFocused: false })),
-      placeholder: r.placeholders.email,
-      type: "email",
-      validation: invalidEmail && showHint.EmailFocused,
-      validationMessage: v.email.invalid,
-      value: email,
-      autocomplete: "email",
-    },
-    {
-      className:
-        (invalidTelefonNumber &&
-          showHint.TelefonnummerFocused &&
-          "border-2 border-red-500") ||
-        "",
-      id: "Telefonnummer",
-      testid: authTestIds.register.telefonnummer,
-      label: r.labels.phone,
-      onBlurListener: () =>
-        setShowHint((prev) => ({
-          ...prev,
-          TelefonnummerFocused: true,
-        })),
-      onChangeListener: setTelefonnummer,
-      onFocusListener: () =>
-        setShowHint((prev) => ({
-          ...prev,
-          TelefonnummerFocused: false,
-        })),
-      placeholder: r.placeholders.phone,
-      type: "tel",
-      validation: invalidTelefonNumber && showHint.TelefonnummerFocused,
-      validationMessage: v.phone.invalid,
-      value: telefonnummer,
-      autocomplete: "tel",
-    },
-  ];
-
-  const businessContainer: Container[] = [
-    {
-      className:
-        (invalidFN && showHint.FNFocused && "border-2 border-red-500") || "",
-      id: "FirmenBuchNummer",
-      testid: authTestIds.register.firmenBuchNummer,
-      label: r.labels.fn,
-      onBlurListener: () =>
-        setShowHint((prev) => ({ ...prev, FNFocused: true })),
-      onChangeListener: setFirmenbuchnummer,
-      onFocusListener: () =>
-        setShowHint((prev) => ({ ...prev, FNFocused: false })),
-      placeholder: r.placeholders.fn,
-      type: "text",
-      validation: invalidFN && showHint.FNFocused,
-      validationMessage: v.fn.invalid,
-      value: firmenbuchnummer,
-      autocomplete: "off",
-    },
-    {
-      className:
-        (invalidATU && showHint.ATUFocused && "border-2 border-red-500") || "",
-      id: "ATU",
-      testid: authTestIds.register.atu,
-      label: r.labels.atu,
-      onBlurListener: () =>
-        setShowHint((prev) => ({ ...prev, ATUFocused: true })),
-      onChangeListener: setAtu,
-      onFocusListener: () =>
-        setShowHint((prev) => ({ ...prev, ATUFocused: false })),
-      placeholder: r.placeholders.atu,
-      type: "text",
-      validation: invalidATU && showHint.ATUFocused,
-      validationMessage: v.atu.invalid,
-      value: atu,
-      autocomplete: "off",
-    },
-  ];
-
-  const passwordContainer: PasswordContainer[] = [
-    {
-      className:
-        (invalidPassword.passwordIsInvalid &&
-          showHint.PasswordFocused &&
-          "border-2 border-red-500") ||
-        "",
-      id: "password",
-      testid: authTestIds.register.password,
-      label: r.labels.password,
-      onBlurListener: () =>
-        setShowHint((prev) => ({
-          ...prev,
-          PasswordFocused: true,
-        })),
-      onChangeListener: setPassword,
-      setShowPassword: setShowPassword,
-      showPassword: showPassword,
-      placeholder: r.placeholders.password,
-      title: "Über 6 Zeichen mit einer Zahl und einem Zeichen",
-      type: showPassword ? "text" : "password",
-      validation: [
-        !invalidPassword.passwordhasNumber && showHint.PasswordFocused,
-        !invalidPassword.passwordhasSpecialChar && showHint.PasswordFocused,
-        !invalidPassword.passwordminimum6Chars && showHint.PasswordFocused,
-      ],
-      validationMessage: [
-        v.password.missingNumber,
-        v.password.missingSymbol,
-        v.password.tooShort,
-      ],
-      value: password,
-      autocomplete: "new-password",
-    },
-    {
-      className:
-        (invalidConfirmPassword.invalid &&
-          showHint.ConfirmPasswordFocused &&
-          "border-2 border-red-500") ||
-        "",
-      id: "confirmPassword",
-      testid: authTestIds.register.confirmPassword,
-      label: r.labels.confirmPassword,
-      onBlurListener: () =>
-        setShowHint((prev) => ({
-          ...prev,
-          ConfirmPasswordFocused: true,
-        })),
-      onChangeListener: setConfirmPassword,
-      setShowPassword: setShowConfirmPassword,
-      showPassword: showConfirmPassword,
-      placeholder: r.placeholders.confirmPassword,
-      title: "Über 6 Zeichen mit einer Zahl und einem Zeichen",
-      type: showConfirmPassword ? "text" : "password",
-      validation: [
-        invalidConfirmPassword.missing && showHint.ConfirmPasswordFocused,
-        !invalidConfirmPassword.matching && showHint.ConfirmPasswordFocused,
-      ],
-      validationMessage: [
-        v.confirmPassword.required,
-        v.confirmPassword.invalid,
-      ],
-      value: confirmPassword,
-      autocomplete: "off",
-    },
-  ];
 
   return (
     <main className="py-7 min-w-screen min-h-screen flex justify-center items-center bg-zinc-200 dark:bg-black overflow-y-auto scrollbar-hide pt-5 md:pt-2">
@@ -358,39 +85,133 @@ function Register() {
           height={220}
           alt="Logo"
           className="mx-auto mb-2"
-        ></img>
+        />
         <CardHeader className="text-center">
-          <CardTitle>{r.heading.title}</CardTitle>
-          <CardDescription>{r.heading.subtitle}</CardDescription>
+          <CardTitle>Konto erstellen</CardTitle>
+          <CardDescription>Bitte geben Sie Ihre Daten ein, um ein Konto zu erstellen</CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent>
-            {/* Main Container */}
             <div className="flex flex-col gap-6">
-              {/* Name Container */}
-              <Inputs Containers={nameContainer} />
-              {/* Email - Number - Container */}
-              <Inputs Containers={verificationContainer} />
-              {/* FN - ATU - Container */}
-              <Inputs Containers={businessContainer} />
-              {/* password - Container */}
-              <PasswordInputs PasswordContainer={passwordContainer} />
+              {/* Name */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  id="vorname"
+                  {...register("vorname")}
+                  label="Vorname"
+                  type="text"
+                  placeholder="Max"
+                  error={errors.vorname?.message}
+                  autoComplete="given-name"
+                  data-testid="vorname"
+                />
+                <FormField
+                  id="nachname"
+                  {...register("nachname")}
+                  label="Nachname"
+                  type="text"
+                  placeholder="Mustermann"
+                  error={errors.nachname?.message}
+                  autoComplete="family-name"
+                  data-testid="nachname"
+                />
+              </div>
+
+              {/* Contact */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  id="email"
+                  {...register("email")}
+                  label="E-Mail-Adresse"
+                  type="email"
+                  placeholder="beispiel@domain.at"
+                  error={errors.email?.message}
+                  autoComplete="email"
+                  data-testid="email"
+                />
+                <FormField
+                  id="Telefonnummer"
+                  {...register("telefon")}
+                  label="Telefonnummer"
+                  type="tel"
+                  placeholder="+43 660 1234567"
+                  error={errors.telefon?.message}
+                  autoComplete="tel"
+                  data-testid="Telefonnummer"
+                />
+              </div>
+
+              {/* Business */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  id="FirmenBuchNummer"
+                  {...register("firmenbuchnummer")}
+                  label="Firmenbuchnummer (FN)"
+                  type="text"
+                  placeholder="FN123456a"
+                  error={errors.firmenbuchnummer?.message}
+                  autoComplete="off"
+                  data-testid="FirmenBuchNummer"
+                />
+                <FormField
+                  id="ATU"
+                  {...register("atu")}
+                  label="Umsatzsteuer-ID (ATU)"
+                  type="text"
+                  placeholder="ATU123456789"
+                  error={errors.atu?.message}
+                  autoComplete="off"
+                  data-testid="ATU"
+                />
+              </div>
+
+              {/* Passwords */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormPasswordField
+                  id="password"
+                  {...register("password")}
+                  label="Kennwort"
+                  showPassword={showPassword}
+                  onTogglePassword={() => setShowPassword((p) => !p)}
+                  placeholder="••••••••"
+                  title="Über 6 Zeichen mit einer Zahl und einem Zeichen"
+                  error={errors.password?.message}
+                  autoComplete="new-password"
+                  data-testid="password"
+                />
+                <FormPasswordField
+                  id="confirmPassword"
+                  {...register("confirmPassword")}
+                  label="Kennwort bestätigen"
+                  showPassword={showConfirmPassword}
+                  onTogglePassword={() => setShowConfirmPassword((p) => !p)}
+                  placeholder="••••••••"
+                  title="Über 6 Zeichen mit einer Zahl und einem Zeichen"
+                  error={errors.confirmPassword?.message}
+                  autoComplete="new-password"
+                  data-testid="confirmPassword"
+                />
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex-col gap-2">
             <Button
               type="submit"
               className="btn-auth-submit"
-              disabled={formUnvalid}
-              data-testid={authTestIds.register.registerButton}
+              disabled={!isValid}
+              data-testid="registerButton"
             >
-              {r.buttons.register}
+              Jetzt registrieren
             </Button>
             <div className="w-full flex justify-center mt-2 text-center">
               <div className="text-sm text-muted-foreground">
-                <p>{r.footer.text}</p>
-                <Link to="/login" className="auth-link" data-testid={authTestIds.register.loginLink}>
-                  {r.footer.link}
+                <p>Bereits registriert?</p>
+                <Link
+                  to="/login"
+                  className="auth-link"
+                  data-testid="loginLink"
+                >
+                  Jetzt anmelden
                 </Link>
               </div>
             </div>

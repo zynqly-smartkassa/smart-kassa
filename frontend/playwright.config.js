@@ -10,8 +10,9 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 import { defineConfig, devices } from "@playwright/test";
+var VIENNA = { latitude: 48.2082, longitude: 16.3738 };
 export default defineConfig({
-    testDir: "./tests",
+    testDir: "./__tests__/e2e",
     fullyParallel: false,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
@@ -23,13 +24,28 @@ export default defineConfig({
         screenshot: "only-on-failure",
     },
     projects: [
+        // Desktop-Browser: all Tests except RideFlow
         {
             name: "chromium",
             use: __assign({}, devices["Desktop Chrome"]),
+            testIgnore: ["**/RideFlow.spec.ts"],
+        },
+        {
+            name: "firefox",
+            use: __assign({}, devices["Desktop Firefox"]),
+            testIgnore: ["**/RideFlow.spec.ts"],
         },
         {
             name: "webkit",
             use: __assign({}, devices["Desktop Safari"]),
+            testIgnore: ["**/RideFlow.spec.ts"],
+        },
+        // Dedicated Mobile project only for RideFlow
+        // Playwright emulates iPhone 13 via Chromium CDP (only browser with full device emulation support)
+        {
+            name: "mobile",
+            use: __assign(__assign({}, devices["iPhone 13"]), { geolocation: VIENNA, permissions: ["geolocation"] }),
+            testMatch: ["**/RideFlow.spec.ts"],
         },
     ],
     webServer: [
