@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "../../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -20,7 +21,17 @@ import { handleLoginError } from "../../utils/errorHandling";
 import FormField from "../../components/inputs/Inputs";
 import FormPasswordField from "../../components/inputs/PasswordInputs";
 
-import { loginSchema, type LoginFormData } from "../../utils/validation/authSchemas";
+const loginSchema = z.object({
+  email: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    ),
+  password: z.string().min(8, "Passwort braucht mindestens 8 Zeichen"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 /**
  * Login page — users sign in with email and password.

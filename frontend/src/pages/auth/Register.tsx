@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "../../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -21,7 +22,40 @@ import FormField from "../../components/inputs/Inputs";
 import FormPasswordField from "../../components/inputs/PasswordInputs";
 import { useCheckForNews } from "../../hooks/userfeedback/useNews";
 
-import { registerSchema, type RegisterFormData } from "../../utils/validation/authSchemas";
+const registerSchema = z
+  .object({
+    vorname: z.string().trim().min(1, "Bitten geben Sie ihren Vornamen ein"),
+    nachname: z.string().trim().min(1, "Bitten geben Sie ihren Nachnamen ein"),
+    email: z
+      .string()
+      .regex(
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      ),
+    telefon: z
+      .string()
+      .min(7, "Bitte geben Sie eine gültige Telefonnummer ein (7-20 Zeichen)")
+      .regex(/^[\d\s+()-]{7,20}$/, "Bitte geben Sie eine gültige Telefonnummer ein (7-20 Zeichen)"),
+    firmenbuchnummer: z
+      .string()
+      .regex(/^FN\d{6}[a-z]$/, "Bitte geben Sie eine gültige Firmenbuchnummer ein (Format:FN123456a)"),
+    atu: z
+      .string()
+      .transform((val) => val.trim().replace(/[\s/]/g, ""))
+      .pipe(z.string().regex(/^ATU\d{9}$/, "Bitte geben Sie eine gültige Umsatzsteuer-ID ein (Format: ATU123456789)")),
+    password: z
+      .string()
+      .min(8, "Das Passwort muss mindestens 8 Zeichen enthalten")
+      .regex(/[0-9]/, "Das Passwort muss mindestens eine Zahl enthalten")
+      .regex(/[!@#$%^&*()§_+=[\]{};':"\\|,.<>/?-]/, "Das Passwort muss mindestens ein Sonderzeichen enthalten"),
+    confirmPassword: z.string().min(1, "Bitte bestätigen Sie Ihr Passwort"),
+  })
+  .refine((data) => data.confirmPassword === data.password, {
+    message: "Die Passwörter stimmen nicht überein",
+    path: ["confirmPassword"],
+  });
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 /**
  * Register page — users create a new account.

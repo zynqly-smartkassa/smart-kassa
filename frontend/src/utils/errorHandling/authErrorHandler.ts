@@ -1,149 +1,114 @@
-import { toastMessages } from "../../content/auth/toastMessages";
-
-/**
- * Handles registration-related errors and returns appropriate error message
- * @param error - The error object to handle
- * @returns Error message string to be displayed
- * @author Casper Zielinski
- */
 export function handleRegisterError(error: unknown): string {
   console.error(error);
-  const t = toastMessages.register;
 
   if (error instanceof Error) {
-    // Check if it's a specific empty fields error with field names
     if (error.message.startsWith("Empty Fields:")) {
       const fields = error.message.replace("Empty Fields: ", "");
-      return `${t.error.missingFields}\nFehlende Felder: ${fields}`;
+      return `Fehler: Bitte füllen Sie alle erforderlichen Felder aus.\nFehlende Felder: ${fields}`;
     }
 
-    // Handle specific error messages from auth.ts
     switch (error.message) {
       case "Email already exists":
-        return t.error.emailAlreadyInUse;
+        return "Fehler: Diese Email wird bereits verwendet, Melden sie sich an oder Erstellen sie ein neues Konto mit einer anderen Email";
       case "FN already exists":
-        return t.error.fnAlreadyInUse;
+        return "Fehler: Diese Firmenbuchnummer wird bereits verwendet, Melden sie sich mit ihrer Email an";
       case "Phonenumber already exists":
-        return t.error.phoneNumberAlreadyInUse;
+        return "Fehler: Diese Telefonnumer wird bereits verwendet, Melden sie sich mit ihrer Email an oder geben sie eine neue Telefonnumer an ";
       case "ATU already exists":
-        return t.error.atuAlreadyInUse;
+        return "Fehler: Diese ATU-Nummer wird bereits verwendet, Melden sie sich mit ihrer Email an";
       case "Internal Server Error":
-        return t.error.internalServerError;
+        return "Fehler: Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.";
       case "Missing Fields":
-        return t.error.missingFields;
+        return "Fehler: Bitte füllen Sie alle erforderlichen Felder aus.";
       case "Network Error":
-        return t.error.networkError;
+        return "Fehler: Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.";
       case "Timeout":
-        return t.error.timeout;
+        return "Fehler: Die Anfrage hat zu lange gedauert. Bitte versuchen Sie es erneut.";
       case "Response is Empty":
-        return t.error.emptyResponse;
+        return "Fehler: Der Server hat keine Antwort gesendet. Bitte versuchen Sie es erneut.";
       case "Conflict":
-        return t.error.conflict;
+        return "Fehler: Ein Konflikt ist aufgetreten. Einige Ihrer Daten werden bereits verwendet.";
       default:
-        return t.error.title;
+        return "Fehler: Registrierung fehlgeschlagen! Bitte überprüfen Sie Ihre Eingaben und versuchen Sie es erneut.";
     }
   } else {
-    return t.error.title;
+    return "Fehler: Registrierung fehlgeschlagen! Bitte überprüfen Sie Ihre Eingaben und versuchen Sie es erneut.";
   }
 }
 
-/**
- * Handles login-related errors and returns appropriate error message
- * @param error - The error object to handle
- * @returns Error message string to be displayed
- * @author Casper Zielinski
- */
 export function handleLoginError(error: unknown): string {
   console.error(error);
-  const t = toastMessages.login;
 
   if (error instanceof Error) {
-    // Handle specific error messages from auth.ts
     switch (error.message) {
       case "User Not Found":
-        return t.error.userNotFound;
+        return "Fehler: Kein Konto mit dieser E-Mail-Adresse gefunden. Bitte registrieren Sie sich oder überprüfen Sie Ihre E-Mail-Adresse.";
       case "Wrong Email or Password":
-        return t.error.wrongCredentials;
+        return "Fehler: Ungültige E-Mail-Adresse oder falsches Passwort. Bitte versuchen Sie es erneut.";
       case "Internal Server Error":
-        return t.error.internalServerError;
+        return "Fehler: Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.";
       case "Missing Fields":
-        return t.error.missingFields;
+        return "Fehler: Bitte füllen Sie alle erforderlichen Felder aus.";
       case "Network Error":
-        return t.error.networkError;
+        return "Fehler: Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.";
       case "Timeout":
-        return t.error.timeout;
+        return "Fehler: Die Anfrage hat zu lange gedauert. Bitte versuchen Sie es erneut.";
       case "Unauthorized":
-        return t.error.unauthorized;
+        return "Fehler: Zugriff verweigert. Bitte überprüfen Sie Ihre Anmeldedaten.";
       default:
-        return t.error.title;
+        return "Fehler: Login fehlgeschlagen! Bitte überprüfen Sie Ihre E-Mail-Adresse und Ihr Kennwort.";
     }
   } else {
-    return t.error.title;
+    return "Fehler: Login fehlgeschlagen! Bitte überprüfen Sie Ihre E-Mail-Adresse und Ihr Kennwort.";
   }
 }
 
-/**
- * Handles logout-related errors and returns appropriate error message
- * @param error - The error object to handle
- * @returns Error message string to be displayed
- * @author Casper Zielinski
- */
 export function handleLogoutError(error: unknown): string {
   console.error(error);
-  const t = toastMessages.logout;
 
   if (error instanceof Error) {
-    // Handle specific error messages from auth.ts
     switch (error.message) {
       case "Missing Fields":
-        return t.error.missingFields;
+        return "Fehler: Fehlende Informationen. Bitte versuchen Sie es erneut.";
       case "User Not Found":
-        return t.error.userNotFound;
+        return "Fehler: Benutzer nicht gefunden. Bitte melden Sie sich erneut an.";
       case "Internal Server Error":
-        return t.error.internalServerError;
+        return "Fehler: Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.";
       case "Network Error":
-        return t.error.networkError;
+        return "Fehler: Keine Internetverbindung. Bitte überprüfen Sie Ihre Verbindung.";
       case "Timeout":
-        return t.error.timeout;
+        return "Fehler: Die Verbindung hat zu lange gedauert. Bitte versuchen Sie es erneut.";
       default:
-        return t.error.title;
+        return "Fehler: Abmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.";
     }
   } else {
-    return t.error.title;
+    return "Fehler: Abmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.";
   }
 }
 
-/**
- * Handles delete account-related errors and returns appropriate error message
- * @param error - The error object to handle
- * @returns Error message string to be displayed
- * @author Casper Zielinski
- */
 export function handleDeleteAccountError(error: unknown): string {
   console.error(error);
-  const t = toastMessages.deleteAccount;
 
   if (error instanceof Error) {
-    // Handle specific error messages from auth.ts
     switch (error.message) {
       case "Invalid Password":
-        return t.error.invalidPassword;
+        return "Fehler: Falsches Passwort. Bitte versuchen Sie es erneut.";
       case "Missing Fields":
-        return t.error.missingFields;
+        return "Fehler: Fehlende Informationen. Bitte versuchen Sie es erneut.";
       case "User Not Found":
-        return t.error.userNotFound;
+        return "Fehler: Benutzer nicht gefunden.";
       case "Unauthorized":
-        return t.error.unauthorized;
+        return "Fehler: Nicht autorisiert. Bitte melden Sie sich an.";
       case "Internal Server Error":
-        return t.error.internalServerError;
+        return "Fehler: Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.";
       case "Network Error":
-        return t.error.networkError;
+        return "Fehler: Keine Internetverbindung. Bitte überprüfen Sie Ihre Verbindung.";
       case "Timeout":
-        return t.error.timeout;
+        return "Fehler: Die Verbindung hat zu lange gedauert. Bitte versuchen Sie es erneut.";
       default:
-        return t.error.title;
+        return "Fehler: Konto konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.";
     }
   } else {
-    return t.error.title;
+    return "Fehler: Konto konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.";
   }
 }
