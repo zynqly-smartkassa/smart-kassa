@@ -35,7 +35,7 @@ import rideRoutes from "./routes/ride.js";
 import allridesRoutes from "./routes/all-rides.js";
 import logOutRoutes from "./routes/logout.js";
 import deleteAccountRoutes from "./routes/deleteAccount.js";
-import listBlobsRoutes from "./routes/list-blobs.js";
+import storageRoutes from "./routes/storage.js";
 import updateProfileRoutes from "./routes/updateProfile.js";
 import invoiceRoutes from "./routes/invoice.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
@@ -83,7 +83,7 @@ app.use("/all-rides", allridesRoutes);
 app.use("/logout", logOutRoutes);
 app.use("/account", deleteAccountRoutes);
 app.use("/account", updateProfileRoutes);
-app.use("/list-blobs", listBlobsRoutes);
+app.use("/storage", storageRoutes);
 app.use("/invoice", invoiceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 

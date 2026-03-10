@@ -325,7 +325,7 @@ const Documentation = () => {
                     </div>
                     <div className="flex items-start gap-3 p-3 rounded-lg bg-sidebar">
                       <code className="text-xs font-mono bg-green-100 dark:bg-green-950 px-2 py-1 rounded">
-                        GET /list-blobs/invoices
+                        GET /storage/invoices
                       </code>
                       <p className="text-sm text-muted-foreground flex-1">
                         Alle Rechnungen abrufen

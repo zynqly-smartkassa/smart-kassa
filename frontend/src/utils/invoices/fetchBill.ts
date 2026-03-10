@@ -13,7 +13,7 @@ export const fetchBill = async (
       : await refreshAccessToken();
 
     const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/list-blobs/invoices/${id}`,
+      `${import.meta.env.VITE_API_URL}/storage/invoices/${id}`,
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
 

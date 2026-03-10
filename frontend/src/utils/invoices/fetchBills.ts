@@ -24,7 +24,7 @@ export const fetchBills = async (
     }
 
     const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/list-blobs/invoices`,
+      `${import.meta.env.VITE_API_URL}/storage/invoices`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

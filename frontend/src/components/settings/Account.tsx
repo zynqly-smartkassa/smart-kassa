@@ -90,7 +90,7 @@ const Account = (): JSX.Element => {
       formData.append("newAvatar", avatarFile);
 
       const response = await axios.put(
-        `${import.meta.env.VITE_API_URL}/list-blobs/avatar`,
+        `${import.meta.env.VITE_API_URL}/storage/avatar`,
         formData,
         {
           headers: {

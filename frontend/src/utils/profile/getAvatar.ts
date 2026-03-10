@@ -31,7 +31,7 @@ export async function fetchAvatar(
     }
 
     const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/list-blobs/avatar`,
+      `${import.meta.env.VITE_API_URL}/storage/avatar`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
