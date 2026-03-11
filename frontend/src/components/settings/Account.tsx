@@ -36,13 +36,22 @@ import { Label } from "@/components/ui/label";
 import { User } from "lucide-react";
 import { updateProfile } from "@/utils/profile/updateProfile";
 import { handleUpdateProfileError } from "@/utils/errorHandling/updateProfileErrorHandler";
-import {
-  useInvalidEmail,
-  useInvalidUsername,
-} from "@/hooks/userfeedback/useValidator";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { fetchAvatar } from "@/utils/profile/getAvatar";
 import { setAvatarState } from "../../../redux/slices/avatarSlice";
 import { setLink } from "../../../redux/slices/footerLinksSlice";
+
+const accountSchema = z.object({
+  firstName: z.string().trim().min(1, "Bitte geben Sie Ihren Vornamen ein"),
+  lastName: z.string().trim().min(1, "Bitte geben Sie Ihren Nachnamen ein"),
+  email: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    ),
+});
 
 /**
  * Account settings page component.
@@ -151,6 +160,8 @@ const Account = (): JSX.Element => {
   const user = useSelector((state: RootState) => state.user);
 
   const form = useForm({
+    resolver: zodResolver(accountSchema),
+    mode: "onTouched",
     defaultValues: {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -166,12 +177,6 @@ const Account = (): JSX.Element => {
     user.email.trim() !== email.trim() ||
     user.firstName.trim() !== firstName.trim() ||
     user.lastName.trim() !== lastName.trim();
-
-  const invalidFirstname = useInvalidUsername(firstName.trim());
-  const invalidLastname = useInvalidUsername(lastName.trim());
-  const invalidEmail = useInvalidEmail(email);
-
-  const formInvalid = invalidFirstname || invalidLastname || invalidEmail;
 
   const revertChanges = () => {
     if (toRevert) {
@@ -192,13 +197,6 @@ const Account = (): JSX.Element => {
 
   const navigator = useNavigate();
   const [deletePassword, setDeletePassword] = useState("");
-
-  // to show the user how to input valid data and in which input field
-  const [showHint, setShowHint] = useState({
-    FirstNameFocused: false,
-    LastNameFocused: false,
-    EmailFocused: false,
-  });
 
   return (
     <div className="settings-page-container">
@@ -268,12 +266,6 @@ const Account = (): JSX.Element => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(async () => {
-                if (formInvalid) {
-                  toast.error("Bitte füllen Sie alle Felder korrekt aus", {
-                    className: "mt-5 md:mt-0",
-                  });
-                  return;
-                }
                 if (!toRevert) {
                   toast.info("Keine Änderungen zum Speichern", {
                     className: "mt-5 md:mt-0",
@@ -308,20 +300,8 @@ const Account = (): JSX.Element => {
                         <Input
                           {...field}
                           placeholder="Max"
-                          onBlur={() =>
-                            setShowHint((prev) => ({
-                              ...prev,
-                              FirstNameFocused: true,
-                            }))
-                          }
-                          onFocus={() =>
-                            setShowHint((prev) => ({
-                              ...prev,
-                              FirstNameFocused: false,
-                            }))
-                          }
                           className={
-                            invalidFirstname && showHint.FirstNameFocused
+                            !!form.formState.errors.firstName
                               ? "h-11 bg-gray-100 dark:bg-gray-700 border-2 border-red-500 focus:ring-2 focus:ring-violet-400"
                               : "h-11 bg-gray-100 dark:bg-gray-700 border border-violet-400 focus:ring-2 focus:ring-violet-400"
                           }
@@ -343,20 +323,8 @@ const Account = (): JSX.Element => {
                         <Input
                           {...field}
                           placeholder="Mustermann"
-                          onBlur={() =>
-                            setShowHint((prev) => ({
-                              ...prev,
-                              LastNameFocused: true,
-                            }))
-                          }
-                          onFocus={() =>
-                            setShowHint((prev) => ({
-                              ...prev,
-                              LastNameFocused: false,
-                            }))
-                          }
                           className={
-                            invalidLastname && showHint.LastNameFocused
+                            !!form.formState.errors.lastName
                               ? "h-11 bg-gray-100 dark:bg-gray-700 border-2 border-red-500 focus:ring-2 focus:ring-violet-400"
                               : "h-11 bg-gray-100 dark:bg-gray-700 border border-violet-400 focus:ring-2 focus:ring-violet-400"
                           }
@@ -379,20 +347,8 @@ const Account = (): JSX.Element => {
                           <Input
                             {...field}
                             placeholder="beispiel@mail.com"
-                            onBlur={() =>
-                              setShowHint((prev) => ({
-                                ...prev,
-                                EmailFocused: true,
-                              }))
-                            }
-                            onFocus={() =>
-                              setShowHint((prev) => ({
-                                ...prev,
-                                EmailFocused: false,
-                              }))
-                            }
                             className={
-                              invalidEmail && showHint.EmailFocused
+                              !!form.formState.errors.email
                                 ? "h-11 bg-gray-100 dark:bg-gray-700 border-2 border-red-500 focus:ring-2 focus:ring-violet-400"
                                 : "h-11 bg-gray-100 dark:bg-gray-700 border border-violet-400 focus:ring-2 focus:ring-violet-400"
                             }
