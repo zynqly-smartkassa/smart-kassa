@@ -49,24 +49,3 @@ export function getDateYesterday() {
 
   return formatted
 }
-
-/**
- * Formats a Date object to a date-only string.
- * 
- * Converts a Date object to "YYYY-MM-DD" format with zero-padding,
- * excluding time components.
- * 
- * @param {Date} date - The Date object to format.
- * @returns {string} Formatted date string as "YYYY-MM-DD".
- */
-export function getDateFormat(date: Date) {
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0 based
-  const day = String(date.getDate()).padStart(2, "0");
-
-  const formatted = `${year}-${month}-${day}`;
-
-  return formatted
-}
-

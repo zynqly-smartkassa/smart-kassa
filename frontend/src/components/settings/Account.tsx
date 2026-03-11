@@ -29,7 +29,6 @@ import {
   handleLogoutError,
   handleDeleteAccountError,
 } from "@/utils/errorHandling";
-import { toastMessages } from "@/content/auth/toastMessages";
 import axios, { AxiosError } from "axios";
 import { AuthStorage } from "@/utils/secureStorage";
 import { refreshAccessToken } from "@/utils/auth/jwttokens";
@@ -37,14 +36,22 @@ import { Label } from "@/components/ui/label";
 import { User } from "lucide-react";
 import { updateProfile } from "@/utils/profile/updateProfile";
 import { handleUpdateProfileError } from "@/utils/errorHandling/updateProfileErrorHandler";
-import {
-  useInvalidEmail,
-  useInvalidUsername,
-} from "@/hooks/userfeedback/useValidator";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { fetchAvatar } from "@/utils/profile/getAvatar";
 import { setAvatarState } from "../../../redux/slices/avatarSlice";
 import { setLink } from "../../../redux/slices/footerLinksSlice";
-import { authTestIds } from "../../../constants/authDataTestId";
+
+const accountSchema = z.object({
+  firstName: z.string().trim().min(1, "Bitte geben Sie Ihren Vornamen ein"),
+  lastName: z.string().trim().min(1, "Bitte geben Sie Ihren Nachnamen ein"),
+  email: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    ),
+});
 
 /**
  * Account settings page component.
@@ -64,8 +71,6 @@ const Account = (): JSX.Element => {
   const [loading, setLoading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
   const avatarState = useSelector((state: RootState) => state.avatarState.url);
-  const { modal: m } = authTestIds;
-
   useEffect(() => {
     if (avatarState) {
       setPreview(avatarState);
@@ -155,6 +160,8 @@ const Account = (): JSX.Element => {
   const user = useSelector((state: RootState) => state.user);
 
   const form = useForm({
+    resolver: zodResolver(accountSchema),
+    mode: "onTouched",
     defaultValues: {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -170,12 +177,6 @@ const Account = (): JSX.Element => {
     user.email.trim() !== email.trim() ||
     user.firstName.trim() !== firstName.trim() ||
     user.lastName.trim() !== lastName.trim();
-
-  const invalidFirstname = useInvalidUsername(firstName.trim());
-  const invalidLastname = useInvalidUsername(lastName.trim());
-  const invalidEmail = useInvalidEmail(email);
-
-  const formInvalid = invalidFirstname || invalidLastname || invalidEmail;
 
   const revertChanges = () => {
     if (toRevert) {
@@ -196,13 +197,6 @@ const Account = (): JSX.Element => {
 
   const navigator = useNavigate();
   const [deletePassword, setDeletePassword] = useState("");
-
-  // to show the user how to input valid data and in which input field
-  const [showHint, setShowHint] = useState({
-    FirstNameFocused: false,
-    LastNameFocused: false,
-    EmailFocused: false,
-  });
 
   return (
     <div className="settings-page-container">
@@ -272,12 +266,6 @@ const Account = (): JSX.Element => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(async () => {
-                if (formInvalid) {
-                  toast.error("Bitte füllen Sie alle Felder korrekt aus", {
-                    className: "mt-5 md:mt-0",
-                  });
-                  return;
-                }
                 if (!toRevert) {
                   toast.info("Keine Änderungen zum Speichern", {
                     className: "mt-5 md:mt-0",
@@ -312,20 +300,8 @@ const Account = (): JSX.Element => {
                         <Input
                           {...field}
                           placeholder="Max"
-                          onBlur={() =>
-                            setShowHint((prev) => ({
-                              ...prev,
-                              FirstNameFocused: true,
-                            }))
-                          }
-                          onFocus={() =>
-                            setShowHint((prev) => ({
-                              ...prev,
-                              FirstNameFocused: false,
-                            }))
-                          }
                           className={
-                            invalidFirstname && showHint.FirstNameFocused
+                            !!form.formState.errors.firstName
                               ? "h-11 bg-gray-100 dark:bg-gray-700 border-2 border-red-500 focus:ring-2 focus:ring-violet-400"
                               : "h-11 bg-gray-100 dark:bg-gray-700 border border-violet-400 focus:ring-2 focus:ring-violet-400"
                           }
@@ -347,20 +323,8 @@ const Account = (): JSX.Element => {
                         <Input
                           {...field}
                           placeholder="Mustermann"
-                          onBlur={() =>
-                            setShowHint((prev) => ({
-                              ...prev,
-                              LastNameFocused: true,
-                            }))
-                          }
-                          onFocus={() =>
-                            setShowHint((prev) => ({
-                              ...prev,
-                              LastNameFocused: false,
-                            }))
-                          }
                           className={
-                            invalidLastname && showHint.LastNameFocused
+                            !!form.formState.errors.lastName
                               ? "h-11 bg-gray-100 dark:bg-gray-700 border-2 border-red-500 focus:ring-2 focus:ring-violet-400"
                               : "h-11 bg-gray-100 dark:bg-gray-700 border border-violet-400 focus:ring-2 focus:ring-violet-400"
                           }
@@ -383,20 +347,8 @@ const Account = (): JSX.Element => {
                           <Input
                             {...field}
                             placeholder="beispiel@mail.com"
-                            onBlur={() =>
-                              setShowHint((prev) => ({
-                                ...prev,
-                                EmailFocused: true,
-                              }))
-                            }
-                            onFocus={() =>
-                              setShowHint((prev) => ({
-                                ...prev,
-                                EmailFocused: false,
-                              }))
-                            }
                             className={
-                              invalidEmail && showHint.EmailFocused
+                              !!form.formState.errors.email
                                 ? "h-11 bg-gray-100 dark:bg-gray-700 border-2 border-red-500 focus:ring-2 focus:ring-violet-400"
                                 : "h-11 bg-gray-100 dark:bg-gray-700 border border-violet-400 focus:ring-2 focus:ring-violet-400"
                             }
@@ -464,7 +416,7 @@ const Account = (): JSX.Element => {
             <DialogTrigger asChild>
               <Button
                 className="btn-main-action"
-                data-testid={m.logoutTrigger}
+                data-testid="modal-logout-trigger"
               >
                 Abmelden
               </Button>
@@ -479,7 +431,7 @@ const Account = (): JSX.Element => {
               </DialogHeader>
               <DialogFooter>
                 <Button
-                  data-testid={m.logoutButton}
+                  data-testid="modal-logout-button"
                   onClick={async () => {
                     toast.promise(
                       async () => {
@@ -489,7 +441,7 @@ const Account = (): JSX.Element => {
                         loading: "Abmelden...",
                         success: () => {
                           navigator("/register");
-                          return toastMessages.logout.success.title;
+                          return "Erfolg: Erfolgreich abgemeldet!";
                         },
                         error: (err) => handleLogoutError(err),
                         className: "mt-5 md:mt-0",
@@ -518,7 +470,7 @@ const Account = (): JSX.Element => {
             <DialogTrigger asChild>
               <Button
                 className="btn-danger"
-                data-testid={m.deleteAccountTrigger}
+                data-testid="model-delete-account-trigger"
               >
                 Mein Konto löschen
               </Button>
@@ -547,7 +499,7 @@ const Account = (): JSX.Element => {
                       success: async () => {
                         setDeletePassword("");
                         await navigator("/register");
-                        return toastMessages.deleteAccount.success.title;
+                        return "Erfolg: Ihr Konto wurde erfolgreich gelöscht.";
                       },
                       error: (err) => handleDeleteAccountError(err),
                       className: "mt-5 md:mt-0",
@@ -580,13 +532,13 @@ const Account = (): JSX.Element => {
                         value={deletePassword}
                         onChange={(e) => setDeletePassword(e.target.value)}
                         className="h-11 bg-gray-100 dark:bg-gray-700 border border-red-400 focus:ring-2 focus:ring-red-500"
-                        data-testid={m.confirmPassword}
+                        data-testid="confirm-password-delete-account"
                       />
                     </div>
                     <Button
                       type="submit"
                       disabled={!deletePassword}
-                      data-testid={m.deleteAccountButton}
+                      data-testid="delete-account-button"
                       className=" my-2
                 bg-red-500 text-white font-extrabold w-full md:w-56 py-3
                 transition-all duration-200

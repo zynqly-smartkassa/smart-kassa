@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { LOGIN_USER } from "./userCredentials";
 import { loginUser } from "./helpers";
-import { rideTestIds } from "../constants/rideDataTestId";
+import { rideTestIds } from "../../constants/rideDataTestId";
 
 const ri = rideTestIds.ride;
 const p = rideTestIds.payment;

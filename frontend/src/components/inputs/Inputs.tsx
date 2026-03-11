@@ -1,55 +1,52 @@
+import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { Container } from "../../../constants/Compontents";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { resizeKeyboard } from "../../hooks/layout/keyboardResizer";
 
-interface NameInputsProps {
-  Containers: Container[];
-  classname?: string;
+export interface FormFieldProps extends React.ComponentProps<"input"> {
+  /** Field label rendered above the input. */
+  label: string;
+  /** Error message shown below the input (animated). */
+  error?: string;
 }
 
-const NameInputs = ({ Containers, classname }: NameInputsProps) => {
-  return (
-    <div
-      className={
-        !classname ? "grid grid-cols-1 md:grid-cols-2 gap-6" : classname
-      }
-    >
-      {Containers.map((value, index) => (
-        <div key={index}>
-          <Label htmlFor={value.id}>{value.label}</Label>
-          <Input
-            id={value.id}
-            className={value.className}
-            type="text"
-            placeholder={value.placeholder}
-            required
-            value={value.value}
-            onChange={(e) => value.onChangeListener(e.target.value)}
-            onBlur={value.onBlurListener}
-            onFocus={value.onFocusListener}
-            onClick={() => resizeKeyboard()}
-            data-testid={value.testid ?? value.id}
-            autoComplete={value.autocomplete}
-          />
-          <AnimatePresence>
-            {value.validation && (
-              <motion.p
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="text-red-500 text-sm"
-              >
-                {value.validationMessage}
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
-      ))}
+/**
+ * A labelled input field with an animated validation error message.
+ * Uses forwardRef so it works directly with react-hook-form's `register()`.
+ */
+const FormField = React.forwardRef<HTMLInputElement, FormFieldProps>(
+  ({ label, error, id, onClick, className, ...props }, ref) => (
+    <div>
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        ref={ref}
+        className={error ? `border-2 border-red-500${className ? ` ${className}` : ""}` : className}
+        onClick={(e) => {
+          resizeKeyboard();
+          onClick?.(e);
+        }}
+        {...props}
+      />
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            key="error"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="text-red-500 text-sm"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
-  );
-};
+  ),
+);
 
-export default NameInputs;
+FormField.displayName = "FormField";
+
+export default FormField;

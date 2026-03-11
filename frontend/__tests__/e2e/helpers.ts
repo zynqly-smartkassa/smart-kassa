@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import { authTestIds } from "../constants/authDataTestId";
+import { authTestIds } from "../../constants/authDataTestId";
 
 const r = authTestIds.register;
 const l = authTestIds.login;

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { createUniqueUser } from "./userCredentials";
-import { authTestIds } from "../constants/authDataTestId";
+import { authTestIds } from "../../constants/authDataTestId";
 import { RegisterableUser, registerUser } from "./helpers";
 
 const registerTestId = authTestIds.register;

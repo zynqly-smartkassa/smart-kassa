@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
-import { isValidAddressInput } from "../userfeedback/useValidator";
 
 /**
  * Custom hook that manages all state logic for an active ride.
@@ -21,9 +20,10 @@ export const useRideStates = (
   const [destination, setDestination] = useState("");
 
   // Validation for destination...
+  // Allowed characters: letters, numbers, spaces, commas, dots, hyphens
   const [showDestinationHint, setShowDestinationHint] = useState(false);
   const isDestinationInvalid =
-    !destination || !isValidAddressInput(destination);
+    !destination || !/^[a-zA-Z0-9\s.,-]*$/.test(destination);
 
   // Driver can't click start button, if route is not calculated
   const [isRoutCalculated, setIsRouteCalculated] = useState(false);

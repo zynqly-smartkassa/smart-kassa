@@ -1,3 +1,7 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "../../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -9,136 +13,65 @@ import {
   CardFooter,
 } from "../../components/ui/card";
 import { toast } from "sonner";
-import { useState } from "react";
-import {
-  useInvalidEmail,
-  useInvalidPassword,
-  type PASSWORD_VALIDATOR,
-} from "../../hooks/userfeedback/useValidator";
-import { authContent } from "../../content/auth/auth";
-import { validationMessages } from "../../content/auth/validationMessages";
-import { toastMessages } from "../../content/auth/toastMessages";
 import { useWarningToast } from "../../hooks/userfeedback/useToast";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../../redux/store";
 import { login } from "../../utils/auth/auth";
 import { handleLoginError } from "../../utils/errorHandling";
-import type {
-  Container,
-  LoginShowError,
-  PasswordContainer,
-} from "../../../constants/Compontents";
-import Inputs from "../../components/inputs/Inputs";
-import PasswordInputs from "../../components/inputs/PasswordInputs";
-import { authTestIds } from "../../../constants/authDataTestId";
+import FormField from "../../components/inputs/Inputs";
+import FormPasswordField from "../../components/inputs/PasswordInputs";
+
+const loginSchema = z.object({
+  email: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    ),
+  password: z.string().min(8, "Passwort braucht mindestens 8 Zeichen"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 /**
- * The Login page, where users sign in
- * @returns Login Page where Users can Sign In
- * @author Umejr Džinović
- * @author Casper Zielinski
+ * Login page — users sign in with email and password.
+ * Form state is managed by react-hook-form with Zod validation.
  */
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  // to show the user how to input valid data and in which input field
-  const [showHint, setShowHint] = useState<LoginShowError>({
-    EmailFocused: false,
-    PasswordFocused: false,
-  });
-
-  const l = authContent.login;
-  const v = validationMessages.login;
-  const t = toastMessages.login;
 
   const navigator = useNavigate();
 
-  // Redux States and Dispatches
   const toastState = useSelector((state: RootState) => state.toastState);
   const dispatch: AppDispatch = useDispatch();
 
-  const invalidemail = useInvalidEmail(email);
-  const invalidPassword: PASSWORD_VALIDATOR = useInvalidPassword(password);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onTouched",
+  });
 
-  async function handleLogin() {
+  const onSubmit = async (data: LoginFormData) => {
     toast.promise(
       async () => {
-        await login(email, password, dispatch);
+        await login(data.email, data.password, dispatch);
       },
       {
         loading: "Anmelden...",
         success: async () => {
           await navigator("/");
-          return t.success.title;
+          return "Erfolg: Login erfolgreich! Sie werden weitergeleitet...";
         },
         error: (err) => handleLoginError(err),
         className: "mt-5 md:mt-0",
       },
     );
-  }
-
-  useWarningToast(toastState.showWarning, t.warning.title, dispatch);
-
-  //Form Validator, so the username is not empty, the email is not unvalid and the password is min. 6 chars long, one Special char and one Digit
-  const formUnvalid = invalidemail || !invalidPassword.passwordminimum6Chars;
-
-  const emailContainer: Container[] = [
-    {
-      className:
-        (invalidemail && showHint.EmailFocused && "border-2 border-red-500") ||
-        "",
-      id: "email",
-      testid: authTestIds.login.email,
-      label: l.labels.email,
-      onBlurListener: () =>
-        setShowHint((prev) => ({ ...prev, EmailFocused: true })),
-      onChangeListener: setEmail,
-      onFocusListener: () =>
-        setShowHint((prev) => ({ ...prev, EmailFocused: false })),
-      placeholder: l.placeholders.email,
-      type: "email",
-      validation: invalidemail && showHint.EmailFocused,
-      validationMessage: v.email.invalid,
-      value: email,
-      autocomplete: "email",
-    },
-  ];
-
-  const passwordContainer: PasswordContainer[] = [
-    {
-      className:
-        (!invalidPassword.passwordminimum6Chars &&
-          showHint.PasswordFocused &&
-          "border-2 border-red-500") ||
-        "",
-      id: "password",
-      testid: authTestIds.login.password,
-      label: "", // Empty label since we render it manually with forgot password link
-      onBlurListener: () =>
-        setShowHint((prev) => ({
-          ...prev,
-          PasswordFocused: true,
-        })),
-      onChangeListener: setPassword,
-      setShowPassword: setShowPassword,
-      showPassword: showPassword,
-      placeholder: l.placeholders.password,
-      title: "Über 6 Zeichen mit einer Zahl und einem Zeichen",
-      type: showPassword ? "text" : "password",
-      validation: [
-        !invalidPassword.passwordminimum6Chars && showHint.PasswordFocused,
-      ],
-      validationMessage: [v.password.tooShort],
-      value: password,
-      autocomplete: "current-password",
-    },
-  ];
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleLogin();
   };
+
+  useWarningToast(toastState.showWarning, "Hinweis: Sie müssen sich anmelden oder registrieren, bevor Sie unseren Service nutzen können.", dispatch);
 
   return (
     <main
@@ -152,30 +85,45 @@ function Login() {
           height={220}
           alt="Logo"
           className="mx-auto mb-2"
-        ></img>
+        />
         <CardHeader className="text-center">
-          <CardTitle>{l.heading.title}</CardTitle>
-          <CardDescription>{l.heading.subtitle}</CardDescription>
+          <CardTitle>Anmelden</CardTitle>
+          <CardDescription>Melden Sie sich mit Ihren Zugangsdaten an</CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent>
-            {/* Main Container */}
             <div className="flex flex-col gap-6">
-              {/* Email Container */}
-              <Inputs Containers={emailContainer} classname="  " />
-              {/* Password Container - with forgot password link */}
+              {/* Email */}
+              <FormField
+                id="email"
+                {...register("email")}
+                label="E-Mail"
+                type="email"
+                placeholder="beispiel@domain.at"
+                error={errors.email?.message}
+                autoComplete="email"
+                data-testid="email"
+              />
+
+              {/* Password with inline forgot-password link */}
               <div>
                 <div className="flex items-center mb-2">
                   <label htmlFor="password" className="form-label">
-                    {l.labels.password}
+                    Kennwort
                   </label>
                   <a href="#" className="auth-link-small">
-                    {l.links.forgotPassword}
+                    Passwort vergessen?
                   </a>
                 </div>
-                <PasswordInputs
-                  PasswordContainer={passwordContainer}
-                  classname=" "
+                <FormPasswordField
+                  id="password"
+                  {...register("password")}
+                  showPassword={showPassword}
+                  onTogglePassword={() => setShowPassword((p) => !p)}
+                  placeholder="••••••••"
+                  error={errors.password?.message}
+                  autoComplete="current-password"
+                  data-testid="password"
                 />
               </div>
             </div>
@@ -185,20 +133,20 @@ function Login() {
               type="submit"
               className="btn-auth-submit"
               variant="default"
-              disabled={formUnvalid}
-              data-testid={authTestIds.login.loginButton}
+              disabled={!isValid}
+              data-testid="login"
             >
-              {l.buttons.login}
+              Jetzt anmelden
             </Button>
             <div className="w-full flex justify-center mt-2 text-center">
               <div className="text-sm text-muted-foreground">
-                <p>{l.footer.text}</p>
+                <p>Neu hier?</p>
                 <Link
                   to="/register"
                   className="auth-link"
-                  data-testid={authTestIds.login.registerLink}
+                  data-testid="registerLink"
                 >
-                  {l.footer.link}
+                  Konto erstellen
                 </Link>
               </div>
             </div>
