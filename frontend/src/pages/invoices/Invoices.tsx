@@ -285,7 +285,7 @@ const Invoices = () => {
             }`}
             onClick={() => {
               if (page > 1) {
-                setToken(tokenTracker.current.get(page - 1));
+                setToken(page - 2 <= 0 ? undefined : tokenTracker.current.get(page - 2));
                 setPage((prev) => --prev);
               }
             }}

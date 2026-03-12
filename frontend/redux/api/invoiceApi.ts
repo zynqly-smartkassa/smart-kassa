@@ -13,7 +13,6 @@ export const invoicesApi = createApi({
         method: "GET",
       }),
       providesTags: ["Invoice"],
-      serializeQueryArgs: ({ endpointName }) => endpointName,
       merge: (currentCacheData, responseData) => {
         currentCacheData.files = responseData.files;
         currentCacheData.nextContinuationToken =
