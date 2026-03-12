@@ -38,13 +38,13 @@ router.get("/invoices", authenticateToken, async (req, res) => {
   try {
     const user_id = req.user.userId;
     const company_id = req.user.companyId;
-    const { token } = req.query;
+    const { token, limit } = req.query;
 
     const listCommand = new ListObjectsV2Command({
       Bucket: BUCKET_NAME,
       Prefix: `Bills/${company_id}/${user_id}/`,
       ContinuationToken: token,
-      MaxKeys: 10,
+      MaxKeys: limit || 10,
     });
 
     const response = await s3Client.send(listCommand);
