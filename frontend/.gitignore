@@ -83,3 +83,4 @@ android/**/build/
 /playwright-report
 /test-results
 >>>>>>> test/e2e
+.vercel
