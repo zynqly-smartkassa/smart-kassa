@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   FileText,
   Download,
@@ -23,26 +23,31 @@ import { fetchDownload } from "@/utils/invoices/fetchDownload";
 import type { InvoiceFiles } from "@/types/InvoiceFile";
 import LoadingInvoices from "@/components/Invoices/LoadingInvoices";
 import EmptyInvoices from "@/components/Invoices/EmptyInvoices";
+import ErrorInvoices from "@/components/Invoices/ErrorInvoices";
 import { useNavigate, useParams } from "react-router";
 import QrCodeScanner from "@/components/Invoices/QrCodeScanner";
 import SingleInvoice from "./SingleInvoice";
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationItem,
-//   PaginationNext,
-//   PaginationPrevious,
-// } from "@/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useGetInvoicesQuery } from "../../../redux/api/invoiceApi";
 
 const Invoices = () => {
+  const [token, setToken] = useState<string | undefined>(undefined);
   const { id } = useParams();
   const navigator = useNavigate();
-  const TokenMap = new Map();
   const [page, setPage] = useState(1);
+  const tokenTracker = useRef(new Map<number, string>());
   const {
     data,
     isLoading,
+    isError,
+    refetch,
+    isFetching,
   }: {
     data?: {
       files: InvoiceFiles[];
@@ -51,8 +56,11 @@ const Invoices = () => {
       message: string;
     };
     isLoading: boolean;
+    isError: boolean;
+    refetch: () => void;
+    isFetching: boolean;
   } = useGetInvoicesQuery({
-    token: TokenMap.get(page),
+    token: token,
   });
 
   if (id) {
@@ -73,6 +81,7 @@ const Invoices = () => {
           {data &&
             data.files.length !== 0 &&
             !isLoading &&
+            !isFetching &&
             data.files.map((file, index) => (
               <Card
                 key={index}
@@ -262,11 +271,44 @@ const Invoices = () => {
             ))}
         </div>
 
-        {(!data || !data.files || data.files.length === 0) && !isLoading && (
-          <EmptyInvoices />
-        )}
-        {isLoading && <LoadingInvoices />}
+        {(!data || !data.files || data.files.length === 0) &&
+          !isLoading &&
+          !isError && <EmptyInvoices />}
+        {(isLoading || isFetching) && <LoadingInvoices />}
+        {isError && <ErrorInvoices onRetry={refetch} />}
       </div>
+      <Pagination className="mx-0 my-5 w-auto">
+        <PaginationContent>
+          <PaginationItem
+            className={`cursor-pointer ${
+              page === 1 ? "text-gray-600" : "text-white"
+            }`}
+            onClick={() => {
+              if (page > 1) {
+                setToken(tokenTracker.current.get(page - 1));
+                setPage((prev) => --prev);
+              }
+            }}
+          >
+            <PaginationPrevious />
+          </PaginationItem>
+          <PaginationItem
+            className={`cursor-pointer ${
+              data?.nextContinuationToken ? "" : "text-gray-700"
+            }`}
+            onClick={() => {
+              if (data && data.nextContinuationToken) {
+                if (tokenTracker.current.size === page - 1)
+                  tokenTracker.current.set(page, data.nextContinuationToken);
+                setToken(data.nextContinuationToken);
+                setPage((prev) => ++prev);
+              }
+            }}
+          >
+            <PaginationNext />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </section>
   );
 };

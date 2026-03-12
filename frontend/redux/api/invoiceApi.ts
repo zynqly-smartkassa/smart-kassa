@@ -11,9 +11,16 @@ export const invoicesApi = createApi({
         url: "/storage/invoices",
         params: { limit: 10, token: arg.token },
         method: "GET",
-        
       }),
       providesTags: ["Invoice"],
+      serializeQueryArgs: ({ endpointName }) => endpointName,
+      merge: (currentCacheData, responseData) => {
+        currentCacheData.files = responseData.files;
+        currentCacheData.nextContinuationToken =
+          responseData.nextContinuationToken;
+      },
+      forceRefetch: ({ currentArg, previousArg }) =>
+        currentArg?.token !== previousArg?.token,
     }),
     createInvoice: builder.mutation({
       query: (body) => ({ url: "/invoices", method: "POST", body }),

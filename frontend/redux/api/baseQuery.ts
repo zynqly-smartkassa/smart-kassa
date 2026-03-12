@@ -9,9 +9,6 @@ import { refreshAccessToken } from "../../src/utils/auth/jwttokens";
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_URL as string,
-  headers: {
-    Authorization: `Bearer ${await AuthStorage.getAccessToken()}`,
-  },
 });
 
 export const baseQueryWithReauth: BaseQueryFn<
@@ -19,7 +16,20 @@ export const baseQueryWithReauth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  let result = await rawBaseQuery(args, api, extraOptions);
+  const accessToken = await AuthStorage.getAccessToken();
+
+  const withAuth = (token: string) =>
+    typeof args === "string"
+      ? { url: args, headers: { Authorization: `Bearer ${token}` } }
+      : {
+          ...args,
+          headers: {
+            ...(args.headers ?? {}),
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
+  let result = await rawBaseQuery(withAuth(accessToken!), api, extraOptions);
 
   if (
     result.error &&
@@ -29,16 +39,6 @@ export const baseQueryWithReauth: BaseQueryFn<
   ) {
     const errorData = result.error.data as { error: string; path: string };
     if (errorData.path === "auth middleware") {
-      const withAuth = (token: string) =>
-        typeof args === "string"
-          ? { url: args, headers: { Authorization: `Bearer ${token}` } }
-          : {
-              ...args,
-              headers: {
-                ...(args.headers ?? {}),
-                Authorization: `Bearer ${token}`,
-              },
-            };
       const newToken = await refreshAccessToken();
       result = await rawBaseQuery(withAuth(newToken), api, extraOptions);
     }
