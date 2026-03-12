@@ -47,7 +47,7 @@ const Invoices = () => {
       </div>
 
       <div className="flex flex-col min-h-[70vh] mt-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {data &&
             data.files.length !== 0 &&
             !isLoading &&
