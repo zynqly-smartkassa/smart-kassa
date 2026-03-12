@@ -4,13 +4,20 @@ import { baseQueryWithReauth } from "./baseQuery";
 export const invoicesApi = createApi({
   reducerPath: "invoicesApi",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ["Invoice"],
   endpoints: (builder) => ({
     getInvoices: builder.query({
-      query: () => ({
-        url: "/invoices",
-        params: { limit: 10 },
+      query: (arg) => ({
+        url: "/storage/invoices",
+        params: { limit: 10, token: arg.token },
         method: "GET",
+        
       }),
+      providesTags: ["Invoice"],
+    }),
+    createInvoice: builder.mutation({
+      query: (body) => ({ url: "/invoices", method: "POST", body }),
+      invalidatesTags: ["Invoice"],
     }),
   }),
 });
