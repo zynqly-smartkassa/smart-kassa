@@ -38,7 +38,7 @@ const InvoiceCard = ({ file }: InvoiceCardProps) => {
 
   return (
     <Card
-      className="relative rounded-xl border border-border/40 bg-sidebar dark:bg-sidebar shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+      className="relative flex flex-col h-full rounded-xl border border-border/40 bg-sidebar dark:bg-sidebar shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
       onClick={navigateToInvoice}
     >
       <CardHeader className="flex flex-row justify-between items-start pb-2">
@@ -57,7 +57,7 @@ const InvoiceCard = ({ file }: InvoiceCardProps) => {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 flex-1">
         <div className="flex flex-col gap-2">
           <p className="font-bold text-lg text-violet-600 dark:text-violet-400">
             €{file.billingData?.amount_gross}
@@ -110,7 +110,9 @@ const InvoiceCard = ({ file }: InvoiceCardProps) => {
           <div className="flex-1">
             <p className="text-xs text-muted-foreground">Zahlungsmethode</p>
             <p className="font-medium capitalize">
-              {file.billingData?.payment_method === "card" ? "Karte" : "Bargeld"}
+              {file.billingData?.payment_method === "card"
+                ? "Karte"
+                : "Bargeld"}
             </p>
           </div>
         </div>
