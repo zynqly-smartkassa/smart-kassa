@@ -116,7 +116,7 @@ const SingleInvoice = ({ invoice }: { invoice?: InvoiceFiles }) => {
 
       {qrCodeOrPdf === "pdf" ? (
         <Dialog>
-          <DialogTrigger className="w-full lg:w-1/2">
+          <DialogTrigger className="w-full lg:w-1/2 mx-auto">
             <PdfReader InvoiceFile={file} />
           </DialogTrigger>
           <DialogContent className="flex flex-col items-center justify-center p-2 sm:h-[95dvh] sm:w-[95vw] sm:max-w-4xl sm:p-4 gap-0">

@@ -50,7 +50,7 @@ const PdfReader = ({
           ? "h-full w-full overflow-auto"
           : mobileView
           ? "h-[40vh] min-h-52 overflow-auto rounded-xl border border-border/40"
-          : "h-[60vh] min-h-52 overflow-auto rounded-xl border border-border/40"
+          : "h-[60vh] min-h-52 overflow-auto rounded-xl border border-border/40 flex justify-center bg-white"
       }`}
     >
       <Document file={InvoiceFile.url} onLoadSuccess={onDocumentLoadSuccess}>
