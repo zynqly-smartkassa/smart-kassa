@@ -300,7 +300,7 @@ const Ride = () => {
 
   const [isRideActive, setIsRideActive] = useState(false);
 
-  const driverLocation = useDriverLocation();
+  const driverLocation = useDriverLocation(isRideActive);
   const {
     destination,
     setDestination,

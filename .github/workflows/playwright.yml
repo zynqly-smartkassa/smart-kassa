@@ -2,9 +2,9 @@ name: Playwright E2E Tests
 
 on:
   push:
-    branches: [main, develop, test/e2e]
+    branches: [main, develop, test/e2e, test/frontend, ci/cd]
   pull_request:
-    branches: [main, develop, test/e2e]
+    branches: [main, develop]
 
 jobs:
   e2e-test:
@@ -43,7 +43,6 @@ jobs:
         run: npx playwright install --with-deps
         working-directory: frontend
 
-      # Creates backend/.env.test from GitHub Secrets
       - name: Create backend/.env.test
         env:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
@@ -69,9 +68,14 @@ jobs:
             "HOST=0.0.0.0" \
             > backend/.env.test
 
-      # VITE_API_URL is on Testing Environment on the localhost:3000
       - name: Create frontend/.env.local
-        run: echo "VITE_API_URL=http://localhost:3000" > frontend/.env.local
+        env:
+          VITE_TOKEN: ${{ secrets.VITE_TOKEN }}
+        run: |
+          printf '%s\n' \
+            "VITE_API_URL=http://localhost:3000" \
+            "VITE_TOKEN=${VITE_TOKEN}" \
+            > frontend/.env.local
 
       - name: Run Playwright tests (${{ matrix.browser }})
         run: npx playwright test --project=${{ matrix.browser }}

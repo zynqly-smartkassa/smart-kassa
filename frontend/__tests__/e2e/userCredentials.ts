@@ -1,6 +1,14 @@
-import { RegisterableUser } from "./helpers";
-
 const RUN_ID = Date.now();
+
+export type RegisterableUser = {
+  vorname: string;
+  nachname: string;
+  email: string;
+  telefon: string;
+  fn: string;
+  atu: string;
+  password: string;
+};
 
 /**
  * Function to create Unique test credentials once per test run.

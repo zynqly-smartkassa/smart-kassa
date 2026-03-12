@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { createUniqueUser } from "./userCredentials";
+import { createUniqueUser, RegisterableUser } from "./userCredentials";
 import { authTestIds } from "../../constants/authDataTestId";
-import { RegisterableUser, registerUser } from "./helpers";
+import { registerUser } from "./auth";
 
 const registerTestId = authTestIds.register;
 const loginTestId = authTestIds.login;
@@ -50,9 +50,12 @@ test.describe("Auth Flow", () => {
     await expect(page.getByTestId(modalTestId.logoutButton)).toBeVisible({
       timeout: 2_000,
     });
-    await expect(page.getByTestId(modalTestId.logoutButton)).toHaveText("Abmelden", {
-      timeout: 2_000,
-    });
+    await expect(page.getByTestId(modalTestId.logoutButton)).toHaveText(
+      "Abmelden",
+      {
+        timeout: 2_000,
+      },
+    );
     await page.getByTestId(modalTestId.logoutButton).click();
     await expect(page).toHaveURL("/register", { timeout: 5_000 });
     await page.reload();

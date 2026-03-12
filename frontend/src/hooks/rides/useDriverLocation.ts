@@ -3,18 +3,41 @@ import { toast } from "sonner";
 import { Geolocation } from "@capacitor/geolocation";
 import { isMobile } from "../layout/use-mobile";
 
+const IS_DEV = import.meta.env.MODE !== "production";
+
 /**
  * Custom hook that manages the driver's location using the Capacitor Geolocation API.
  *
- * This hook requests location permissions and retrieves the initial GPS position.
- * It returns the current driver location as a coordinate tuple or null if not available.
+ * In development mode (MODE !== "production"), real GPS is skipped and movement is
+ * simulated by incrementing lat/lng every second when the ride is active.
  *
+ * @param {boolean} isRideActive - Whether a ride is currently in progress (used for dev simulation).
  * @returns {[number, number] | null} The driver's location as [latitude, longitude] or null if not yet determined.
  */
-export const useDriverLocation = () => {
+export const useDriverLocation = (isRideActive: boolean): [number, number] | null => {
   const [driverLocation, setDriverLocation] = useState<[number, number] | null>(
     null,
   );
+
+  // Dev-only: simulate movement when ride is active
+  useEffect(() => {
+    if (!IS_DEV) return;
+    if (!driverLocation) return;
+
+    if (!isRideActive) return;
+
+    let lat = driverLocation[0];
+    let lng = driverLocation[1];
+
+    const interval = setInterval(() => {
+      lat += 0.0001;
+      lng += 0.0001;
+      setDriverLocation([lat, lng]);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRideActive]);
 
   useEffect(() => {
     let watchId: string | undefined;

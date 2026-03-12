@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { LOGIN_USER } from "./userCredentials";
-import { loginUser } from "./helpers";
+import { loginUser } from "./auth";
 import { rideTestIds } from "../../constants/rideDataTestId";
 
 const ri = rideTestIds.ride;
