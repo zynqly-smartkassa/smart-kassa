@@ -11,11 +11,19 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "../components/ui/sidebar";
-import { sidebarSections } from "@/content/sidebar/sidebar";
 import { useState, useEffect } from "react";
+import {
+  Home,
+  BookOpen,
+  Settings,
+  Car,
+  Receipt,
+  List,
+  Info,
+} from "lucide-react";
 
 import { Link } from "react-router-dom";
-import { isMobile } from "@/hooks/use-mobile";
+import { isMobile } from "@/hooks/layout/use-mobile";
 import type { AppDispatch } from "../../redux/store";
 import { useDispatch } from "react-redux";
 import { setLink } from "../../redux/slices/footerLinksSlice";
@@ -91,7 +99,30 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {sidebarSections.map((section, index) => (
+        {[
+          {
+            title: "Navigation",
+            items: [
+              { label: "Dashboard", path: "/", icon: Home },
+              { label: "Dokumentation", path: "/documentation", icon: BookOpen },
+            ],
+          },
+          {
+            title: "Taxi Verwaltung",
+            items: [
+              { label: "Fahrt starten", path: "/ride", icon: Car, onlyMobile: true },
+              { label: "Alle Fahrten", path: "/all-rides", icon: List },
+              { label: "Rechnungen", path: "/invoices", icon: Receipt },
+            ],
+          },
+          {
+            title: "Weitere",
+            items: [
+              { label: "Hilfe", path: "/help", icon: Info },
+              { label: "Einstellungen", path: "/settings", icon: Settings },
+            ],
+          },
+        ].map((section, index) => (
           <SidebarGroup className="flex flex-col gap-2" key={index}>
             <SidebarGroupLabel className="text-xl">
               {section.title}
@@ -118,7 +149,7 @@ export function AppSidebar() {
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
-                    )
+                    ),
                 )}
               </SidebarMenu>
             </SidebarGroupContent>

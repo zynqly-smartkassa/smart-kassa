@@ -68,6 +68,19 @@ DerivedData/
 # Capacitor plugins
 .capacitor/
 
+<<<<<<< HEAD
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+=======
 # Redundant patterns (cleanup)
 android/**/.gradle/
 android/**/build/
+
+/playwright-report
+/test-results
+>>>>>>> test/e2e
+.vercel

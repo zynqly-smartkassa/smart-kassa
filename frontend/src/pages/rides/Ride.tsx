@@ -31,8 +31,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import StatusOverlay from "../../components/StatusOverlay";
 import { ROUTING_CONFIG } from "../../utils/config";
-import { driverIcon, locationIcon } from "../../utils/icons";
+import { driverIcon, locationIcon } from "../../utils/rides/icons";
 import type { RideInfo } from "@/types/RideInfoForBill";
+import { setRideInfo } from "../../utils/invoices/setRideInfo";
 
 /**
  * The Rides page, where a driver can start/end a Ride
@@ -41,10 +42,10 @@ import type { RideInfo } from "@/types/RideInfoForBill";
 
 /**
  * Component that creates and manages the routing between start and end locations on a Leaflet map.
- * 
+ *
  * This component uses Leaflet Routing Machine to calculate and display routes. It supports both
  * OSRM demo mode and Mapbox routing modes. The route is non-draggable and doesn't show alternatives.
- * 
+ *
  * @param {Object} args - The args for the component.
  * @param {[number, number]} args.start - Start coordinates as [latitude, longitude].
  * @param {[number, number]} args.end - End coordinates as [latitude, longitude].
@@ -112,7 +113,7 @@ export const RoutingMachine = ({
     routingControl.on("routingerror", (e: any) => {
       console.error("Routing failed:", e);
       setRoutingError(
-        "Die Route konnte nicht berechnet werden. Bitte probiere es später erneut."
+        "Die Route konnte nicht berechnet werden. Bitte probiere es später erneut.",
       );
     });
 
@@ -139,11 +140,11 @@ export const RoutingMachine = ({
 
 /**
  * Component that recenters the map as the driver moves and tracks the complete ride path.
- * 
+ *
  * This memoized component smoothly pans the map to follow the driver's location and records
  * coordinate points when the driver moves more than 50 meters. It maintains the complete route
  * in the wholeRide array for later visualization.
- * 
+ *
  * @param {Object} args - The args for the component.
  * @param {number} args.lat - Current latitude of the driver.
  * @param {number} args.lng - Current longitude of the driver.
@@ -192,15 +193,15 @@ export const RecenterMap = memo(
       }
     }, [map, lat, lng, wholeRide, setWholeRide]);
     return null;
-  }
+  },
 );
 
 /**
  * Component that automatically zooms the map to the driver's location when a ride starts.
- * 
+ *
  * This component performs a one-time zoom animation to zoom level 16 centered on the driver's
  * location. It only executes once per mount to avoid repeated zooming during the ride.
- * 
+ *
  * @param {Object} args - The args for the component.
  * @param {number} args.lat - Latitude of the driver's location to zoom to.
  * @param {number} args.lng - Longitude of the driver's location to zoom to.
@@ -224,11 +225,11 @@ export const ZoomDriver = ({ lat, lng }: { lat: number; lng: number }) => {
 
 /**
  * Component that tracks and accumulates the total distance traveled during a ride.
- * 
+ *
  * This component calculates the distance between consecutive GPS positions and updates
  * the total distance counter. It only adds to the distance when the driver has moved
  * more than 5 meters to filter out GPS noise.
- * 
+ *
  * @param {Object} args - The args for the component.
  * @param {number} args.lat - Current latitude of the driver.
  * @param {number} args.lng - Current longitude of the driver.
@@ -268,7 +269,7 @@ export const DistanceTracker = ({
 
 /**
  * Main Ride component that manages the complete ride lifecycle for drivers.
- * 
+ *
  * This component provides the interface for drivers to:
  * - View their current GPS location on a map
  * - Enter and geocode destination addresses
@@ -276,10 +277,10 @@ export const DistanceTracker = ({
  * - Start and end rides with timer and distance tracking
  * - Select ride type (Botenfahrt/Taxifahrt)
  * - Automatically save completed rides to the backend
- * 
+ *
  * The component integrates GPS tracking, map visualization, routing, and ride state management.
  * It handles loading states, errors, and automatically navigates to the ride summary after completion.
- * 
+ *
  * @returns {JSX.Element} The complete ride management interface.
  */
 const Ride = () => {
@@ -354,7 +355,9 @@ const Ride = () => {
         // Validate user_id before sending
         const userIdNumber = Number(user_id);
         if (!user_id || isNaN(userIdNumber) || userIdNumber <= 0) {
-          toast.error("Fehler: Benutzer-ID ungültig. Bitte melden Sie sich erneut an.");
+          toast.error(
+            "Fehler: Benutzer-ID ungültig. Bitte melden Sie sich erneut an.",
+          );
           setIsLoading(false);
           return;
         }
@@ -379,41 +382,65 @@ const Ride = () => {
           const ride_id = data.ride_info.ride_id;
 
           reInitialize();
+          const rideInfo: RideInfo = {
+            ride_id: ride_id,
+            start_address: startAddress ?? "",
+            end_address: endAddress ?? "",
+            start_time: startTime,
+            end_time: endTime,
+            duration: formatTime(timer),
+            distance: distance,
+            ride_type: rideType,
+          };
+          await setRideInfo.setRideInfo(rideInfo);
 
           // Navigate to invoice page with ride data
-          navigator(`/payment/${ride_id}`, {
-            state: {
-              start_address: startAddress ?? "",
-              end_address: endAddress ?? "",
-              start_time: startTime,
-              end_time: endTime,
-              duration: formatTime(timer),
-              distance: distance,
-              ride_type: rideType,
-            } satisfies RideInfo
+          await navigator(`/payment/${ride_id}`, {
+            state: rideInfo,
           });
         } catch (error) {
           console.error(error);
           toast.error(
             error instanceof Error
               ? error.message
-              : "Fehler beim Speichern der Fahrt. Bitte versuchen Sie es erneut."
+              : "Fehler beim Speichern der Fahrt. Bitte versuchen Sie es erneut.",
           );
           setIsLoading(false);
-        } finally {
-          setTimeout(() => setIsLoading(false), 200); // Needed so navigator has enough time to switch
         }
+        // finally {
+        //   setTimeout(() => setIsLoading(false), 200); // Needed so navigator has enough time to switch
+        // }
       })();
     }
-  }, [isRideActive, isSuccessful, driverLocation, destinationCoords,
-     startTime, endTime, timer, distance, rideType, dispatch, reInitialize, user_id, navigator, wholeRide]);
+  }, [
+    isRideActive,
+    isSuccessful,
+    driverLocation,
+    destinationCoords,
+    startTime,
+    endTime,
+    timer,
+    distance,
+    rideType,
+    dispatch,
+    reInitialize,
+    user_id,
+    navigator,
+    wholeRide,
+  ]);
 
   // Simle loading state
   if (!driverLocation) {
-    return <StatusOverlay text="Warte auf GPS-Daten" isLoading={true} errorFallback={
-      ["Zynqly benötigt Zugriff auf deinen Standort.",
-        "Ist die Standortermittlung auf deinem Gerät aktiviert?"]
-    } />;
+    return (
+      <StatusOverlay
+        text="Warte auf GPS-Daten"
+        isLoading={true}
+        errorFallback={[
+          "Zynqly benötigt Zugriff auf deinen Standort.",
+          "Ist die Standortermittlung auf deinem Gerät aktiviert?",
+        ]}
+      />
+    );
   }
 
   if (isLoading) {
@@ -428,8 +455,10 @@ const Ride = () => {
     <div className="w-full flex flex-col z-20 gap-2">
       <h2 className="hidden md:block font-bold text-3xl text-left">Fahrten</h2>
       <div className="md:hidden flex flex-col gap-2">
-        <p className="w-full text-5xl font-bold text-center"
-          data-testid="timer">
+        <p
+          className="w-full text-5xl font-bold text-center"
+          data-testid="timer"
+        >
           {formatTime(timer)}
         </p>
 
@@ -448,7 +477,6 @@ const Ride = () => {
 
             {/* This will ensure that the markers get clustered into one "container" marker */}
             <MarkerClusterGroup>
-
               <>
                 {/* Driver current location */}
                 <Marker position={driverLocation} icon={driverIcon}></Marker>
@@ -460,10 +488,12 @@ const Ride = () => {
                 />
               </>
 
-
               {/* Marker for destination address */}
               {destinationCoords && (
-                <Marker position={destinationCoords} icon={locationIcon}></Marker>
+                <Marker
+                  position={destinationCoords}
+                  icon={locationIcon}
+                ></Marker>
               )}
             </MarkerClusterGroup>
 
@@ -477,13 +507,11 @@ const Ride = () => {
               />
             )}
 
-
             <DistanceTracker
               lat={driverLocation[0]}
               lng={driverLocation[1]}
               setDist={setDistance}
             ></DistanceTracker>
-
 
             {isRideActive && (
               <ZoomDriver
@@ -495,23 +523,18 @@ const Ride = () => {
         )}
 
         <div className="w-full flex justify-center">
-          <Select
-            onValueChange={(value) => setRideType(value)}>
-            <SelectTrigger data-testid="select-trigger"
-              className="w-[180px] border-2 border-violet-300 rounded-md">
+          <Select onValueChange={(value) => setRideType(value)}>
+            <SelectTrigger
+              data-testid="select-trigger"
+              className="w-[180px] border-2 border-violet-300 rounded-md"
+            >
               <SelectValue placeholder="Art der Fahrt" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                value="botenfahrt"
-                data-testid="botenfahrt"
-              >
+              <SelectItem value="botenfahrt" data-testid="botenfahrt">
                 Botenfahrt
               </SelectItem>
-              <SelectItem
-                value="taxifahrt"
-                data-testid="taxifahrt"
-              >
+              <SelectItem value="taxifahrt" data-testid="taxifahrt">
                 Taxifahrt
               </SelectItem>
             </SelectContent>
@@ -527,10 +550,11 @@ const Ride = () => {
           onBlur={() => setShowDestinationHint(true)}
           onFocus={() => setShowDestinationHint(false)}
           className={`w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition duration-150
-      ${isDestinationInvalid && showDestinationHint
-              ? "border-red-500"
-              : "border-violet-300"
-            }`}
+      ${
+        isDestinationInvalid && showDestinationHint
+          ? "border-red-500"
+          : "border-violet-300"
+      }`}
           disabled={isRideActive}
         />
 

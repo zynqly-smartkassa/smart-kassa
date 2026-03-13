@@ -23,7 +23,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useSelector } from "react-redux";
 import { type RootState } from "../../../redux/store";
-import { useCheckForAchievements } from "../notifications/useAchievements";
+import { useCheckForAchievements } from "../../hooks/userfeedback/useAchievements";
 
 /**
  * Component that displays all rides for the logged-in user with filtering and sorting capabilities.

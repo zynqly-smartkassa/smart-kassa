@@ -1,0 +1,35 @@
+{
+  "name": "smart-kassa",
+  "version": "1.0.0",
+  "description": "<p align=center>\r  <a href=\"https://smart-kassa.vercel.app/\"><img src=\"./frontend/public/Logo.svg\" width=300> </a>\r </p>",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+   "start-frontend": "npm run dev --prefix frontend",
+   "start-backend": "npm run dev --prefix backend",
+   "start-android": "npm run android --prefix frontend && echo \"Make sure to use a deployed Backend (not on localhost)\"",
+   "android": "npm run android --prefix frontend && echo \"Make sure to use a deployed Backend (not on localhost)\"",
+   "start-ios":"npm run ios --prefix frontend && echo \"Make sure to use a deployed Backend (not on localhost)\"",
+   "ios":"npm run ios --prefix frontend && echo \"Make sure to use a deployed Backend (not on localhost)\"",
+   "dev":"concurrently \"npm run start-frontend\" \"npm run start-backend\"",
+   "install": "concurrently \"npm install\" \"npm install --prefix frontend\" \"npm install --prefix backend\"",
+   "test":"concurrently \"npm run dev:test --prefix backend\" \"npm run test --prefix frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zynqly-smartkassa/smart-kassa.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/zynqly-smartkassa/smart-kassa/issues"
+  },
+  "homepage": "https://github.com/zynqly-smartkassa/smart-kassa#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

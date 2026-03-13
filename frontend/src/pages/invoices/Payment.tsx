@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Card,
@@ -31,16 +37,12 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/utils/formatDate";
 import { toast } from "sonner";
-import NoRideDataWarning from "@/components/NoRideDataWarning";
+import NoRideDataWarning from "@/components/Payment/NoRideDataWarning";
 import { useForm } from "react-hook-form";
-import { AuthStorage } from "@/utils/secureStorage";
-import axios, { AxiosError } from "axios";
-import type { AppDispatch } from "../../../redux/store";
-import { useDispatch } from "react-redux";
-import { appendBillState } from "../../../redux/slices/invoices";
-import type { Files } from "@/types/InvoiceFile";
-import { refreshAccessToken } from "@/utils/jwttokens";
 import type { RideInfo } from "@/types/RideInfoForBill";
+import { setRideInfo } from "@/utils/invoices/setRideInfo";
+import { sendBill } from "@/utils/invoices/sendBill";
+import LoadingPayment from "@/components/Payment/LoadingPayment";
 
 /**
  * Invoice page where drivers can review ride details and select payment method
@@ -49,20 +51,31 @@ import type { RideInfo } from "@/types/RideInfoForBill";
 const Invoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [ride, setRide] = useState<RideInfo | null>(null);
   const { id } = useParams();
   const form = useForm({
     defaultValues: {
       tip: 0,
       zahlungmethode: "cash",
+      ride_price: 0,
     },
   });
 
   const startAddressParagraph = useRef<HTMLParagraphElement>(null);
   const [lineheight, setLineheight] = useState(2.75);
-  const dispatch: AppDispatch = useDispatch();
+
+  const getRideData = useCallback(async () => {
+    const rideData =
+      (location.state as RideInfo) || (await setRideInfo.getRideInfo());
+
+    setRide(rideData);
+    setLoading(false);
+  }, [location.state]);
 
   // ResizeObserver to automatically update line height when paragraph size changes
   useEffect(() => {
+    getRideData();
     const element = startAddressParagraph.current;
     if (!element) return;
 
@@ -72,118 +85,75 @@ const Invoice = () => {
       setLineheight(2.75 + startaddr);
     };
 
-    // Initial calculation
     updateLineHeight();
 
-    // Create ResizeObserver to watch for size changes
     const resizeObserver = new ResizeObserver(() => {
       updateLineHeight();
     });
 
     resizeObserver.observe(element);
 
-    // Cleanup observer on unmount
     return () => {
       resizeObserver.disconnect();
     };
-  }, []); // Re-run when address changes
+  }, [getRideData]);
 
-  // Get ride data from navigation state
-  //location.state;
-  const rideData: RideInfo = location.state;
+  if (loading) {
+    return <LoadingPayment />;
+  }
 
-  if (!rideData) {
+  if (!ride) {
     return <NoRideDataWarning />;
   }
 
-  const BASE_FEE = 3.5;
-  const RATE_PER_KM = 1.5;
   const distanceInKm =
-    typeof rideData.distance === "number" && rideData.distance > 100
-      ? (rideData.distance / 1000).toFixed(2)
-      : rideData.distance;
+    typeof ride.distance === "number" && ride.distance > 100
+      ? (ride.distance / 1000).toFixed(2)
+      : ride.distance;
 
-  // Get tip from form
+  // Reactive values for live display — driven by user input
+  const ride_price_gross =
+    parseFloat(form.watch("ride_price")?.toString() || "0") || 0;
   const tipAmount = parseFloat(form.watch("tip")?.toString() || "0") || 0;
 
-  const tax_rate = rideData.ride_type === "Taxifahrt" ? 0.1 : 0.2; // 10% for Taxi, 20% for Boten
-  const ride_price_gross = Number(distanceInKm) * RATE_PER_KM + BASE_FEE;
+  const tax_rate = ride.ride_type === "Taxifahrt" ? 0.1 : 0.2; // 10% for Taxi, 20% for Boten
   const amount_gross = ride_price_gross + tipAmount;
   const amount_net = amount_gross / (1 + tax_rate);
   const amount_tax = amount_gross - amount_net;
 
-  const billingData = {
-    ride_id: id,
-    amount_net: parseFloat(amount_net.toFixed(2)),
-    tax_rate: tax_rate,
-    amount_tax: parseFloat(amount_tax.toFixed(2)),
-    amount_gross: parseFloat(amount_gross.toFixed(2)),
-    payment_method: form.getValues().zahlungmethode,
-    tip_amount: form.getValues().tip || 0,
-  };
-
-  const sendBill = async (retry: boolean = true) => {
-    try {
-      let accessToken: string | null;
-
-      if (retry) {
-        accessToken = await AuthStorage.getAccessToken();
-      } else {
-        accessToken = await refreshAccessToken();
-      }
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/invoice`,
-        billingData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      dispatch(appendBillState(data.files as Files));
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        const tokenError =
-          error.status === 403 ||
-          error.status === 401 ||
-          error.response?.data?.path === "auth middleware";
-
-        if (tokenError && retry) {
-          // First retry with refreshed token
-          retry = false;
-          return await sendBill(false);
-        } else if (tokenError && !retry) {
-          // Second attempt failed - session expired
-          console.error(error);
-          throw new Error(
-            "Sitzung abgelaufen. Bitte melden Sie sich erneut an."
-          );
-        } else if (error.status === 409) {
-          throw new Error("Diese Rechnung existiert bereits.");
-        } else {
-          console.error(error);
-          throw new Error(
-            "Ressourcen konnten nicht geladen werden, überprüfen Sie Ihre Internetverbindung."
-          );
-        }
-      } else {
-        console.error(error);
-        throw new Error("Ein unerwarteter Fehler ist aufgetreten.");
-      }
-    }
-  };
-
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (amount_gross <= 0) {
+      toast.info(
+        "Bitte geben Sie einen Fahrpreis ein, bevor Sie die Rechnung erstellen.",
+        {
+          className: "mt-5 md:mt-0",
+        },
+      );
+      return;
+    }
+
+    const values = form.getValues();
+
     toast.promise(
       async () => {
-        await sendBill(true);
+        return await sendBill({
+          rideId: id,
+          rideType: ride.ride_type,
+          ridePrice: parseFloat(values.ride_price?.toString() || "0") || 0,
+          tip: parseFloat(values.tip?.toString() || "0") || 0,
+          paymentMethod: values.zahlungmethode,
+        });
       },
       {
         className: "mt-5 md:mt-0",
-        success: async () => {
-          await navigate(`/invoices`);
-          return "Rechnung erflogreich erstellt";
+        success: async (invoiceData) => {
+          await navigate(`/invoices/${invoiceData?.billingData?.billing_id}`, {
+            state: invoiceData,
+          });
+          await setRideInfo.removeRideInfo();
+          return "Rechnung erfolgreich erstellt";
         },
         error: (err) => {
           if (err instanceof Error) {
@@ -191,7 +161,7 @@ const Invoice = () => {
           } else return "Fehler beim erstellen der rechnung";
         },
         loading: "Rechnung wird erstellt",
-      }
+      },
     );
   };
 
@@ -213,8 +183,7 @@ const Invoice = () => {
               Fahrtdetails
             </CardTitle>
             <CardDescription>
-              Fahrt #{id || "ID Konnte nicht geladen werden"} -{" "}
-              {rideData.ride_type}
+              Fahrt #{id || "ID Konnte nicht geladen werden"} - {ride.ride_type}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -230,10 +199,10 @@ const Invoice = () => {
                     ref={startAddressParagraph}
                     className="text-sm font-medium w-[70%] break-words"
                   >
-                    {rideData.start_address}
+                    {ride.start_address}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {formatDate(rideData.start_time)}
+                    {formatDate(ride.start_time)}
                   </p>
                 </div>
               </div>
@@ -250,10 +219,10 @@ const Invoice = () => {
                 <div className="flex-1">
                   <Label className="text-xs text-muted-foreground">Ziel</Label>
                   <p className="text-sm font-medium w-[70%] break-words">
-                    {rideData.end_address}
+                    {ride.end_address}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {formatDate(rideData.end_time)}
+                    {formatDate(ride.end_time)}
                   </p>
                 </div>
               </div>
@@ -279,7 +248,7 @@ const Invoice = () => {
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Dauer</Label>
-                  <p className="text-lg font-bold">{rideData.duration}</p>
+                  <p className="text-lg font-bold">{ride.duration}</p>
                 </div>
               </div>
 
@@ -289,7 +258,7 @@ const Invoice = () => {
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Typ</Label>
-                  <p className="text-lg font-bold">{rideData.ride_type}</p>
+                  <p className="text-lg font-bold">{ride.ride_type}</p>
                 </div>
               </div>
             </div>
@@ -321,6 +290,7 @@ const Invoice = () => {
                         <div className="space-y-3">
                           <button
                             type="button"
+                            data-testid="payment-card"
                             onClick={() => field.onChange("card")}
                             className={`w-full p-4 rounded-lg border-2 transition-all ${
                               field.value === "card"
@@ -360,6 +330,7 @@ const Invoice = () => {
 
                           <button
                             type="button"
+                            data-testid="payment-cash"
                             onClick={() => field.onChange("cash")}
                             className={`w-full p-4 rounded-lg border-2 transition-all ${
                               field.value === "cash"
@@ -403,8 +374,39 @@ const Invoice = () => {
                   )}
                 />
 
-                {/* Tip Input Form */}
+                {/* Ride Price Input */}
+                <FormField
+                  control={form.control}
+                  name="ride_price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold">
+                        Fahrpreis
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            €
+                          </span>
+                          <Input
+                            type="number"
+                            placeholder="0.00"
+                            className="pl-7"
+                            data-testid="ride-price"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseFloat(e.target.value))
+                            }
+                            value={field.value}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
+                {/* Tip Input */}
                 <FormField
                   control={form.control}
                   name="tip"
@@ -422,6 +424,7 @@ const Invoice = () => {
                             type="number"
                             placeholder="0.00"
                             className="pl-7"
+                            data-testid="payment-tip"
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseFloat(e.target.value))
@@ -450,12 +453,12 @@ const Invoice = () => {
                   <div className="flex justify-between text-lg font-bold pt-3 border-t">
                     <span>Gesamtbetrag</span>
                     <span className="text-violet-600">
-                      €{amount_net.toFixed(2)}
+                      €{amount_gross.toFixed(2)}
                     </span>
                   </div>
-                  <div className=" text-xs">
+                  <div className="text-xs">
                     <p>{`Enth. MwSt (${tax_rate * 100}%): ${amount_tax.toFixed(
-                      2
+                      2,
                     )}€`}</p>
                     <p>{`Nettoumsatz: ${amount_net.toFixed(2)} €`}</p>
                   </div>
@@ -464,6 +467,7 @@ const Invoice = () => {
               <CardFooter>
                 <Button
                   type="submit"
+                  data-testid="create-invoice"
                   disabled={form.formState.isSubmitting}
                   className="w-full"
                   size="lg"

@@ -28,18 +28,6 @@ export async function geocodeAddress(
       },
     };
 
-    // const response = await fetch(
-    //   `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-    //     address
-    //   )}`,
-    //   {
-    //     headers: {
-    //       "User-Agent": "Zynqly/1.0 (casper.zielinski@edu.fh-joanneum.at)",
-    //     },
-    //   }
-    // );
-    // const data = await response.json();
-
     const response: HttpResponse = await CapacitorHttp.get(options);
     const data = response.data;
 

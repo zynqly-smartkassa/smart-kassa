@@ -58,28 +58,29 @@ router.post(
         tip_amount = 0;
       }
 
+      // Check for missing/null/undefined fields
       if (
-        !companyId ||
-        !userId ||
-        !ride_id ||
-        !amount_net ||
-        !tax_rate ||
-        !amount_tax ||
-        !amount_gross ||
+        companyId == null ||
+        userId == null ||
+        ride_id == null ||
+        amount_net == null ||
+        tax_rate == null ||
+        amount_tax == null ||
+        amount_gross == null ||
         !payment_method
       ) {
-        return res.status(400).send({
-          message: "Missing required fields",
-          companyId,
-          userId,
-          ride_id,
-          amount_net,
-          tax_rate,
-          amount_tax,
-          amount_gross,
-          payment_method,
-          tip_amount,
-        });
+        return res.status(400).send({ message: "Missing required fields" });
+      }
+
+      // Validate amounts for a real cash register
+      if (amount_gross <= 0) {
+        return res
+          .status(400)
+          .send({ message: "amount_gross must be greater than 0" });
+      }
+
+      if (amount_net < 0 || amount_tax < 0 || tip_amount < 0) {
+        return res.status(400).send({ message: "Amounts cannot be negative" });
       }
 
       // Start database transaction - must commit or rollback before returning
@@ -87,7 +88,7 @@ router.post(
 
       const checkDupe = await pool.query(
         "SELECT * FROM billing WHERE ride_id = $1",
-        [ride_id]
+        [ride_id],
       );
       if (checkDupe.rowCount > 0) {
         return res.status(409).send({ message: "Bill already exists" });
@@ -118,7 +119,7 @@ router.post(
           amount_gross,
           tip_amount,
           payment_method,
-        ]
+        ],
       );
 
       const billing_id = billingQuery.rows[0].billing_id;
@@ -171,26 +172,48 @@ router.post(
           new GetObjectCommand({
             Bucket: BUCKET_NAME,
             Key: filename,
+            ResponseContentType: "application/pdf",
+            ResponseContentDisposition: "inline",
           }),
-          { expiresIn: 7 * 24 * 60 * 60 }
+          { expiresIn: 7 * 24 * 60 * 60 },
         );
       } catch (error) {
         console.error(
           "Error generating presigned URL (continuing without URL):",
-          error
+          error,
+        );
+        // File is uploaded successfully, just no temporary URL available
+      }
+
+      let downloadUrl = null;
+      try {
+        downloadUrl = await getSignedUrl(
+          s3Client,
+          new GetObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: filename,
+            ResponseContentType: "application/pdf",
+            ResponseContentDisposition: `attachment; filename="${filename.split("/").pop()}"`,
+          }),
+          { expiresIn: 7 * 24 * 60 * 60 },
+        );
+      } catch (error) {
+        console.error(
+          "Error generating presigned Download-URL (continuing without Download-URL):",
+          error,
         );
         // File is uploaded successfully, just no temporary URL available
       }
 
       const driverDataResult = await pool.query(
         `SELECT first_name, last_name, email, phone_number from users where user_id = $1`,
-        [userId]
+        [userId],
       );
       const driverData = driverDataResult.rows[0];
 
       const billingDataResult = await pool.query(
         `SELECT amount_net, tax_rate, amount_tax, amount_gross, tip_amount, payment_method FROM billing WHERE billing_id = $1`,
-        [billing_id]
+        [billing_id],
       );
       const billingData = billingDataResult.rows[0];
 
@@ -212,10 +235,10 @@ router.post(
           },
           key: filename,
           url: url,
+          downloadUrl: downloadUrl,
           size: newInvoice.size,
           lastModified: new Date(timestamp),
         },
-
         message: "Invoice uploaded successfully",
       });
     } catch (error) {
@@ -231,7 +254,7 @@ router.post(
         error: error,
       });
     }
-  }
+  },
 );
 
 export default router;

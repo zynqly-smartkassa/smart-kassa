@@ -1,218 +1,205 @@
 # Capacitor - Mobile App Development
 
-<p align=center>
-<a href="https://www.apple.com/at/os/ios/"><img src="../docs/pictures/iOS.png" width=150 height=150></a>
-<a href="https://capacitorjs.com"><img src="../docs/pictures/Capacitor.jpeg" width=150 height=150></a>
-<a href="https://www.android.com/intl/de_de/"><img src="../docs/pictures/android.png" width=150 height=150></a>
+<p align="center">
+<a href="https://www.apple.com/at/os/ios/"><img src="../docs/pictures/iOS.png" width="150" height="150"></a>
+<a href="https://capacitorjs.com"><img src="../docs/pictures/Capacitor.jpeg" width="150" height="150"></a>
+<a href="https://www.android.com/intl/de_de/"><img src="../docs/pictures/android.png" width="150" height="150"></a>
 </p>
 
-## Offical Docs
+## Official Docs
 
-Visit [https://capacitorjs.com](https://capacitorjs.com) for offical Documentation
+Besuche [https://capacitorjs.com](https://capacitorjs.com) für die offizielle Dokumentation.
 
-## Set Up
+---
 
-Go to the frontend folder
+## 🚀 Root Project Scripts
 
-```sh
-npm i
-```
+Um die Entwicklung zu beschleunigen, kann das gesamte Projekt (Frontend & Backend) direkt aus dem **Root-Verzeichnis** gesteuert werden. Hierfür wird das Paket `concurrently` verwendet.
 
-to install all packages
+| Script                   | Command                         | Beschreibung                                                                               |
+| :----------------------- | :------------------------------ | :----------------------------------------------------------------------------------------- |
+| `npm run dev`            | `concurrently ...`              | Startet Frontend **und** Backend gleichzeitig — der schnellste Weg für lokale Entwicklung. |
+| `npm run start-frontend` | `npm run dev --prefix frontend` | Startet nur den Vite Dev Server (Frontend).                                                |
+| `npm run start-backend`  | `npm run dev --prefix backend`  | Startet nur den Express Server (Backend).                                                  |
+| `npm run android`        | `build → sync → run`            | Baut die App, synchronisiert Capacitor und startet sie auf Android.                        |
+| `npm run ios`            | `build → sync → run`            | Baut die App, synchronisiert Capacitor und startet sie auf iOS.                            |
 
-```sh
-npm run build
-```
+---
 
-to build the **dist** file (that is the build file in react using vite)
+## Set Up (Manuell)
 
-```sh
-npx cap sync [optionaly: platform: android or ios]
-```
+Führe diese Schritte im **frontend** Ordner aus:
 
-to sync the changes to the app project
-
-now you can either
-
-- open the editor (**Android Studio** or **xcode**)
-
-OR
-
-- run the command
+1. **Abhängigkeiten installieren:**
 
 ```sh
-npx cap open [platform: android or ios]
+   npm i
 ```
 
-now the editor will open and you can run the project
+2. **Projekt bauen:**
 
-## Changes
-
-You should not change the app in the Editor of the Mobile App (so **Android Studio** or **Xcode**)
-
-If you make changes you should make them in the root files (frontend or backend)
-
-Do not change the android or the ios folder on your own, only by using the capacitor commands/cli
-
-### Live Refresh
-
-To use Live Reload, your device must be on the same Wi-Fi network as your development computer
-
-To find local IP adress:
-
-```sh
-ipconfig
+```bash
+   npm run build
 ```
 
-(diffrent on linux)
+_(Dies erstellt den `dist`-Ordner via Vite.)_
 
-look for this section
+3. **Capacitor Sync:**
 
-```sh
-Drahtlos-LAN-Adapter WLAN:
-
-   Verbindungsspezifisches DNS-Suffix: lan
-   Verbindungslokale IPv6-Adresse  . : fe80::8763:e704:1516:5f41%17
-   IPv4-Adresse  . . . . . . . . . . : 192.168.96.171
-   Subnetzmaske  . . . . . . . . . . : 255.255.240.0
-   Standardgateway . . . . . . . . . : 192.168.96.1
+```bash
+   npx cap sync [android | ios]
 ```
 
-and take the IPv4-Adresse `IPv4-Adresse  . . . . . . . . . . : 192.168.96.171` (so the `192.168.96.171`)
-and in the `capacitor.config.ts` modify your file like this
+4. **Editor öffnen oder App starten:**
 
-```ts
-server:
-      {
-        url: "http://91.113.50.78:5173",
-        cleartext: true,
-      }
-
+```bash
+   npx cap open [android | ios]
+   # ODER
+   npx cap run [android | ios]
 ```
 
-now you can use the server on your phone and have live refresh (so when changing UI, you see the changes live)
+---
 
-> There are some changes you will not see on the live refresh, like .env file changes or chores changes (new packages, libaries, etc.), the main use of the live refresh is to see UI Changes and JS Functionality on your phone
+## ⚠️ Die Backend "Localhost" Falle
 
-#### Update
+Beim Testen auf einem echten Smartphone darf im Frontend kein `localhost:3000` als API-URL verwendet werden. Für das Handy ist `localhost` das Handy selbst, nicht dein Computer.
 
-You can now use Environmental Variables to use live refresh, just set a `MOBILE_REFRESH` Variable to the string _true_ and a `LOCAL_URL` with the url.
+### Lösung 1: Lokale LAN-IP-Adresse
 
-The Variables can look like this:
+Nutze deine lokale Netzwerk-IP, damit das Handy deinen PC im selben WLAN erreicht.
 
-```env
+**IP finden (Windows):** Tippe `ipconfig` im Terminal → Suche nach `IPv4-Adresse` (z.B. `192.168.0.150`).
 
+**IP finden (Windows):** `hostname -I`
+
+**Backend Config:** Stelle sicher, dass das Express-Backend auf `0.0.0.0` horcht, um externe Anfragen zuzulassen:
+
+```javascript
+const HOST = "0.0.0.0";
+app.listen(PORT, HOST, () => {
+  console.log(`Server läuft auf http://${HOST}:${PORT}`);
+});
+```
+
+**Frontend Config:** Nutze die gefundene IP in deiner `.env`:
+
+```
+VITE_API_URL="http://192.168.0.150:3000"
+```
+
+> **Voraussetzung:** Handy und PC müssen sich im **selben WLAN-Netzwerk** befinden.
+
+### Lösung 2: Deployed Backend
+
+Alternativ kann das Backend auf einem Server deployed werden. Das Handy greift dann direkt auf die öffentliche URL zu — unabhängig vom Netzwerk. Das wird in Production genutzt (Ein deployed Backend)
+
+**Frontend Config:** Setze die deployed URL in deiner `.env`:
+
+```
+VITE_API_URL="https://mein-backend.onrender.com"
+```
+
+> **Vorteil:** Kein WLAN-Zwang, keine IP-Änderungen, funktioniert auch unterwegs.
+> **Nachteil:** Änderungen am Backend müssen erst deployed werden, bevor sie auf dem Handy sichtbar sind.
+
+### Zusammenfassung
+
+| Methode              | Wann nutzen?                                | Voraussetzung                           |
+| :------------------- | :------------------------------------------ | :-------------------------------------- |
+| **LAN-IP**           | Lokale Entwicklung, schnelles Testen        | Gleiches WLAN, `0.0.0.0` als Host       |
+| **Deployed Backend** | Testen auf echten Geräten, Demos, unterwegs | Backend muss deployed & erreichbar sein |
+
+---
+
+## ⚡ Live Refresh Konfiguration
+
+Um UI-Änderungen sofort auf dem Handy zu sehen, ohne jedes Mal neu zu bauen, nutzen wir den Live-Server von Vite.
+
+### Automatisierung via `.env`
+
+Setze in deiner `.env`-Datei im Frontend:
+
+```
 MOBILE_REFRESH="true"
-LOCAL_URL="http://192.168.0.167:5173"
-
+LOCAL_URL="http://192.168.0.150:5173"  # Deine IP + Vite Port
 ```
 
-instead of the `192.168.0.16` i used, use your ip!
+In der `capacitor.config.ts` wird dies dynamisch geladen:
 
-In the **capacitor.config.ts**
+```typescript
+server: process.env.MOBILE_REFRESH === "true"
+  ? {
+      url: process.env.LOCAL_URL || "http://192.168.0.1:5173",
+      cleartext: true,
+    }
+  : undefined,
+```
 
-```ts
+> **Hinweis:** Live Refresh zeigt UI-Änderungen live an. Bei Änderungen an der `.env`, neu installierten Paketen oder nativen Dateien im `Android`/`iOS`-Ordner muss manuell `npx cap sync` ausgeführt werden.
 
-  server:
-    process.env.MOBILE_REFRESH === "true"
-      ? {
-          url: process.env.LOCAL_URL || "http://192.168.0.167:5173",
-          cleartext: true,
+---
+
+## 🛠 Native Android Konfiguration
+
+Damit Android die unverschlüsselte Verbindung (`http`) zu deinem lokalen PC erlaubt, wurde eine automatische Umschaltung konfiguriert.
+
+### 1. Gradle Placeholders (`android/app/build.gradle`)
+
+Wir steuern die Erlaubnis für Klartext-Traffic über den Build-Typ:
+
+```gradle
+android {
+    buildTypes {
+        release {
+            addManifestPlaceholders([usesCleartextTraffic: "false"])
         }
-      : undefined,
+        debug {
+            addManifestPlaceholders([usesCleartextTraffic: "true"])
+        }
+    }
+}
 ```
 
-> You can still just hardcode how you want it to, but using this no one has to edit the capacitor config file just his own **.env** file
+### 2. Android Manifest (`android/app/src/main/AndroidManifest.xml`)
 
-### Debugging
+Das Manifest nutzt diesen Platzhalter im `<application>` Tag:
+
+```xml
+<application
+    ...
+    android:usesCleartextTraffic="${usesCleartextTraffic}">
+```
+
+> Dadurch ist HTTP in der Entwicklung (Debug) erlaubt, im fertigen Release (Production) jedoch aus Sicherheitsgründen automatisch gesperrt.
+
+---
+
+## 🔍 Debugging
 
 ### Android
 
-1. Connect phone via USB
-2. Enable USB-Debugging on your phone (see Google)
-3. Run the App on your Physical Device (most recommanded)
-4. Open Chrome: `chrome://inspect`
-5. Select your device and click "inspect" (this might take a while)
-
-Now you can see your app in the **Dev-Tools** like a web app. You can access things like the **console**, **cookies**, **network** tab, etc. Some things won't work or won't be displayed because the mobile device handles them differently than a browser (e.g. local storage), but it's **perfect** for **logging** in the **console**.
+1. Gerät via USB anschließen & USB-Debugging in den Entwickleroptionen aktivieren.
+2. App auf dem Handy starten.
+3. In Chrome am PC öffnen: `chrome://inspect`.
+4. Klicke bei deinem Gerät auf **"inspect"**, um Console, Netzwerk-Tab und Elemente zu sehen.
 
 ### iOS
 
-Use Safari Developer Tools
+1. Gerät anschließen.
+2. In Safari (auf dem Mac): **Entwickler** → **[Dein Gerät]** → **[App Name]**.
 
-## Command Shortcuts
+---
 
-These Shortcuts declared in the `package.json` help you run,open and debug your capacitor app faster, by typing one command instead of three in the cli.
-Just type `npm run [command]` (for example: `npm run android` to run app on android (choosing device in cli))
+## Frontend Command Shortcuts
 
-### The Commands
-
-```json
-"cap:dev": "npm run build && npx cap sync && npx cap run android",
-"android": "npm run build && npx cap sync && npx cap run android",
-"cap:dev:android": "npm run build && npx cap sync && npx cap run android",
-"cap:dev:ios": "npm run build && npx cap sync && npx cap run ios",
-"ios": "npm run build && npx cap sync && npx cap run ios",
-"android:open": "npm run build && npx cap sync && npx cap open android",
-"ios:open": "npm run build && npx cap sync && npx cap open ios"
-```
-
-### Overview
-
-#### Run Android App
-
-If you want to run your app on **android** without opening **android studio** and **choosing devices via the cli** (with arrow keys), use these commands
-
-```bash
-npm run android
-
-# or
-
-npm run cap:dev
-
-# or
-
-npm run cap:dev:android
-
-```
+Diese Scripts in der `frontend/package.json` vereinfachen den mobilen Workflow:
 
 ```json
-"cap:dev": "npm run build && npx cap sync && npx cap run android",
-"android": "npm run build && npx cap sync && npx cap run android",
-"cap:dev:android": "npm run build && npx cap sync && npx cap run android",
-```
-
-#### Run iOS App
-
-If you want to run your app on **iOS** without opening **XCode** and **choosing devices via the cli** (with arrow keys), use these commands
-
-```bash
-npm run ios
-
-# or
-
-npm run cap:dev:ios
-
-```
-
-```json
-"cap:dev:ios": "npm run build && npx cap sync && npx cap run ios",
-"ios": "npm run build && npx cap sync && npx cap run ios",
-```
-
-#### Open App in Editor
-
-If you want to open your App in the Editor of the OS you want to test, here are the commands
-
-```bash
-npm run android:open # for android
-
-# or
-
-npm run ios:open # for ios
-```
-
-```json
-"android:open": "npm run build && npx cap sync && npx cap open android",
-"ios:open": "npm run build && npx cap sync && npx cap open ios"
+"scripts": {
+  "cap:dev": "npm run build && npx cap sync && npx cap run android",
+  "android": "npm run build && npx cap sync && npx cap run android",
+  "ios": "npm run build && npx cap sync && npx cap run ios",
+  "android:open": "npm run build && npx cap sync && npx cap open android",
+  "ios:open": "npm run build && npx cap sync && npx cap open ios"
+}
 ```

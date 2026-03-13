@@ -24,6 +24,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import pool from "./db.js";
 // API-Routes
 import refreshRoutes from "./routes/refresh.js";
 import registerRoutes from "./routes/register.js";
@@ -34,7 +35,7 @@ import rideRoutes from "./routes/ride.js";
 import allridesRoutes from "./routes/all-rides.js";
 import logOutRoutes from "./routes/logout.js";
 import deleteAccountRoutes from "./routes/deleteAccount.js";
-import listBlobsRoutes from "./routes/list-blobs.js";
+import storageRoutes from "./routes/storage.js";
 import updateProfileRoutes from "./routes/updateProfile.js";
 import invoiceRoutes from "./routes/invoice.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
@@ -49,15 +50,14 @@ app.use(
   cors({
     origin: [
       "https://smart-kassa.vercel.app",
-      "http://localhost", // Capacitor Android/iOS
-      "https://localhost",
-      "http://localhost:5173",
-      "capacitor://localhost",
-      "http://localhost:5173",
+      "http://localhost", // Capacitor Android
+      "capacitor://localhost", // Capacitor iOS
+      process.env.NODE_ENV !== "production" && "http://localhost:5173",
+      process.env.NODE_ENV !== "production" && "http://localhost:5174",
       process.env.DEBUG_URL, // to test/debug
     ],
     credentials: true, // Allow cookies to be sent
-  })
+  }),
 );
 
 // Parse incoming JSON request bodies
@@ -83,18 +83,33 @@ app.use("/all-rides", allridesRoutes);
 app.use("/logout", logOutRoutes);
 app.use("/account", deleteAccountRoutes);
 app.use("/account", updateProfileRoutes);
-app.use("/list-blobs", listBlobsRoutes);
+app.use("/storage", storageRoutes);
 app.use("/invoice", invoiceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 /**
  * Health Check Endpoint
- * Used to verify the server is running
+ * Verifies the server AND database connection are ready.
+ * Playwright and GitHub Actions use this to wait until the backend is truly up.
+ * @route GET /health
+ * @access Public
+ */
+app.get("/health", async (_, res) => {
+  try {
+    await pool.query("SELECT 1");
+    return res.json({ status: "ok" });
+  } catch (err) {
+    return res.status(503).json({ status: "error", message: err.message });
+  }
+});
+
+/**
+ * Root Endpoint
  * @route GET /
  * @access Public
  */
 app.get("/", (_, res) => {
-  res.send("SmartKassa API - Server running");
+  res.send("SmartKasse API - Server running");
 });
 
 /**
@@ -110,7 +125,8 @@ app.use((req, res) => {
 
 // LOCAL Server Configuration
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 
-app.listen(PORT, () => {
-  console.log(`SmartKassa API running on port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`SmartKassa API running on http://${HOST}:${PORT}`);
 });

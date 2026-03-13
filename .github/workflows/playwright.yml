@@ -1,0 +1,147 @@
+name: Playwright E2E Tests
+
+on:
+  push:
+    branches: [main, develop, test/e2e, test/frontend, ci/cd]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  e2e-test:
+    name: E2E Tests (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit, mobile]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Node 22+ required for @react-email packages (EBADENGINE otherwise)
+          # --env-file flag (used in backend dev:test) works from Node 20.6+
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: frontend
+
+      - name: Install Playwright browser + system dependencies
+        run: npx playwright install --with-deps
+        working-directory: frontend
+
+      - name: Create backend/.env.test
+        env:
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+        run: |
+          printf '%s\n' \
+            "DATABASE_URL=${DATABASE_URL}" \
+            "JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}" \
+            "JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}" \
+            "S3_REGION=${S3_REGION}" \
+            "S3_ENDPOINT=${S3_ENDPOINT}" \
+            "S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}" \
+            "S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}" \
+            "S3_BUCKET_NAME=${S3_BUCKET_NAME}" \
+            "NODE_ENV=test" \
+            "PORT=3000" \
+            "HOST=0.0.0.0" \
+            > backend/.env.test
+
+      - name: Create frontend/.env.local
+        env:
+          VITE_TOKEN: ${{ secrets.VITE_TOKEN }}
+        run: |
+          printf '%s\n' \
+            "VITE_API_URL=http://localhost:3000" \
+            "VITE_TOKEN=${VITE_TOKEN}" \
+            > frontend/.env.local
+
+      - name: Run Playwright tests (${{ matrix.browser }})
+        run: npx playwright test --project=${{ matrix.browser }}
+        working-directory: frontend
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: frontend/playwright-report/
+          retention-days: 14
+
+  unit-test-deploy:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: frontend
+
+      - name: Run Vitest
+        run: npx vitest run
+        working-directory: frontend
+
+  deploy:
+    name: Deploy to Vercel
+    needs: [e2e-test, unit-test-deploy]
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy to Vercel (Production)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Deploy to Vercel (Preview)
+        if: >-
+          (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+          github.event_name == 'pull_request'
+        run: vercel --yes --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

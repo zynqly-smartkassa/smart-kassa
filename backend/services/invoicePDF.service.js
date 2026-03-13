@@ -94,7 +94,7 @@ class InvoiceService {
         const page = await browser.newPage();
 
         await page.setContent(html, {
-            waitUntil: "networkidle0"
+            waitUntil: "load"
         });
 
         const pdf = await page.pdf({

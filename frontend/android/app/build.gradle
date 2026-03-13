@@ -20,6 +20,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            addManifestPlaceholders([usesCleartextTraffic: "false"])
+        }
+        debug {
+            // In Development ist Cleartext ERLAUBT
+            addManifestPlaceholders([usesCleartextTraffic: "true"])
         }
     }
 }

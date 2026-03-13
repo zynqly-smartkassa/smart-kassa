@@ -13,7 +13,7 @@ import {
   formatMinutes,
 } from "../../utils/rides/summaryMinutes";
 import type { AllRide } from "../../../constants/AllRide";
-import { driverIcon, locationIcon } from "../../utils/icons";
+import { driverIcon, locationIcon } from "../../utils/rides/icons";
 import StatusOverlay from "../../components/StatusOverlay";
 
 /**
@@ -62,7 +62,7 @@ export const DrawMap = (data: DrawMapArgs) => {
 
     routePolyline.current = L.polyline([], { color: "violet" }).addTo(map);
     animatedMarker.current = L.marker(wholeRide[0], { icon: driverIcon }).addTo(
-      map
+      map,
     );
 
     return () => {
