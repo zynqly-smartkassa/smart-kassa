@@ -1,5 +1,5 @@
 import express from "express";
-import { weekly, daily, monthly } from "../dashboardController.js";
+import { weekly, daily, monthly } from "../service/dashboardService.js";
 
 const router = express.Router();
 

@@ -6,6 +6,7 @@
 
 import express from "express";
 import pool from "../db.js";
+import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -168,13 +169,51 @@ router.post("/", async (req, res) => {
 });
 
 /**
- * GET /ride
- * Health check endpoint for the ride route
- * @route GET /ride
- * @access Public
+ * GET /rides
+ * Returns all rides for the authenticated user.
+ *
+ * @route GET /rides
+ * @access Private
+ * @returns {Object} 200 - Successful query with ride list
+ * @returns {Object} 400 - Missing required fields
+ * @returns {Object} 500 - Internal server error
  */
-router.get("/", (req, res) => {
-  res.send("Server running on route /ride");
+router.get("/", authenticateToken, async (req, res) => {
+  const user_id = req.user.userId;
+
+  if (!user_id) {
+    return res.status(400).json({
+      status: "error",
+      code: "MISSING_FIELDS",
+      message: "Missing required fields",
+    });
+  }
+
+  try {
+    const rides = await pool.query(
+      `SELECT
+        r.ride_id, r.vehicle_id,
+        r.start_address, r.end_address,
+        r.distance, r.duration,
+        r.start_time, r.end_time,
+        r.ride_type, u.user_id, r.whole_ride
+      FROM ride r
+      JOIN users u ON r.user_id = u.user_id
+      WHERE u.user_id = $1`,
+      [user_id],
+    );
+
+    res.status(200).json({
+      status: "success",
+      ride_count: rides.rowCount,
+      rides: rides.rows,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      error: "Internal Server Error",
+      details: error.message,
+    });
+  }
 });
 
 export default router;

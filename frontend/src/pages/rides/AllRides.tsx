@@ -21,8 +21,6 @@ import {
 import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
-import { useSelector } from "react-redux";
-import { type RootState } from "../../../redux/store";
 import { useCheckForAchievements } from "../../hooks/userfeedback/useAchievements";
 
 /**
@@ -47,19 +45,21 @@ const AllRides = () => {
   const [sortAfter, setSortAfter] = useState("date");
   const [rideType, setRideType] = useState("all");
   const [loading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [rides, setRides] = useState<AllRide[] | null>(null);
   const { id } = useParams();
-  const user_id = useSelector((state: RootState) => state.user.id);
   const navigator = useNavigate();
 
   useEffect(() => {
     (async () => {
-      const data = await getAllRides(Number(user_id));
-
-      if (!data || !data.rides) throw new Error("No rides found");
-      setRides(data.rides);
-
-      setIsLoading(false);
+      try {
+        const data = await getAllRides();
+        setRides(data.rides);
+      } catch {
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
     })();
   }, []);
 
@@ -75,9 +75,13 @@ const AllRides = () => {
     return <>Leider gibt es noch keine Fahrten...</>;
   }
 
+  if (error) {
+    return <>Es gab einen unerwarteten Fehler</>;
+  }
+
   // Test if all-rides was called with a id, if so find the exact route
 
-  if (ride_id) {
+  if (!loading && ride_id) {
     const ride = rides.find((r) => Number(r.ride_id) === ride_id);
 
     if (ride) {
@@ -92,26 +96,21 @@ const AllRides = () => {
   const ridesYesterday = getRidesYesterday(rides);
 
   return (
-    <div className="w-full flex">
+    <div className="w-full flex flex-col gap-1 text-center md:text-left">
+      <h2 data-testid="h2text" className="page-title">
+        Fahrten
+      </h2>
+
+      <p className="subheader">
+        Sehen und sortieren Sie jede Fahrt, die Sie unternommen haben!
+      </p>
+
       {/* TabsList left */}
       <Tabs defaultValue="today" className="w-full flex flex-col gap-3">
         <div
           className="flex flex-col md:justify-between gap-3 md:flex-row
         md:items-center"
         >
-          <div className="flex flex-col gap-1 text-center md:text-left">
-            <h2
-              data-testid="h2text"
-              className="page-title"
-              onClick={() => rides}
-            >
-              Fahrten
-            </h2>
-            <p className="subheader">
-              Sehen und sortieren Sie jede Fahrt, die Sie unternommen haben!
-            </p>
-          </div>
-
           <div className="flex flex-col items-center md:items-end gap-3">
             <TabsList className="grid grid-cols-3 md:w-auto max-w-[400px] ">
               <TabsTrigger value="today" data-testid="show-today">
