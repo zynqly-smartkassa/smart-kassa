@@ -5,9 +5,7 @@ import {
   TabsTrigger,
 } from "../../components/ui/tabs";
 
-import { getAllRides } from "../../utils/rides/all-rides";
-import { useEffect, useState } from "react";
-import type { AllRide } from "../../../constants/AllRide";
+import { useRef, useState } from "react";
 import RideAtDate from "./RideAtDate";
 import { ListFilter, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -22,6 +20,8 @@ import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useCheckForAchievements } from "../../hooks/userfeedback/useAchievements";
+import InvoicesPagination from "@/components/Invoices/InvoicesPagination";
+import { useGetAllRides } from "@/hooks/rides/useGetAllRides";
 
 /**
  * Component that displays all rides for the logged-in user with filtering and sorting capabilities.
@@ -44,24 +44,28 @@ const AllRides = () => {
   const [isAscending, setIsAscending] = useState(false);
   const [sortAfter, setSortAfter] = useState("date");
   const [rideType, setRideType] = useState("all");
-  const [loading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [rides, setRides] = useState<AllRide[] | null>(null);
+  const [page, setPage] = useState(1);
+  const tokenTracker = useRef(new Map<number, string>());
+  const [token, setToken] = useState<string | undefined>(undefined);
   const { id } = useParams();
   const navigator = useNavigate();
+  const { error, loading, rides, nextCursor } = useGetAllRides(token);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await getAllRides();
-        setRides(data.rides);
-      } catch {
-        setError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, []);
+  const handlePrevious = () => {
+    if (page > 1) {
+      setToken(tokenTracker.current.get(page - 2) || undefined);
+      setPage((prev) => prev - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (nextCursor) {
+      if (tokenTracker.current.size === page - 1)
+        tokenTracker.current.set(page, nextCursor);
+      setToken(nextCursor);
+      setPage((prev) => prev + 1);
+    }
+  };
 
   useCheckForAchievements(rides);
 
@@ -106,13 +110,10 @@ const AllRides = () => {
       </p>
 
       {/* TabsList left */}
-      <Tabs defaultValue="today" className="w-full flex flex-col gap-3">
-        <div
-          className="flex flex-col md:justify-between gap-3 md:flex-row
-        md:items-center"
-        >
-          <div className="flex flex-col items-center md:items-end gap-3">
-            <TabsList className="grid grid-cols-3 md:w-auto max-w-[400px] ">
+      <Tabs defaultValue="today" className="w-full flex flex-col gap-3 mt-3">
+        <div className="w-full flex flex-col items-center gap-3">
+          <div className="w-full max-w-[400px] flex flex-col items-center gap-3">
+            <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="today" data-testid="show-today">
                 Heute
               </TabsTrigger>
@@ -251,6 +252,13 @@ const AllRides = () => {
           </TabsContent>
         </div>
       </Tabs>
+
+      <InvoicesPagination
+        page={page}
+        hasNext={!!nextCursor}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+      />
     </div>
   );
 };

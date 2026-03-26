@@ -180,6 +180,8 @@ router.post("/", async (req, res) => {
  */
 router.get("/", authenticateToken, async (req, res) => {
   const user_id = req.user.userId;
+  const cursor = req.query.cursor ?? 0;
+  const limit = req.query.limit ?? 12;
 
   try {
     const rides = await pool.query(
@@ -191,14 +193,15 @@ router.get("/", authenticateToken, async (req, res) => {
         r.ride_type, u.user_id, r.whole_ride
       FROM ride r
       JOIN users u ON r.user_id = u.user_id
-      WHERE u.user_id = $1`,
-      [user_id],
+      WHERE u.user_id = $1 AND ride_id > $2 LIMIT $3`,
+      [user_id, cursor, limit],
     );
 
     res.status(200).json({
       status: "success",
       ride_count: rides.rowCount,
       rides: rides.rows,
+      next_cursor: rides.rows.at(-1).ride_id
     });
   } catch (error) {
     return res.status(500).send({

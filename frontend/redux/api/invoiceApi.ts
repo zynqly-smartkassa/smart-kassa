@@ -9,7 +9,7 @@ export const invoicesApi = createApi({
     getInvoices: builder.query({
       query: (arg) => ({
         url: "/storage/invoices",
-        params: { limit: 10, token: arg.token },
+        params: { limit: 12, token: arg.token },
         method: "GET",
       }),
       providesTags: ["Invoice"],
