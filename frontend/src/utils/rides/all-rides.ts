@@ -29,6 +29,7 @@ export async function getAllRides(cursor: string | undefined, retry: boolean = f
       },
       params: {
         cursor: cursor,
+        limit: 12,
       },
     });
 

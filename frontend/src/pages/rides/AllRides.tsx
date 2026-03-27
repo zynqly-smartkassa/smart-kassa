@@ -59,7 +59,7 @@ const AllRides = () => {
   };
 
   const handleNext = () => {
-    if (nextCursor) {
+    if (nextCursor && rides?.length == 12) {
       if (tokenTracker.current.size === page - 1)
         tokenTracker.current.set(page, nextCursor);
       setToken(nextCursor);
@@ -255,7 +255,7 @@ const AllRides = () => {
 
       <InvoicesPagination
         page={page}
-        hasNext={!!nextCursor}
+        hasNext={!!nextCursor && rides.length == 12}
         onPrevious={handlePrevious}
         onNext={handleNext}
       />
