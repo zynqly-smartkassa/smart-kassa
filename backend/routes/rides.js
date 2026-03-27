@@ -182,6 +182,14 @@ router.get("/", authenticateToken, async (req, res) => {
   const user_id = req.user.userId;
   const cursor = parseInt(req.query.cursor ?? 0);
   const limit = parseInt(req.query.limit ?? 12);
+  const dateQuery = req.query.date?.toString() ?? "all";
+
+  let dateCondition = "";
+  if (dateQuery === "today") {
+    dateCondition = "AND r.start_time::date = CURRENT_DATE";
+  } else if (dateQuery === "yesterday") {
+    dateCondition = "AND r.start_time::date = CURRENT_DATE - INTERVAL '1 day'";
+  }
 
   try {
     const rides = await pool.query(
@@ -193,7 +201,7 @@ router.get("/", authenticateToken, async (req, res) => {
         r.ride_type, u.user_id, r.whole_ride
       FROM ride r
       JOIN users u ON r.user_id = u.user_id
-      WHERE u.user_id = $1 AND ride_id > $2 LIMIT $3`,
+      WHERE u.user_id = $1 AND ride_id > $2 ${dateCondition} LIMIT $3`,
       [user_id, cursor, limit + 1],
     );
 
@@ -205,13 +213,13 @@ router.get("/", authenticateToken, async (req, res) => {
       next_cursor = rides.rows.at(-1).ride_id;
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       rides: rides.rows,
       next_cursor: next_cursor,
     });
   } catch (error) {
-    return res.status(500).send({
+    return res.status(500).json({
       error: "Internal Server Error",
       details: error.message,
     });

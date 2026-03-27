@@ -1,14 +1,11 @@
 import {
   Tabs,
-  TabsContent,
   TabsList,
   TabsTrigger,
 } from "../../components/ui/tabs";
 
 import { useRef, useState } from "react";
-import RideAtDate from "./RideAtDate";
 import { ListFilter, ArrowUp, ArrowDown } from "lucide-react";
-
 import {
   Select,
   SelectContent,
@@ -16,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useCheckForAchievements } from "../../hooks/userfeedback/useAchievements";
@@ -24,6 +20,7 @@ import PaginationHandler from "@/components/Invoices/InvoicesPagination";
 import { handleNext, handlePrevious } from "@/utils/pagination/handleChange";
 import { useGetRidesQuery } from "../../../redux/api/rideApi";
 import type { AllRide } from "../../../constants/AllRide";
+import RideCards from "@/components/rides/RideCards";
 
 /**
  * Component that displays all rides for the logged-in user with filtering and sorting capabilities.
@@ -52,7 +49,7 @@ const AllRides = () => {
   const [activeTab, setActiveTab] = useState("today");
   const { id } = useParams();
   const navigator = useNavigate();
-  const { data, isLoading, isError, isFetching } = useGetRidesQuery({ cursor });
+  const { data, isLoading, isError, isFetching } = useGetRidesQuery({ cursor: cursor, date: activeTab });
 
   const rides = (data?.rides ?? []) as AllRide[];
   const nextCursor = data?.next_cursor;
@@ -61,15 +58,11 @@ const AllRides = () => {
 
   const ride_id = Number(id);
 
-  if (isLoading || isFetching) {
-    return <>Fahrten werden geladen...</>;
-  }
-
   if (isError) {
     return <>Es gab einen unerwarteten Fehler</>;
   }
 
-  if (!isLoading && ride_id) {
+  if (ride_id) {
     const ride = rides.find((r) => Number(r.ride_id) === ride_id);
 
     if (ride) {
@@ -78,9 +71,6 @@ const AllRides = () => {
       navigator("/all-rides");
     }
   }
-
-  const ridesToday = getRidesToday(rides);
-  const ridesYesterday = getRidesYesterday(rides);
 
   return (
     <div className="w-full flex flex-col gap-1 text-center md:text-left min-h-[calc(100dvh-10rem)]">
@@ -93,7 +83,11 @@ const AllRides = () => {
       </p>
 
       {/* TabsList left */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col gap-3 mt-3">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full flex flex-col gap-3 mt-3"
+      >
         <div className="w-full flex flex-col items-center gap-3">
           <div className="w-full max-w-[400px] flex flex-col items-center gap-3">
             <TabsList className="grid grid-cols-3 w-full">
@@ -207,33 +201,7 @@ const AllRides = () => {
           </div>
         </div>
 
-        {/* TabsContent right */}
-        <div className="w-full">
-          <TabsContent value="today">
-            <RideAtDate
-              rides={ridesToday}
-              sortAfter={sortAfter}
-              isDescending={isDescending}
-              rideType={rideType}
-            ></RideAtDate>
-          </TabsContent>
-          <TabsContent value="yesterday">
-            <RideAtDate
-              rides={ridesYesterday}
-              sortAfter={sortAfter}
-              isDescending={isDescending}
-              rideType={rideType}
-            ></RideAtDate>
-          </TabsContent>
-          <TabsContent value="all">
-            <RideAtDate
-              rides={rides}
-              sortAfter={sortAfter}
-              isDescending={isDescending}
-              rideType={rideType}
-            ></RideAtDate>
-          </TabsContent>
-        </div>
+        <RideCards isLoading={isLoading || isFetching} isDescending={isDescending} rideType={rideType} rides={rides} sortAfter={sortAfter}/>
       </Tabs>
 
       <div className="mt-auto">

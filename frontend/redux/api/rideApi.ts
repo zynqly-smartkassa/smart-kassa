@@ -9,7 +9,7 @@ export const rideApi = createApi({
     getRides: builder.query({
       query: (arg) => ({
         url: "/rides",
-        params: { limit: 12, cursor: arg.cursor },
+        params: { limit: 12, cursor: arg.cursor, date: arg.date },
         method: "GET",
       }),
       providesTags: ["Ride"],
