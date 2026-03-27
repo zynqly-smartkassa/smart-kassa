@@ -49,6 +49,7 @@ const AllRides = () => {
   const [page, setPage] = useState(1);
   const tokenTracker = useRef(new Map<number, string>());
   const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState("today");
   const { id } = useParams();
   const navigator = useNavigate();
   const { data, isLoading, isError, isFetching } = useGetRidesQuery({ cursor });
@@ -92,7 +93,7 @@ const AllRides = () => {
       </p>
 
       {/* TabsList left */}
-      <Tabs defaultValue="today" className="w-full flex flex-col gap-3 mt-3">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col gap-3 mt-3">
         <div className="w-full flex flex-col items-center gap-3">
           <div className="w-full max-w-[400px] flex flex-col items-center gap-3">
             <TabsList className="grid grid-cols-3 w-full">
