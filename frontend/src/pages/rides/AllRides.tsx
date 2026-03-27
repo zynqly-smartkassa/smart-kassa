@@ -20,8 +20,9 @@ import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useCheckForAchievements } from "../../hooks/userfeedback/useAchievements";
-import InvoicesPagination from "@/components/Invoices/InvoicesPagination";
+import PaginationHandler from "@/components/Invoices/InvoicesPagination";
 import { useGetAllRides } from "@/hooks/rides/useGetAllRides";
+import { handleNext, handlePrevious } from "@/utils/pagination/handleChange";
 
 /**
  * Component that displays all rides for the logged-in user with filtering and sorting capabilities.
@@ -50,22 +51,6 @@ const AllRides = () => {
   const { id } = useParams();
   const navigator = useNavigate();
   const { error, loading, rides, nextCursor } = useGetAllRides(token);
-
-  const handlePrevious = () => {
-    if (page > 1) {
-      setToken(tokenTracker.current.get(page - 2) || undefined);
-      setPage((prev) => prev - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (nextCursor && rides?.length == 12) {
-      if (tokenTracker.current.size === page - 1)
-        tokenTracker.current.set(page, nextCursor);
-      setToken(nextCursor);
-      setPage((prev) => prev + 1);
-    }
-  };
 
   useCheckForAchievements(rides);
 
@@ -100,7 +85,7 @@ const AllRides = () => {
   const ridesYesterday = getRidesYesterday(rides);
 
   return (
-    <div className="w-full flex flex-col gap-1 text-center md:text-left">
+    <div className="w-full flex flex-col gap-1 text-center md:text-left min-h-[calc(100dvh-10rem)]">
       <h2 data-testid="h2text" className="page-title">
         Fahrten
       </h2>
@@ -253,12 +238,18 @@ const AllRides = () => {
         </div>
       </Tabs>
 
-      <InvoicesPagination
-        page={page}
-        hasNext={!!nextCursor && rides.length == 12}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-      />
+      <div className="mt-auto">
+        <PaginationHandler
+          page={page}
+          hasNext={!!nextCursor && rides.length == 12}
+          onPrevious={() =>
+            handlePrevious(page, setToken, tokenTracker, setPage)
+          }
+          onNext={() =>
+            handleNext(nextCursor, rides, tokenTracker, page, setToken, setPage)
+          }
+        />
+      </div>
     </div>
   );
 };

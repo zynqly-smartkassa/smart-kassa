@@ -6,19 +6,19 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-interface InvoicesPaginationProps {
+interface PaginationProps {
   page: number;
   hasNext: boolean;
   onPrevious: () => void;
   onNext: () => void;
 }
 
-const InvoicesPagination = ({
+const PaginationHandler = ({
   page,
   hasNext,
   onPrevious,
   onNext,
-}: InvoicesPaginationProps) => {
+}: PaginationProps) => {
   return (
     <Pagination className="mx-0 my-5 w-auto">
       <PaginationContent>
@@ -47,4 +47,4 @@ const InvoicesPagination = ({
   );
 };
 
-export default InvoicesPagination;
+export default PaginationHandler;
