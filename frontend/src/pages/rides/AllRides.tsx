@@ -21,8 +21,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
 import { useCheckForAchievements } from "../../hooks/userfeedback/useAchievements";
 import PaginationHandler from "@/components/Invoices/InvoicesPagination";
-import { useGetAllRides } from "@/hooks/rides/useGetAllRides";
 import { handleNext, handlePrevious } from "@/utils/pagination/handleChange";
+import { useGetRidesQuery } from "../../../redux/api/rideApi";
+import type { AllRide } from "../../../constants/AllRide";
 
 /**
  * Component that displays all rides for the logged-in user with filtering and sorting capabilities.
@@ -47,36 +48,32 @@ const AllRides = () => {
   const [rideType, setRideType] = useState("all");
   const [page, setPage] = useState(1);
   const tokenTracker = useRef(new Map<number, string>());
-  const [token, setToken] = useState<string | undefined>(undefined);
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
   const { id } = useParams();
   const navigator = useNavigate();
-  const { error, loading, rides, nextCursor } = useGetAllRides(token);
+  const { data, isLoading, isError, isFetching } = useGetRidesQuery({ cursor });
+
+  const rides = (data?.rides ?? []) as AllRide[];
+  const nextCursor = data?.next_cursor;
 
   useCheckForAchievements(rides);
 
   const ride_id = Number(id);
 
-  if (loading) {
+  if (isLoading || isFetching) {
     return <>Fahrten werden geladen...</>;
   }
 
-  if (!rides) {
-    return <>Leider gibt es noch keine Fahrten...</>;
-  }
-
-  if (error) {
+  if (isError) {
     return <>Es gab einen unerwarteten Fehler</>;
   }
 
-  // Test if all-rides was called with a id, if so find the exact route
-
-  if (!loading && ride_id) {
+  if (!isLoading && ride_id) {
     const ride = rides.find((r) => Number(r.ride_id) === ride_id);
 
     if (ride) {
       return <SummaryRide ride={ride}></SummaryRide>;
     } else {
-      // since id was not found, navigate to main all-rides
       navigator("/all-rides");
     }
   }
@@ -243,10 +240,17 @@ const AllRides = () => {
           page={page}
           hasNext={!!nextCursor && rides.length == 12}
           onPrevious={() =>
-            handlePrevious(page, setToken, tokenTracker, setPage)
+            handlePrevious(page, setCursor, tokenTracker, setPage)
           }
           onNext={() =>
-            handleNext(nextCursor, rides, tokenTracker, page, setToken, setPage)
+            handleNext(
+              nextCursor,
+              rides,
+              tokenTracker,
+              page,
+              setCursor,
+              setPage,
+            )
           }
         />
       </div>
