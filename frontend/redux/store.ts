@@ -6,6 +6,7 @@ import footerLinkSlice from "./slices/footerLinksSlice";
 import notificationsSlice from "./slices/notificationsSlice";
 import avatarSlice from "./slices/avatarSlice";
 import { invoicesApi } from "./api/invoiceApi";
+import { rideApi } from "./api/rideApi";
 
 export const store = configureStore({
   reducer: {
@@ -16,9 +17,10 @@ export const store = configureStore({
     notificationsState: notificationsSlice,
     avatarState: avatarSlice,
     [invoicesApi.reducerPath]: invoicesApi.reducer,
+    [rideApi.reducerPath]: rideApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(invoicesApi.middleware),
+    getDefaultMiddleware().concat(invoicesApi.middleware, rideApi.middleware),
   devTools: import.meta.env.NODE_ENV !== "production",
 });
 

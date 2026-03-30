@@ -1,16 +1,11 @@
 import {
   Tabs,
-  TabsContent,
   TabsList,
   TabsTrigger,
 } from "../../components/ui/tabs";
 
-import { getAllRides } from "../../utils/rides/all-rides";
-import { useEffect, useState } from "react";
-import type { AllRide } from "../../../constants/AllRide";
-import RideAtDate from "./RideAtDate";
+import { useRef, useState } from "react";
 import { ListFilter, ArrowUp, ArrowDown } from "lucide-react";
-
 import {
   Select,
   SelectContent,
@@ -18,12 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { getRidesToday, getRidesYesterday } from "../../utils/rides/getRides";
 import { useNavigate, useParams } from "react-router-dom";
 import SummaryRide from "./SummaryRide";
-import { useSelector } from "react-redux";
-import { type RootState } from "../../../redux/store";
 import { useCheckForAchievements } from "../../hooks/userfeedback/useAchievements";
+import PaginationHandler from "@/components/Invoices/InvoicesPagination";
+import { handleNext, handlePrevious } from "@/utils/pagination/handleChange";
+import { useGetRidesQuery } from "../../../redux/api/rideApi";
+import type { AllRide } from "../../../constants/AllRide";
+import RideCards from "@/components/rides/RideCards";
 
 /**
  * Component that displays all rides for the logged-in user with filtering and sorting capabilities.
@@ -46,36 +43,24 @@ const AllRides = () => {
   const [isAscending, setIsAscending] = useState(false);
   const [sortAfter, setSortAfter] = useState("date");
   const [rideType, setRideType] = useState("all");
-  const [loading, setIsLoading] = useState(true);
-  const [rides, setRides] = useState<AllRide[] | null>(null);
+  const [page, setPage] = useState(1);
+  const tokenTracker = useRef(new Map<number, string>());
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState("today");
   const { id } = useParams();
-  const user_id = useSelector((state: RootState) => state.user.id);
   const navigator = useNavigate();
+  const { data, isLoading, isError, isFetching } = useGetRidesQuery({ cursor: cursor, date: activeTab });
 
-  useEffect(() => {
-    (async () => {
-      const data = await getAllRides(Number(user_id));
-
-      if (!data || !data.rides) throw new Error("No rides found");
-      setRides(data.rides);
-
-      setIsLoading(false);
-    })();
-  }, []);
+  const rides = (data?.rides ?? []) as AllRide[];
+  const nextCursor = data?.next_cursor;
 
   useCheckForAchievements(rides);
 
   const ride_id = Number(id);
 
-  if (loading) {
-    return <>Fahrten werden geladen...</>;
+  if (isError) {
+    return <>Es gab einen unerwarteten Fehler</>;
   }
-
-  if (!rides) {
-    return <>Leider gibt es noch keine Fahrten...</>;
-  }
-
-  // Test if all-rides was called with a id, if so find the exact route
 
   if (ride_id) {
     const ride = rides.find((r) => Number(r.ride_id) === ride_id);
@@ -83,37 +68,29 @@ const AllRides = () => {
     if (ride) {
       return <SummaryRide ride={ride}></SummaryRide>;
     } else {
-      // since id was not found, navigate to main all-rides
       navigator("/all-rides");
     }
   }
 
-  const ridesToday = getRidesToday(rides);
-  const ridesYesterday = getRidesYesterday(rides);
-
   return (
-    <div className="w-full flex">
-      {/* TabsList left */}
-      <Tabs defaultValue="today" className="w-full flex flex-col gap-3">
-        <div
-          className="flex flex-col md:justify-between gap-3 md:flex-row
-        md:items-center"
-        >
-          <div className="flex flex-col gap-1 text-center md:text-left">
-            <h2
-              data-testid="h2text"
-              className="page-title"
-              onClick={() => rides}
-            >
-              Fahrten
-            </h2>
-            <p className="subheader">
-              Sehen und sortieren Sie jede Fahrt, die Sie unternommen haben!
-            </p>
-          </div>
+    <div className="w-full flex flex-col gap-1 text-center md:text-left min-h-[calc(100dvh-10rem)]">
+      <h2 data-testid="h2text" className="page-title">
+        Fahrten
+      </h2>
 
-          <div className="flex flex-col items-center md:items-end gap-3">
-            <TabsList className="grid grid-cols-3 md:w-auto max-w-[400px] ">
+      <p className="subheader">
+        Sehen und sortieren Sie jede Fahrt, die Sie unternommen haben!
+      </p>
+
+      {/* TabsList left */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full flex flex-col gap-3 mt-3"
+      >
+        <div className="w-full flex flex-col items-center gap-3">
+          <div className="w-full max-w-[400px] flex flex-col items-center gap-3">
+            <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="today" data-testid="show-today">
                 Heute
               </TabsTrigger>
@@ -224,34 +201,28 @@ const AllRides = () => {
           </div>
         </div>
 
-        {/* TabsContent right */}
-        <div className="w-full">
-          <TabsContent value="today">
-            <RideAtDate
-              rides={ridesToday}
-              sortAfter={sortAfter}
-              isDescending={isDescending}
-              rideType={rideType}
-            ></RideAtDate>
-          </TabsContent>
-          <TabsContent value="yesterday">
-            <RideAtDate
-              rides={ridesYesterday}
-              sortAfter={sortAfter}
-              isDescending={isDescending}
-              rideType={rideType}
-            ></RideAtDate>
-          </TabsContent>
-          <TabsContent value="all">
-            <RideAtDate
-              rides={rides}
-              sortAfter={sortAfter}
-              isDescending={isDescending}
-              rideType={rideType}
-            ></RideAtDate>
-          </TabsContent>
-        </div>
+        <RideCards isLoading={isLoading || isFetching} isDescending={isDescending} rideType={rideType} rides={rides} sortAfter={sortAfter}/>
       </Tabs>
+
+      <div className="mt-auto">
+        <PaginationHandler
+          page={page}
+          hasNext={!!nextCursor && rides.length == 12}
+          onPrevious={() =>
+            handlePrevious(page, setCursor, tokenTracker, setPage)
+          }
+          onNext={() =>
+            handleNext(
+              nextCursor,
+              rides,
+              tokenTracker,
+              page,
+              setCursor,
+              setPage,
+            )
+          }
+        />
+      </div>
     </div>
   );
 };

@@ -3,11 +3,12 @@ import LoadingInvoices from "@/components/Invoices/LoadingInvoices";
 import EmptyInvoices from "@/components/Invoices/EmptyInvoices";
 import ErrorInvoices from "@/components/Invoices/ErrorInvoices";
 import InvoiceCard from "@/components/Invoices/InvoiceCard";
-import InvoicesPagination from "@/components/Invoices/InvoicesPagination";
+import PaginationHandler from "@/components/Invoices/InvoicesPagination";
 import { useParams } from "react-router";
 import SingleInvoice from "./SingleInvoice";
 import { useGetInvoicesQuery } from "../../../redux/api/invoiceApi";
 import type { InvoicesQuery } from "@/types/InvoiceQuery";
+import { handlePrevious, handleNext } from "@/utils/pagination/handleChange";
 
 const Invoices = () => {
   const [token, setToken] = useState<string | undefined>(undefined);
@@ -20,22 +21,6 @@ const Invoices = () => {
   if (id) {
     return <SingleInvoice />;
   }
-
-  const handlePrevious = () => {
-    if (page > 1) {
-      setToken(tokenTracker.current.get(page - 2) || undefined);
-      setPage((prev) => prev - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (data?.nextContinuationToken) {
-      if (tokenTracker.current.size === page - 1)
-        tokenTracker.current.set(page, data.nextContinuationToken);
-      setToken(data.nextContinuationToken);
-      setPage((prev) => prev + 1);
-    }
-  };
 
   return (
     <section className="flex flex-col w-full min-h-screen">
@@ -65,11 +50,20 @@ const Invoices = () => {
         {isError && <ErrorInvoices onRetry={refetch} />}
       </div>
 
-      <InvoicesPagination
+      <PaginationHandler
         page={page}
         hasNext={!!data?.nextContinuationToken}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
+        onPrevious={() => handlePrevious(page, setToken, tokenTracker, setPage)}
+        onNext={() =>
+          handleNext(
+            data?.nextContinuationToken,
+            data?.files ?? [],
+            tokenTracker,
+            page,
+            setToken,
+            setPage,
+          )
+        }
       />
     </section>
   );

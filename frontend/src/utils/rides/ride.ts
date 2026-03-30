@@ -41,7 +41,7 @@ export async function sendRide(ride: {
 }) {
   try {
     const { data } = await axios.post(
-      `${import.meta.env.VITE_API_URL}/ride`,
+      `${import.meta.env.VITE_API_URL}/rides`,
       ride,
       {
         headers: {
